@@ -48,26 +48,25 @@
           </div>
         </paper-toolbar>
         <div fit layout vertical>
-          <iron-pages selected="{{page}}" attr-for-selected="category">
 
+          <iron-pages selected="{{page}}" attr-for-selected="category">
             <template is="dom-repeat" items="{{allPages}}">
                 <section category="{{item.category}}">
                   <h1>{{item.category}}</h1>
                   <div>{{item.title}}</div>
                 </section>
             </template>
-
           </iron-pages>
-          <iron-pages id="subPages" selected="{{subPage}}" attr-for-selected="category">
 
+          <iron-pages id="subPages" selected="{{subPage}}" attr-for-selected="category">
             <template is="dom-repeat" items="{{allSubPages}}">
                 <section category="{{item.category}}">
                   <h1>{{item.category}}</h1>
                   <div>{{item.title}}</div>
                 </section>
             </template>
-
           </iron-pages>
+
         </div>
       </paper-header-panel>
     </paper-drawer-panel>
