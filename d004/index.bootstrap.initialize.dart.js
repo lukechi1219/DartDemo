@@ -605,7 +605,7 @@
       }],
       noSuchMethod$1: ["super$Interceptor$noSuchMethod", function(receiver, invocation) {
         throw H.wrapException(P.NoSuchMethodError$(receiver, invocation.get$memberName(), invocation.get$positionalArguments(), invocation.get$namedArguments(), null));
-      }, null, "get$noSuchMethod", 2, 0, null, 14],
+      }, null, "get$noSuchMethod", 2, 0, null, 11],
       get$runtimeType: function(receiver) {
         return new H.TypeImpl(H.getRuntimeTypeString(receiver), null);
       },
@@ -640,7 +640,7 @@
       },
       noSuchMethod$1: [function(receiver, invocation) {
         return this.super$Interceptor$noSuchMethod(receiver, invocation);
-      }, null, "get$noSuchMethod", 2, 0, null, 14]
+      }, null, "get$noSuchMethod", 2, 0, null, 11]
     },
     JavaScriptObject: {
       "^": "Interceptor;",
@@ -723,6 +723,15 @@
       },
       elementAt$1: function(receiver, index) {
         return receiver[index];
+      },
+      sublist$2: function(receiver, start, end) {
+        if (start < 0 || start > receiver.length)
+          throw H.wrapException(P.RangeError$range(start, 0, receiver.length, null, null));
+        if (end < start || end > receiver.length)
+          throw H.wrapException(P.RangeError$range(end, start, receiver.length, null, null));
+        if (start === end)
+          return H.setRuntimeTypeInfo([], [H.getTypeArgumentByIndex(receiver, 0)]);
+        return H.setRuntimeTypeInfo(receiver.slice(start, end), [H.getTypeArgumentByIndex(receiver, 0)]);
       },
       get$first: function(receiver) {
         if (receiver.length > 0)
@@ -989,6 +998,15 @@
           throw H.wrapException(P.ArgumentError$value(other, null, null));
         return receiver + other;
       },
+      endsWith$1: function(receiver, other) {
+        var otherLength, t1;
+        H.checkString(other);
+        otherLength = other.length;
+        t1 = receiver.length;
+        if (otherLength > t1)
+          return false;
+        return other === this.substring$1(receiver, t1 - otherLength);
+      },
       startsWith$2: function(receiver, pattern, index) {
         var endIndex;
         H.checkInt(index);
@@ -1023,7 +1041,12 @@
       substring$1: function($receiver, startIndex) {
         return this.substring$2($receiver, startIndex, null);
       },
+      toLowerCase$0: function(receiver) {
+        return receiver.toLowerCase();
+      },
       contains$2: function(receiver, other, startIndex) {
+        if (other == null)
+          H.throwExpression(H.argumentErrorValue(other));
         if (startIndex > receiver.length)
           throw H.wrapException(P.RangeError$range(startIndex, 0, receiver.length, null, null));
         return H.stringContainsUnchecked(receiver, other, startIndex);
@@ -1224,7 +1247,7 @@
         case "error":
           throw H.wrapException(t1.$index(msg, "msg"));
       }
-    }, null, null, 4, 0, null, 17, 7],
+    }, null, null, 4, 0, null, 23, 8],
     IsolateNatives__log: function(msg) {
       var trace, t1, t2, exception;
       if (init.globalState.isWorker) {
@@ -1285,7 +1308,7 @@
       static: {_Manager__serializePrintMessage: [function(object) {
           var t1 = P.LinkedHashMap__makeLiteral(["command", "print", "msg", object]);
           return new H._Serializer(true, P.LinkedHashMap_LinkedHashMap$identity(null, P.$int)).serialize$1(t1);
-        }, null, null, 2, 0, null, 31]}
+        }, null, null, 2, 0, null, 38]}
     },
     _IsolateContext: {
       "^": "Object;id,ports,weakPorts,isolateStatics<,controlPort<,pauseCapability,terminateCapability,initialized,isPaused,delayedEvents,pauseTokens,doneHandlers,_scheduledControlEvents,_isExecutingEvent,errorsAreFatal,errorPorts",
@@ -1661,9 +1684,17 @@
         t1.events._add$1(new H._IsolateEvent(isolate, new H._NativeJsSendPort_send_closure(this, msg), t2));
       },
       $eq: function(_, other) {
+        var t1, t2;
         if (other == null)
           return false;
-        return other instanceof H._NativeJsSendPort && this._receivePort === other._receivePort;
+        if (other instanceof H._NativeJsSendPort) {
+          t1 = this._receivePort;
+          t2 = other._receivePort;
+          t2 = t1 == null ? t2 == null : t1 === t2;
+          t1 = t2;
+        } else
+          t1 = false;
+        return t1;
       },
       get$hashCode: function(_) {
         return this._receivePort._id;
@@ -1850,7 +1881,7 @@
         if (!(x instanceof P.Object))
           this.unsupported$1(x);
         return ["dart", init.classIdExtractor(x), this.serializeArrayInPlace$1(init.classFieldsExtractor(x))];
-      }, "call$1", "get$serialize", 2, 0, 0, 13],
+      }, "call$1", "get$serialize", 2, 0, 0, 12],
       unsupported$2: function(x, message) {
         throw H.wrapException(new P.UnsupportedError(H.S(message == null ? "Can't transmit:" : message) + " " + H.S(x)));
       },
@@ -1990,7 +2021,7 @@
           default:
             throw H.wrapException("couldn't deserialize: " + H.S(x));
         }
-      }, "call$1", "get$deserialize", 2, 0, 0, 13],
+      }, "call$1", "get$deserialize", 2, 0, 0, 12],
       deserializeArrayInPlace$1: function(x) {
         var i;
         for (i = 0; i < x.length; ++i)
@@ -2355,7 +2386,7 @@
         return H._callInIsolate(isolate, new H.invokeClosure_closure3(closure, arg1, arg2, arg3, arg4));
       else
         throw H.wrapException(P.Exception_Exception("Unsupported number of arguments for wrapped closure"));
-    }, null, null, 14, 0, null, 39, 35, 20, 30, 29, 25, 19],
+    }, null, null, 14, 0, null, 19, 33, 46, 20, 24, 34, 35],
     convertDartClosureToJS: function(closure, arity) {
       var $function;
       if (closure == null)
@@ -3187,9 +3218,10 @@
         return receiver.indexOf(other, startIndex) >= 0;
       else {
         t1 = J.getInterceptor(other);
-        if (!!t1.$isJSSyntaxRegExp)
-          return other._nativeRegExp.test(H.checkString(C.JSString_methods.substring$1(receiver, startIndex)));
-        else
+        if (!!t1.$isJSSyntaxRegExp) {
+          t1 = C.JSString_methods.substring$1(receiver, startIndex);
+          return other._nativeRegExp.test(H.checkString(t1));
+        } else
           return J.get$isNotEmpty$asx(t1.allMatches$1(other, C.JSString_methods.substring$1(receiver, startIndex)));
       }
     },
@@ -3246,6 +3278,32 @@
       },
       get$length: function(_) {
         return J.get$length$asx(this.__js_helper$_map._keys);
+      }
+    },
+    GeneralConstantMap: {
+      "^": "ConstantMap;_jsData",
+      _getMap$0: function() {
+        var backingMap = this.$map;
+        if (backingMap == null) {
+          backingMap = new H.JsLinkedHashMap(0, null, null, null, null, null, 0);
+          backingMap.$builtinTypeInfo = this.$builtinTypeInfo;
+          H.fillLiteralMap(this._jsData, backingMap);
+          this.$map = backingMap;
+        }
+        return backingMap;
+      },
+      $index: function(_, key) {
+        return this._getMap$0().$index(0, key);
+      },
+      forEach$1: function(_, f) {
+        this._getMap$0().forEach$1(0, f);
+      },
+      get$keys: function() {
+        return this._getMap$0().get$keys();
+      },
+      get$length: function(_) {
+        var t1 = this._getMap$0();
+        return t1.get$length(t1);
       }
     },
     JSInvocationMirror: {
@@ -3305,7 +3363,7 @@
         }}
     },
     Primitives_functionNoSuchMethod_closure: {
-      "^": "Closure:8;__js_helper$_box_0,_captured_arguments_1,_captured_namedArgumentList_2",
+      "^": "Closure:12;__js_helper$_box_0,_captured_arguments_1,_captured_namedArgumentList_2",
       call$2: function($name, argument) {
         var t1 = this.__js_helper$_box_0;
         t1._captured_names_1 = t1._captured_names_1 + "$" + H.S($name);
@@ -3661,16 +3719,16 @@
       "^": "Object;dartException,stackTrace<"
     },
     asyncHelper_closure: {
-      "^": "Closure:9;_captured_bodyFunctionOrErrorCode_0",
+      "^": "Closure:13;_captured_bodyFunctionOrErrorCode_0",
       call$2: [function(error, stackTrace) {
         H._wrapJsFunctionForAsync(this._captured_bodyFunctionOrErrorCode_0, 1).call$1(new H.ExceptionAndStackTrace(error, stackTrace));
-      }, null, null, 4, 0, null, 2, 1, "call"]
+      }, null, null, 4, 0, null, 2, 3, "call"]
     },
     _wrapJsFunctionForAsync_closure: {
       "^": "Closure:0;_captured_errorCode_0,_captured_protected_1",
       call$1: [function(result) {
         this._captured_protected_1(this._captured_errorCode_0, result);
-      }, null, null, 2, 0, null, 16, "call"]
+      }, null, null, 2, 0, null, 25, "call"]
     },
     TypeImpl: {
       "^": "Object;_typeName,_unmangledName",
@@ -3941,7 +3999,7 @@
       "^": "Closure:0;__js_helper$_captured_this_0",
       call$1: [function(each) {
         return this.__js_helper$_captured_this_0.$index(0, each);
-      }, null, null, 2, 0, null, 15, "call"]
+      }, null, null, 2, 0, null, 28, "call"]
     },
     LinkedHashMapCell: {
       "^": "Object;hashMapCellKey,hashMapCellValue,_next,_previous"
@@ -4008,13 +4066,13 @@
       }
     },
     initHooks_closure0: {
-      "^": "Closure:10;_captured_getUnknownTag_1",
+      "^": "Closure:14;_captured_getUnknownTag_1",
       call$2: function(o, tag) {
         return this._captured_getUnknownTag_1(o, tag);
       }
     },
     initHooks_closure1: {
-      "^": "Closure:11;_captured_prototypeForTag_2",
+      "^": "Closure:4;_captured_prototypeForTag_2",
       call$1: function(tag) {
         return this._captured_prototypeForTag_2(tag);
       }
@@ -4030,7 +4088,7 @@
   }], ["d004.lib.main_app", "package:d004/main_app.dart",, S, {
     "^": "",
     MainApp: {
-      "^": "PolymerElement;page:$$MainApp_page=,subPage:$$MainApp_subPage=,tabs:$$MainApp_tabs=,allPages:$$MainApp_allPages=,allSubPages:$$MainApp_allSubPages=,PolymerMixin__proxy",
+      "^": "PolymerElement;page:$$MainApp_page=,subPage:$$MainApp_subPage=,tabs:$$MainApp_tabs=,allPages:$$MainApp_allPages=,allSubPages:$$MainApp_allSubPages=,$$MainApp_i,PolymerMixin__proxy",
       set$page: function(receiver, page) {
         receiver.$$MainApp_page = page;
       },
@@ -4047,44 +4105,71 @@
         receiver.$$MainApp_allSubPages = allSubPages;
       },
       coreSelectHandler$2: [function(receiver, e, _) {
-        var selectedCategory, t1, t2;
-        selectedCategory = J.getAttribute$1$x(J.get$attributes$x(J.get$target$x(e))._element, "category");
-        for (t1 = J.get$iterator$ax(receiver.$$MainApp_allPages); t1.moveNext$0();) {
-          t2 = J.$index$asx(t1.get$current(), "category");
-          if ((selectedCategory == null ? t2 == null : selectedCategory === t2) && receiver.$$MainApp_subPage !== "") {
+        var t1, id, section, t2, t3;
+        t1 = receiver.$$MainApp_page;
+        if (t1 != null)
+          P.print(C.JSString_methods.$add("page: ", t1));
+        else {
+          t1 = receiver.$$MainApp_subPage;
+          if (t1 != null)
+            P.print(C.JSString_methods.$add("subPage: ", t1));
+          else
+            P.print("page & subPage are both null");
+        }
+        ++receiver.$$MainApp_i;
+        id = receiver.$$MainApp_page;
+        if (id == null)
+          id = receiver.$$MainApp_subPage;
+        if (id != null) {
+          t1 = "#" + id;
+          section = C.HtmlDocument_methods.querySelector$1(document, t1);
+          P.print(section);
+          J.append$1$x(section, W.Element_Element$html("<p>This is the snippet " + C.JSInt_methods.toString$0(receiver.$$MainApp_i) + "</p>", null, null));
+        }
+        t1 = receiver.$$MainApp_page;
+        if (t1 == null)
+          return;
+        P.print(C.JSString_methods.$add("selectedCategory: ", t1));
+        for (t2 = J.get$iterator$ax(receiver.$$MainApp_allPages); t2.moveNext$0();) {
+          t3 = J.$index$asx(t2.get$current(), "category");
+          if ((t1 == null ? t3 == null : t1 === t3) && receiver.$$MainApp_subPage !== "") {
             receiver.$$MainApp_subPage = "";
             J.set$selected$x(C.HtmlDocument_methods.querySelector$1(document, "#subPages"), "");
           }
         }
       }, function($receiver, e) {
         return this.coreSelectHandler$2($receiver, e, null);
-      }, "coreSelectHandler$1", "call$2", "call$1", "get$coreSelectHandler", 2, 2, 12, 0, 7, 3],
+      }, "coreSelectHandler$1", "call$2", "call$1", "get$coreSelectHandler", 2, 2, 15, 1, 8, 5],
       reverseText$1: [function(receiver, text) {
         var t1 = text.split("");
         return H.setRuntimeTypeInfo(new H.ReversedListIterable(t1), [H.getTypeArgumentByIndex(t1, 0)]).join$1(0, "");
-      }, "call$1", "get$reverseText", 2, 0, 13, 18],
+      }, "call$1", "get$reverseText", 2, 0, 16, 43],
       static: {MainApp$created: function(receiver) {
-          var t1, t2, t3, t4, t5, t6, t7, t8, t9;
-          t1 = P.LinkedHashMap__makeLiteral(["category", "home", "title", "Home"]);
+          var t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12;
+          t1 = P.LinkedHashMap__makeLiteral(["category", "homePage", "title", "Home"]);
           t2 = P.LinkedHashMap__makeLiteral(["category", "portfolio", "title", "Portfolio"]);
           t3 = P.LinkedHashMap__makeLiteral(["category", "contact", "title", "Contact"]);
-          t4 = P.LinkedHashMap__makeLiteral(["category", "service", "title", "Service"]);
-          t5 = P.LinkedHashMap__makeLiteral(["category", "about", "title", "About"]);
-          t6 = P.LinkedHashMap__makeLiteral(["category", "settings", "title", "Settings"]);
-          t7 = P.LinkedHashMap__makeLiteral(["category", "topic1", "title", "Topic 1"]);
-          t8 = P.LinkedHashMap__makeLiteral(["category", "topic2", "title", "Topic 2"]);
-          t9 = P.LinkedHashMap__makeLiteral(["category", "topic3", "title", "Topic 3"]);
-          receiver.$$MainApp_page = "home";
+          t4 = P.LinkedHashMap__makeLiteral(["category", "homePage", "title", "Home"]);
+          t5 = P.LinkedHashMap__makeLiteral(["category", "portfolio", "title", "Portfolio"]);
+          t6 = P.LinkedHashMap__makeLiteral(["category", "contact", "title", "Contact"]);
+          t7 = P.LinkedHashMap__makeLiteral(["category", "service", "title", "Service"]);
+          t8 = P.LinkedHashMap__makeLiteral(["category", "about", "title", "About"]);
+          t9 = P.LinkedHashMap__makeLiteral(["category", "settingsPage", "title", "Settings"]);
+          t10 = P.LinkedHashMap__makeLiteral(["category", "topic1", "title", "Topic 1"]);
+          t11 = P.LinkedHashMap__makeLiteral(["category", "topic2", "title", "Topic 2"]);
+          t12 = P.LinkedHashMap__makeLiteral(["category", "topic3", "title", "Topic 3"]);
+          receiver.$$MainApp_page = "homePage";
           receiver.$$MainApp_subPage = "";
-          receiver.$$MainApp_tabs = ["home", "portfolio", "contact"];
-          receiver.$$MainApp_allPages = [t1, t2, t3, t4, t5, t6];
-          receiver.$$MainApp_allSubPages = [t7, t8, t9];
+          receiver.$$MainApp_tabs = [t1, t2, t3];
+          receiver.$$MainApp_allPages = [t4, t5, t6, t7, t8, t9];
+          receiver.$$MainApp_allSubPages = [t10, t11, t12];
+          receiver.$$MainApp_i = 0;
           C.MainApp_methods.Element$created$0(receiver);
           C.MainApp_methods.PolymerElement$created$0(receiver);
           return receiver;
         }}
     }
-  }], ["d004.web.index", "index_reflectable_original_main.dart",, O, {
+  }], ["d004.web.index", "index.dart",, O, {
     "^": "",
     main: function() {
       var $async$goto = 0, $async$completer = new P.Completer_Completer(), $async$handler = 1, $async$currentError, $async$temp1;
@@ -4115,6 +4200,9 @@
     "^": "",
     IterableElementError_noElement: function() {
       return new P.StateError("No element");
+    },
+    IterableElementError_tooMany: function() {
+      return new P.StateError("Too many elements");
     },
     IterableElementError_tooFew: function() {
       return new P.StateError("Too few elements");
@@ -4164,6 +4252,9 @@
           t1 = buffer._contents;
           return t1.charCodeAt(0) == 0 ? t1 : t1;
         }
+      },
+      where$1: function(_, test) {
+        return this.super$Iterable$where(this, test);
       },
       map$1: function(_, f) {
         return H.setRuntimeTypeInfo(new H.MappedListIterable(this, f), [null, null]);
@@ -4473,14 +4564,14 @@
     _AsyncRun__scheduleImmediateJsOverride: [function(callback) {
       ++init.globalState.topEventLoop._activeJsAsyncCount;
       self.scheduleImmediate(H.convertDartClosureToJS(new P._AsyncRun__scheduleImmediateJsOverride_internalCallback(callback), 0));
-    }, "call$1", "async__AsyncRun__scheduleImmediateJsOverride$closure", 2, 0, 5],
+    }, "call$1", "async__AsyncRun__scheduleImmediateJsOverride$closure", 2, 0, 6],
     _AsyncRun__scheduleImmediateWithSetImmediate: [function(callback) {
       ++init.globalState.topEventLoop._activeJsAsyncCount;
       self.setImmediate(H.convertDartClosureToJS(new P._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback(callback), 0));
-    }, "call$1", "async__AsyncRun__scheduleImmediateWithSetImmediate$closure", 2, 0, 5],
+    }, "call$1", "async__AsyncRun__scheduleImmediateWithSetImmediate$closure", 2, 0, 6],
     _AsyncRun__scheduleImmediateWithTimer: [function(callback) {
       P.Timer__createTimer(C.Duration_0, callback);
-    }, "call$1", "async__AsyncRun__scheduleImmediateWithTimer$closure", 2, 0, 5],
+    }, "call$1", "async__AsyncRun__scheduleImmediateWithTimer$closure", 2, 0, 6],
     _registerErrorHandler: function(errorHandler, zone) {
       var t1 = H.getDynamicRuntimeType();
       t1 = H.buildFunctionType(t1, [t1, t1])._isTest$1(errorHandler);
@@ -4655,10 +4746,10 @@
         f = t1._captured_storedCallback_0;
         t1._captured_storedCallback_0 = null;
         f.call$0();
-      }, null, null, 2, 0, null, 3, "call"]
+      }, null, null, 2, 0, null, 5, "call"]
     },
     _AsyncRun__initializeScheduleImmediate_closure: {
-      "^": "Closure:14;_async$_box_0,_captured_div_1,_captured_span_2",
+      "^": "Closure:17;_async$_box_0,_captured_div_1,_captured_span_2",
       call$1: function(callback) {
         var t1, t2;
         t1 = this._async$_box_0;
@@ -4828,7 +4919,7 @@
         listeners = this._removeListeners$0();
         this._setErrorObject$1(new P.AsyncError(error, stackTrace));
         P._Future__propagateToListeners(this, listeners);
-      }, null, "get$_completeError", 2, 2, null, 0, 2, 1],
+      }, null, "get$_completeError", 2, 2, null, 1, 2, 3],
       _asyncComplete$1: function(value) {
         var t1;
         H.assertHelper(this._state < 4);
@@ -5037,17 +5128,17 @@
         var t1 = this._captured_target_0;
         H.assertHelper(t1._state === 2);
         t1._completeWithValue$1(value);
-      }, null, null, 2, 0, null, 12, "call"]
+      }, null, null, 2, 0, null, 4, "call"]
     },
     _Future__chainForeignFuture_closure0: {
-      "^": "Closure:6;_captured_target_1",
+      "^": "Closure:7;_captured_target_1",
       call$2: [function(error, stackTrace) {
         var t1 = this._captured_target_1;
         H.assertHelper(t1._state === 2);
         t1._completeError$2(error, stackTrace);
       }, function(error) {
         return this.call$2(error, null);
-      }, "call$1", null, null, null, 2, 2, null, 0, 2, 1, "call"]
+      }, "call$1", null, null, null, 2, 2, null, 1, 2, 3, "call"]
     },
     _Future__chainForeignFuture_closure1: {
       "^": "Closure:1;_captured_target_2,_captured_e_3,_captured_s_4",
@@ -5074,7 +5165,7 @@
       }
     },
     _Future__propagateToListeners_handleValueCallback: {
-      "^": "Closure:15;_box_1,_captured_listener_3,_captured_sourceValue_4,_captured_zone_5",
+      "^": "Closure:18;_box_1,_captured_listener_3,_captured_sourceValue_4,_captured_zone_5",
       call$0: function() {
         var e, s, t1, exception;
         try {
@@ -5203,10 +5294,10 @@
       "^": "Closure:0;_box_2,_captured_result_11",
       call$1: [function(ignored) {
         P._Future__propagateToListeners(this._box_2._captured_source_4, new P._FutureListener(null, this._captured_result_11, 0, null, null));
-      }, null, null, 2, 0, null, 41, "call"]
+      }, null, null, 2, 0, null, 18, "call"]
     },
     _Future__propagateToListeners_handleWhenCompleteCallback_closure0: {
-      "^": "Closure:6;_async$_box_0,_captured_result_12",
+      "^": "Closure:7;_async$_box_0,_captured_result_12",
       call$2: [function(error, stackTrace) {
         var t1, completeResult;
         t1 = this._async$_box_0;
@@ -5218,7 +5309,7 @@
         P._Future__propagateToListeners(t1._captured_completeResult_0, new P._FutureListener(null, this._captured_result_12, 0, null, null));
       }, function(error) {
         return this.call$2(error, null);
-      }, "call$1", null, null, null, 2, 2, null, 0, 2, 1, "call"]
+      }, "call$1", null, null, null, 2, 2, null, 1, 2, 3, "call"]
     },
     _AsyncCallbackEntry: {
       "^": "Object;callback,zone,next",
@@ -5282,7 +5373,7 @@
         this._state = 4;
       }, function(error) {
         return this._onError$2(error, null);
-      }, "_onError$1", "call$2", "call$1", "get$_onError", 2, 2, 16, 0, 2, 1],
+      }, "_onError$1", "call$2", "call$1", "get$_onError", 2, 2, 19, 1, 2, 3],
       _onDone$0: [function() {
         if (this._state === 2) {
           var hasNext = this._futureOrPrefetch;
@@ -5383,6 +5474,9 @@
       P._HashMap__setTableEntry(table, "<non-identifier-key>", table);
       delete table["<non-identifier-key>"];
       return table;
+    },
+    LinkedHashMap_LinkedHashMap$_empty: function($K, $V) {
+      return H.setRuntimeTypeInfo(new H.JsLinkedHashMap(0, null, null, null, null, null, 0), [$K, $V]);
     },
     LinkedHashMap__makeEmpty: function() {
       return H.setRuntimeTypeInfo(new H.JsLinkedHashMap(0, null, null, null, null, null, 0), [null, null]);
@@ -5522,6 +5616,13 @@
     LinkedHashSet_LinkedHashSet: function(equals, hashCode, isValidKey, $E) {
       return H.setRuntimeTypeInfo(new P._LinkedHashSet(0, null, null, null, null, null, 0), [$E]);
     },
+    LinkedHashSet_LinkedHashSet$from: function(elements, $E) {
+      var result, t1, _i;
+      result = P.LinkedHashSet_LinkedHashSet(null, null, null, $E);
+      for (t1 = elements.length, _i = 0; _i < elements.length; elements.length === t1 || (0, H.throwConcurrentModificationError)(elements), ++_i)
+        result.add$1(0, elements[_i]);
+      return result;
+    },
     Maps_mapToString: function(m) {
       var t1, result, t2;
       t1 = {};
@@ -5546,8 +5647,8 @@
     },
     Maps__fillMapWithIterables: function(map, keys, values) {
       var keyIterator, valueIterator, hasNextKey, hasNextValue;
-      keyIterator = H.setRuntimeTypeInfo(new J.ArrayIterator(keys, 13, 0, null), [H.getTypeArgumentByIndex(keys, 0)]);
-      valueIterator = H.setRuntimeTypeInfo(new J.ArrayIterator(values, 13, 0, null), [H.getTypeArgumentByIndex(values, 0)]);
+      keyIterator = H.setRuntimeTypeInfo(new J.ArrayIterator(keys, keys.length, 0, null), [H.getTypeArgumentByIndex(keys, 0)]);
+      valueIterator = H.setRuntimeTypeInfo(new J.ArrayIterator(values, values.length, 0, null), [H.getTypeArgumentByIndex(values, 0)]);
       hasNextKey = keyIterator.moveNext$0();
       hasNextValue = valueIterator.moveNext$0();
       while (true) {
@@ -5886,8 +5987,19 @@
         }
       },
       add$1: function(_, element) {
-        var nums, table;
-        if (typeof element === "number" && (element & 0x3ffffff) === element) {
+        var strings, table, nums;
+        if (typeof element === "string" && element !== "__proto__") {
+          strings = this._collection$_strings;
+          if (strings == null) {
+            table = Object.create(null);
+            H.assertHelper(table != null);
+            table["<non-identifier-key>"] = table;
+            delete table["<non-identifier-key>"];
+            this._collection$_strings = table;
+            strings = table;
+          }
+          return this._collection$_addHashTableEntry$2(strings, element);
+        } else if (typeof element === "number" && (element & 0x3ffffff) === element) {
           nums = this._collection$_nums;
           if (nums == null) {
             table = Object.create(null);
@@ -6062,6 +6174,17 @@
     _HashSetBase: {
       "^": "SetBase;"
     },
+    ListBase: {
+      "^": "Object_ListMixin;"
+    },
+    Object_ListMixin: {
+      "^": "Object+ListMixin;",
+      $isList: 1,
+      $asList: null,
+      $isEfficientLength: 1,
+      $isIterable: 1,
+      $asIterable: null
+    },
     ListMixin: {
       "^": "Object;",
       get$iterator: function(receiver) {
@@ -6081,6 +6204,9 @@
       },
       get$isEmpty: function(receiver) {
         return this.get$length(receiver) === 0;
+      },
+      where$1: function(receiver, test) {
+        return H.setRuntimeTypeInfo(new H.WhereIterable(receiver, test), [H.getRuntimeTypeArgument(receiver, "ListMixin", 0)]);
       },
       map$1: function(receiver, f) {
         return H.setRuntimeTypeInfo(new H.MappedListIterable(receiver, f), [null, null]);
@@ -6423,6 +6549,11 @@
       get$isEmpty: function(_) {
         return this.get$length(this) === 0;
       },
+      addAll$1: function(_, elements) {
+        var t1;
+        for (t1 = J.get$iterator$ax(elements); t1.moveNext$0();)
+          this.add$1(0, t1.get$current());
+      },
       map$1: function(_, f) {
         return H.setRuntimeTypeInfo(new H.EfficientLengthMappedIterable(this, f), [H.getTypeArgumentByIndex(this, 0), null]);
       },
@@ -6474,7 +6605,7 @@
       H.printString(line);
     },
     NoSuchMethodError_toString_closure: {
-      "^": "Closure:17;_box_0,_captured_sb_1",
+      "^": "Closure:20;_box_0,_captured_sb_1",
       call$2: function(key, value) {
         var t1, t2, t3;
         t1 = this._captured_sb_1;
@@ -6586,7 +6717,7 @@
       }
     },
     Duration_toString_sixDigits: {
-      "^": "Closure:7;",
+      "^": "Closure:8;",
       call$1: function(n) {
         if (n >= 100000)
           return "" + n;
@@ -6602,7 +6733,7 @@
       }
     },
     Duration_toString_twoDigits: {
-      "^": "Closure:7;",
+      "^": "Closure:8;",
       call$1: function(n) {
         if (n >= 10)
           return "" + n;
@@ -6827,6 +6958,9 @@
       map$1: function(_, f) {
         return H.MappedIterable_MappedIterable(this, f, H.getRuntimeTypeArgument(this, "Iterable", 0), null);
       },
+      where$1: ["super$Iterable$where", function(_, f) {
+        return H.setRuntimeTypeInfo(new H.WhereIterable(this, f), [H.getRuntimeTypeArgument(this, "Iterable", 0)]);
+      }],
       forEach$1: function(_, f) {
         var t1;
         for (t1 = this.get$iterator(this); t1.moveNext$0();)
@@ -6871,6 +7005,16 @@
       },
       get$isNotEmpty: function(_) {
         return !this.get$isEmpty(this);
+      },
+      get$single: function(_) {
+        var it, result;
+        it = this.get$iterator(this);
+        if (!it.moveNext$0())
+          throw H.wrapException(H.IterableElementError_noElement());
+        result = it.get$current();
+        if (it.moveNext$0())
+          throw H.wrapException(H.IterableElementError_tooMany());
+        return result;
       },
       elementAt$1: function(_, index) {
         var t1, elementIndex, element;
@@ -6981,6 +7125,15 @@
     CssStyleDeclaration__camelCase: function(hyphenated) {
       return hyphenated.replace(/^-ms-/, "ms-").replace(/-([\da-z])/ig, C.JS_CONST_s8I);
     },
+    Element_Element$html: function(html, treeSanitizer, validator) {
+      var t1, fragment;
+      t1 = document.body;
+      fragment = (t1 && C.BodyElement_methods).createFragment$3$treeSanitizer$validator(t1, html, treeSanitizer, validator);
+      fragment.toString;
+      t1 = new W._ChildNodeListLazy(fragment);
+      t1 = t1.where$1(t1, new W.Element_Element$html_closure());
+      return t1.get$single(t1);
+    },
     _ElementFactoryProvider_createElement_tag: function(tag, typeExtension) {
       return document.createElement(tag);
     },
@@ -7010,11 +7163,15 @@
       "^": "Element;",
       $isHtmlElement: 1,
       $isElement: 1,
+      $isNode: 1,
       $isObject: 1,
-      "%": "HTMLAppletElement|HTMLBRElement|HTMLCanvasElement|HTMLContentElement|HTMLDListElement|HTMLDataListElement|HTMLDetailsElement|HTMLDialogElement|HTMLDirectoryElement|HTMLDivElement|HTMLFontElement|HTMLFrameElement|HTMLHRElement|HTMLHeadElement|HTMLHeadingElement|HTMLHtmlElement|HTMLImageElement|HTMLLIElement|HTMLLabelElement|HTMLLegendElement|HTMLLinkElement|HTMLMarqueeElement|HTMLMenuElement|HTMLMenuItemElement|HTMLMeterElement|HTMLModElement|HTMLOListElement|HTMLOptGroupElement|HTMLParagraphElement|HTMLPictureElement|HTMLPreElement|HTMLProgressElement|HTMLQuoteElement|HTMLScriptElement|HTMLShadowElement|HTMLSourceElement|HTMLSpanElement|HTMLStyleElement|HTMLTableCaptionElement|HTMLTableCellElement|HTMLTableColElement|HTMLTableDataCellElement|HTMLTableElement|HTMLTableHeaderCellElement|HTMLTableRowElement|HTMLTableSectionElement|HTMLTitleElement|HTMLTrackElement|HTMLUListElement|HTMLUnknownElement|PluginPlaceholderElement;HTMLElement;HtmlElement_PolymerMixin|HtmlElement_PolymerMixin_PolymerBase|PolymerElement|MainApp|HtmlElement_CustomElementProxyMixin|HtmlElement_CustomElementProxyMixin_PolymerBase|ArraySelector|HtmlElement_CustomElementProxyMixin0|HtmlElement_CustomElementProxyMixin_PolymerBase0|IronCollapse|HtmlElement_CustomElementProxyMixin1|HtmlElement_CustomElementProxyMixin_PolymerBase1|IronIcon|HtmlElement_CustomElementProxyMixin2|HtmlElement_CustomElementProxyMixin_PolymerBase2|IronIconsetSvg|HtmlElement_CustomElementProxyMixin3|HtmlElement_CustomElementProxyMixin_PolymerBase3|IronMediaQuery|HtmlElement_CustomElementProxyMixin4|HtmlElement_CustomElementProxyMixin_PolymerBase4|IronMeta|HtmlElement_CustomElementProxyMixin5|HtmlElement_CustomElementProxyMixin_PolymerBase5|IronMetaQuery|HtmlElement_CustomElementProxyMixin6|HtmlElement_CustomElementProxyMixin_PolymerBase6|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior|IronPages|HtmlElement_CustomElementProxyMixin7|HtmlElement_CustomElementProxyMixin_PolymerBase7|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior|IronSelector|HtmlElement_CustomElementProxyMixin8|HtmlElement_CustomElementProxyMixin_PolymerBase8|PaperDrawerPanel|HtmlElement_CustomElementProxyMixin9|HtmlElement_CustomElementProxyMixin_PolymerBase9|PaperHeaderPanel|HtmlElement_CustomElementProxyMixin10|HtmlElement_CustomElementProxyMixin_PolymerBase10|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperInkyFocusBehavior|PaperIconButton|HtmlElement_CustomElementProxyMixin11|HtmlElement_CustomElementProxyMixin_PolymerBase11|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_PaperInputBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_PaperInputBehavior_IronControlState|PaperInput|HtmlElement_CustomElementProxyMixin12|HtmlElement_CustomElementProxyMixin_PolymerBase12|HtmlElement_CustomElementProxyMixin_PolymerBase_PaperInputAddonBehavior|PaperInputCharCounter|HtmlElement_CustomElementProxyMixin13|HtmlElement_CustomElementProxyMixin_PolymerBase13|PaperInputContainer|HtmlElement_CustomElementProxyMixin14|HtmlElement_CustomElementProxyMixin_PolymerBase14|HtmlElement_CustomElementProxyMixin_PolymerBase_PaperInputAddonBehavior0|PaperInputError|HtmlElement_CustomElementProxyMixin15|HtmlElement_CustomElementProxyMixin_PolymerBase15|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState|PaperItem|HtmlElement_CustomElementProxyMixin16|HtmlElement_CustomElementProxyMixin_PolymerBase16|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior|PaperMenu|HtmlElement_CustomElementProxyMixin17|HtmlElement_CustomElementProxyMixin_PolymerBase17|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState0|PaperSubmenu|HtmlElement_CustomElementProxyMixin18|HtmlElement_CustomElementProxyMixin_PolymerBase18|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior0|PaperRipple|HtmlElement_CustomElementProxyMixin19|HtmlElement_CustomElementProxyMixin_PolymerBase19|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState1|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState0|PaperTab|HtmlElement_CustomElementProxyMixin20|HtmlElement_CustomElementProxyMixin_PolymerBase20|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior_IronMenubarBehavior|PaperTabs|HtmlElement_CustomElementProxyMixin21|HtmlElement_CustomElementProxyMixin_PolymerBase21|PaperToolbar"
+      "%": "HTMLAppletElement|HTMLBRElement|HTMLCanvasElement|HTMLContentElement|HTMLDListElement|HTMLDataListElement|HTMLDetailsElement|HTMLDialogElement|HTMLDirectoryElement|HTMLDivElement|HTMLFontElement|HTMLFrameElement|HTMLHRElement|HTMLHeadingElement|HTMLHtmlElement|HTMLImageElement|HTMLLIElement|HTMLLabelElement|HTMLLegendElement|HTMLMarqueeElement|HTMLMenuElement|HTMLMenuItemElement|HTMLMeterElement|HTMLModElement|HTMLOListElement|HTMLOptGroupElement|HTMLOptionElement|HTMLParagraphElement|HTMLPictureElement|HTMLPreElement|HTMLProgressElement|HTMLQuoteElement|HTMLScriptElement|HTMLShadowElement|HTMLSourceElement|HTMLSpanElement|HTMLStyleElement|HTMLTableCaptionElement|HTMLTableCellElement|HTMLTableColElement|HTMLTableDataCellElement|HTMLTableElement|HTMLTableHeaderCellElement|HTMLTableRowElement|HTMLTableSectionElement|HTMLTitleElement|HTMLTrackElement|HTMLUListElement|HTMLUnknownElement|PluginPlaceholderElement;HTMLElement;HtmlElement_PolymerMixin|HtmlElement_PolymerMixin_PolymerBase|PolymerElement|MainApp|HtmlElement_CustomElementProxyMixin|HtmlElement_CustomElementProxyMixin_PolymerBase|ArraySelector|HtmlElement_CustomElementProxyMixin0|HtmlElement_CustomElementProxyMixin_PolymerBase0|IronA11yAnnouncer|HtmlElement_CustomElementProxyMixin1|HtmlElement_CustomElementProxyMixin_PolymerBase1|IronCollapse|HtmlElement_CustomElementProxyMixin2|HtmlElement_CustomElementProxyMixin_PolymerBase2|IronIcon|HtmlElement_CustomElementProxyMixin3|HtmlElement_CustomElementProxyMixin_PolymerBase3|IronIconsetSvg|HtmlElement_CustomElementProxyMixin4|HtmlElement_CustomElementProxyMixin_PolymerBase4|IronMediaQuery|HtmlElement_CustomElementProxyMixin5|HtmlElement_CustomElementProxyMixin_PolymerBase5|IronMeta|HtmlElement_CustomElementProxyMixin6|HtmlElement_CustomElementProxyMixin_PolymerBase6|IronMetaQuery|HtmlElement_CustomElementProxyMixin7|HtmlElement_CustomElementProxyMixin_PolymerBase7|IronOverlayBackdrop|HtmlElement_CustomElementProxyMixin8|HtmlElement_CustomElementProxyMixin_PolymerBase8|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior|IronPages|HtmlElement_CustomElementProxyMixin9|HtmlElement_CustomElementProxyMixin_PolymerBase9|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior|IronSelector|HtmlElement_CustomElementProxyMixin10|HtmlElement_CustomElementProxyMixin_PolymerBase10|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior0|PaperDrawerPanel|HtmlElement_CustomElementProxyMixin11|HtmlElement_CustomElementProxyMixin_PolymerBase11|PaperHeaderPanel|HtmlElement_CustomElementProxyMixin12|HtmlElement_CustomElementProxyMixin_PolymerBase12|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperRippleBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperRippleBehavior_PaperInkyFocusBehavior|PaperIconButton|HtmlElement_CustomElementProxyMixin13|HtmlElement_CustomElementProxyMixin_PolymerBase13|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_IronA11yKeysBehavior_PaperInputBehavior|PaperInput|HtmlElement_CustomElementProxyMixin14|HtmlElement_CustomElementProxyMixin_PolymerBase14|HtmlElement_CustomElementProxyMixin_PolymerBase_PaperInputAddonBehavior|PaperInputCharCounter|HtmlElement_CustomElementProxyMixin15|HtmlElement_CustomElementProxyMixin_PolymerBase15|PaperInputContainer|HtmlElement_CustomElementProxyMixin16|HtmlElement_CustomElementProxyMixin_PolymerBase16|HtmlElement_CustomElementProxyMixin_PolymerBase_PaperInputAddonBehavior0|PaperInputError|HtmlElement_CustomElementProxyMixin17|HtmlElement_CustomElementProxyMixin_PolymerBase17|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperItemBehavior|PaperItem|HtmlElement_CustomElementProxyMixin18|HtmlElement_CustomElementProxyMixin_PolymerBase18|PaperMaterial|HtmlElement_CustomElementProxyMixin19|HtmlElement_CustomElementProxyMixin_PolymerBase19|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior|PaperMenu|HtmlElement_CustomElementProxyMixin20|HtmlElement_CustomElementProxyMixin_PolymerBase20|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState|PaperSubmenu|HtmlElement_CustomElementProxyMixin21|HtmlElement_CustomElementProxyMixin_PolymerBase21|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior1|PaperRipple|HtmlElement_CustomElementProxyMixin22|HtmlElement_CustomElementProxyMixin_PolymerBase22|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior1|PaperScrollHeaderPanel|HtmlElement_CustomElementProxyMixin23|HtmlElement_CustomElementProxyMixin_PolymerBase23|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState_PaperRippleBehavior|PaperTab|HtmlElement_CustomElementProxyMixin24|HtmlElement_CustomElementProxyMixin_PolymerBase24|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior2|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior_IronMenubarBehavior|PaperTabs|HtmlElement_CustomElementProxyMixin25|HtmlElement_CustomElementProxyMixin_PolymerBase25|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFitBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFitBehavior_IronResizableBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFitBehavior_IronResizableBehavior_IronOverlayBehavior|PaperToast|HtmlElement_CustomElementProxyMixin26|HtmlElement_CustomElementProxyMixin_PolymerBase26|PaperToolbar"
     },
     AnchorElement: {
-      "^": "HtmlElement;target=",
+      "^": "HtmlElement;target=,href",
+      set$href: function(receiver, href) {
+        receiver.href = href;
+      },
       toString$0: function(receiver) {
         return String(receiver);
       },
@@ -7022,7 +7179,10 @@
       "%": "HTMLAnchorElement"
     },
     AreaElement: {
-      "^": "HtmlElement;target=",
+      "^": "HtmlElement;target=,href",
+      set$href: function(receiver, href) {
+        receiver.href = href;
+      },
       toString$0: function(receiver) {
         return String(receiver);
       },
@@ -7030,7 +7190,10 @@
       "%": "HTMLAreaElement"
     },
     BaseElement: {
-      "^": "HtmlElement;target=",
+      "^": "HtmlElement;href,target=",
+      set$href: function(receiver, href) {
+        receiver.href = href;
+      },
       "%": "HTMLBaseElement"
     },
     Blob: {
@@ -7040,6 +7203,7 @@
     },
     BodyElement: {
       "^": "HtmlElement;",
+      $isBodyElement: 1,
       $isEventTarget: 1,
       $isInterceptor: 1,
       "%": "HTMLBodyElement"
@@ -7106,6 +7270,9 @@
     },
     Document: {
       "^": "Node;",
+      adoptNode$1: function(receiver, node) {
+        return receiver.adoptNode(node);
+      },
       _createElement$2: function(receiver, localName_OR_tagName, typeExtension) {
         return receiver.createElement(localName_OR_tagName, typeExtension);
       },
@@ -7125,6 +7292,13 @@
         return String(receiver);
       },
       "%": "DOMException"
+    },
+    DomImplementation: {
+      "^": "Interceptor;",
+      createHtmlDocument$1: function(receiver, title) {
+        return receiver.createHTMLDocument(title);
+      },
+      "%": "DOMImplementation"
     },
     DomRectReadOnly: {
       "^": "Interceptor;bottom=,height=,left=,right=,top=,width=",
@@ -7171,18 +7345,75 @@
       "%": ";DOMRectReadOnly"
     },
     Element: {
-      "^": "Node;",
-      get$attributes: function(receiver) {
-        return new W._ElementAttributeMap(receiver);
-      },
+      "^": "Node;tagName=",
       attached$0: [function(receiver) {
       }, "call$0", "get$attached", 0, 0, 3],
       detached$0: [function(receiver) {
       }, "call$0", "get$detached", 0, 0, 3],
       attributeChanged$3: [function(receiver, $name, oldValue, newValue) {
-      }, "call$3", "get$attributeChanged", 6, 0, 18, 23, 24, 11],
+      }, "call$3", "get$attributeChanged", 6, 0, 21, 26, 27, 16],
       toString$0: function(receiver) {
         return receiver.localName;
+      },
+      createFragment$3$treeSanitizer$validator: function(receiver, html, treeSanitizer, validator) {
+        var t1, t2, base, contextElement, fragment;
+        if (treeSanitizer == null) {
+          t1 = $.Element__defaultValidator;
+          if (t1 == null) {
+            t1 = H.setRuntimeTypeInfo([], [W.NodeValidator]);
+            t2 = new W.NodeValidatorBuilder(t1);
+            C.JSArray_methods.add$1(t1, W._Html5NodeValidator$(null));
+            C.JSArray_methods.add$1(t1, W._TemplatingNodeValidator$());
+            $.Element__defaultValidator = t2;
+            validator = t2;
+          } else
+            validator = t1;
+          t1 = $.Element__defaultSanitizer;
+          if (t1 == null) {
+            t1 = new W._ValidatingTreeSanitizer(validator);
+            $.Element__defaultSanitizer = t1;
+            treeSanitizer = t1;
+          } else {
+            t1.validator = validator;
+            treeSanitizer = t1;
+          }
+        }
+        if ($.Element__parseDocument == null) {
+          t1 = document.implementation;
+          t1 = (t1 && C.DomImplementation_methods).createHtmlDocument$1(t1, "");
+          $.Element__parseDocument = t1;
+          $.Element__parseRange = t1.createRange();
+          t1 = $.Element__parseDocument;
+          base = (t1 && C.HtmlDocument_methods)._createElement$2(t1, "base", null);
+          J.set$href$x(base, document.baseURI);
+          t1 = $.Element__parseDocument.head;
+          (t1 && C.HeadElement_methods).append$1(t1, base);
+        }
+        t1 = $.Element__parseDocument;
+        if (!!this.$isBodyElement)
+          contextElement = t1.body;
+        else {
+          contextElement = (t1 && C.HtmlDocument_methods)._createElement$2(t1, receiver.tagName, null);
+          t1 = $.Element__parseDocument.body;
+          (t1 && C.BodyElement_methods).append$1(t1, contextElement);
+        }
+        if ("createContextualFragment" in window.Range.prototype && !C.JSArray_methods.contains$1(C.List_ego, receiver.tagName)) {
+          t1 = $.Element__parseRange;
+          (t1 && C.Range_methods).selectNodeContents$1(t1, contextElement);
+          t1 = $.Element__parseRange;
+          fragment = (t1 && C.Range_methods).createContextualFragment$1(t1, html);
+        } else {
+          contextElement.innerHTML = html;
+          fragment = $.Element__parseDocument.createDocumentFragment();
+          for (t1 = J.getInterceptor$x(fragment); t2 = contextElement.firstChild, t2 != null;)
+            t1.append$1(fragment, t2);
+        }
+        t1 = $.Element__parseDocument.body;
+        if (contextElement == null ? t1 != null : contextElement !== t1)
+          J.remove$0$ax(contextElement);
+        treeSanitizer.sanitizeTree$1(fragment);
+        C.HtmlDocument_methods.adoptNode$1(document, fragment);
+        return fragment;
       },
       getAttribute$1: function(receiver, $name) {
         return receiver.getAttribute($name);
@@ -7196,10 +7427,17 @@
       Element$created$0: function(receiver) {
       },
       $isElement: 1,
+      $isNode: 1,
       $isObject: 1,
       $isInterceptor: 1,
       $isEventTarget: 1,
       "%": ";Element"
+    },
+    Element_Element$html_closure: {
+      "^": "Closure:0;",
+      call$1: function(e) {
+        return !!J.getInterceptor(e).$isElement;
+      }
     },
     EmbedElement: {
       "^": "HtmlElement;name=",
@@ -7231,6 +7469,10 @@
       "^": "HtmlElement;length=,name=,target=",
       "%": "HTMLFormElement"
     },
+    HeadElement: {
+      "^": "HtmlElement;",
+      "%": "HTMLHeadElement"
+    },
     HtmlDocument: {
       "^": "Document;",
       "%": "HTMLDocument"
@@ -7246,6 +7488,7 @@
     },
     InputElement: {
       "^": "HtmlElement;name=",
+      $isElement: 1,
       $isInterceptor: 1,
       $isEventTarget: 1,
       $isNode: 1,
@@ -7254,6 +7497,20 @@
     KeygenElement: {
       "^": "HtmlElement;name=",
       "%": "HTMLKeygenElement"
+    },
+    LinkElement: {
+      "^": "HtmlElement;href",
+      set$href: function(receiver, href) {
+        receiver.href = href;
+      },
+      "%": "HTMLLinkElement"
+    },
+    Location: {
+      "^": "Interceptor;",
+      toString$0: function(receiver) {
+        return String(receiver);
+      },
+      "%": "Location"
     },
     MapElement: {
       "^": "HtmlElement;name=",
@@ -7286,11 +7543,95 @@
       $isInterceptor: 1,
       "%": "Navigator"
     },
+    _ChildNodeListLazy: {
+      "^": "ListBase;_this",
+      addAll$1: function(_, iterable) {
+        var t1, t2, len, t3, i;
+        if (!!iterable.$is_ChildNodeListLazy) {
+          t1 = iterable._this;
+          t2 = this._this;
+          if (t1 !== t2)
+            for (len = t1.childNodes.length, t3 = J.getInterceptor$x(t2), i = 0; i < len; ++i)
+              t3.append$1(t2, t1.firstChild);
+          return;
+        }
+        for (t1 = iterable.get$iterator(iterable), t2 = this._this, t3 = J.getInterceptor$x(t2); t1.moveNext$0();)
+          t3.append$1(t2, t1.get$current());
+      },
+      insertAll$2: function(_, index, iterable) {
+        var t1, t2;
+        t1 = this._this;
+        t2 = t1.childNodes;
+        if (index === t2.length)
+          this.addAll$1(0, iterable);
+        else
+          J.insertAllBefore$2$x(t1, iterable, C.NodeList_methods.$index(t2, index));
+      },
+      setAll$2: function(_, index, iterable) {
+        throw H.wrapException(new P.UnsupportedError("Cannot setAll on Node list"));
+      },
+      $indexSet: function(_, index, value) {
+        var t1 = this._this;
+        J._replaceChild$2$x(t1, value, C.NodeList_methods.$index(t1.childNodes, index));
+      },
+      get$iterator: function(_) {
+        return C.NodeList_methods.get$iterator(this._this.childNodes);
+      },
+      setRange$4: function(_, start, end, iterable, skipCount) {
+        throw H.wrapException(new P.UnsupportedError("Cannot setRange on Node list"));
+      },
+      setRange$3: function($receiver, start, end, iterable) {
+        return this.setRange$4($receiver, start, end, iterable, 0);
+      },
+      get$length: function(_) {
+        return this._this.childNodes.length;
+      },
+      set$length: function(_, value) {
+        throw H.wrapException(new P.UnsupportedError("Cannot set length on immutable List."));
+      },
+      $index: function(_, index) {
+        return C.NodeList_methods.$index(this._this.childNodes, index);
+      },
+      $asListBase: function() {
+        return [W.Node];
+      },
+      $asObject_ListMixin: function() {
+        return [W.Node];
+      },
+      $asList: function() {
+        return [W.Node];
+      },
+      $asIterable: function() {
+        return [W.Node];
+      }
+    },
     Node: {
       "^": "EventTarget;",
+      remove$0: function(receiver) {
+        var t1 = receiver.parentNode;
+        if (t1 != null)
+          J._removeChild$1$x(t1, receiver);
+      },
+      insertAllBefore$2: function(receiver, newNodes, refChild) {
+        var t1;
+        for (t1 = H.setRuntimeTypeInfo(new H.ListIterator(newNodes, newNodes.get$length(newNodes), 0, null), [H.getRuntimeTypeArgument(newNodes, "ListIterable", 0)]); t1.moveNext$0();)
+          this.insertBefore$2(receiver, t1._current, refChild);
+      },
       toString$0: function(receiver) {
         var value = receiver.nodeValue;
         return value == null ? this.super$Interceptor$toString(receiver) : value;
+      },
+      append$1: function(receiver, newChild) {
+        return receiver.appendChild(newChild);
+      },
+      insertBefore$2: function(receiver, newChild, refChild) {
+        return receiver.insertBefore(newChild, refChild);
+      },
+      _removeChild$1: function(receiver, oldChild) {
+        return receiver.removeChild(oldChild);
+      },
+      _replaceChild$2: function(receiver, newChild, oldChild) {
+        return receiver.replaceChild(newChild, oldChild);
       },
       $isNode: 1,
       $isObject: 1,
@@ -7356,13 +7697,6 @@
       "^": "HtmlElement;name=",
       "%": "HTMLObjectElement"
     },
-    OptionElement: {
-      "^": "HtmlElement;selected",
-      set$selected: function(receiver, selected) {
-        receiver.selected = selected;
-      },
-      "%": "HTMLOptionElement"
-    },
     OutputElement: {
       "^": "HtmlElement;name=",
       "%": "HTMLOutputElement"
@@ -7375,6 +7709,16 @@
       "^": "CharacterData;target=",
       "%": "ProcessingInstruction"
     },
+    Range: {
+      "^": "Interceptor;",
+      createContextualFragment$1: function(receiver, html) {
+        return receiver.createContextualFragment(html);
+      },
+      selectNodeContents$1: function(receiver, refNode) {
+        return receiver.selectNodeContents(refNode);
+      },
+      "%": "Range"
+    },
     SelectElement: {
       "^": "HtmlElement;length=,name=",
       "%": "HTMLSelectElement"
@@ -7385,6 +7729,7 @@
     },
     TemplateElement: {
       "^": "HtmlElement;",
+      $isTemplateElement: 1,
       "%": ";HTMLTemplateElement;TemplateElement_CustomElementProxyMixin|TemplateElement_CustomElementProxyMixin_PolymerBase|DomBind|TemplateElement_CustomElementProxyMixin0|TemplateElement_CustomElementProxyMixin_PolymerBase0|DomIf|TemplateElement_CustomElementProxyMixin1|TemplateElement_CustomElementProxyMixin_PolymerBase1|DomRepeat"
     },
     TextAreaElement: {
@@ -7531,7 +7876,7 @@
       }
     },
     _AttributeMap: {
-      "^": "Object;",
+      "^": "Object;_element<",
       forEach$1: function(_, f) {
         var t1, t2, _i, key;
         for (t1 = this.get$keys(), t2 = t1.length, _i = 0; _i < t1.length; t1.length === t2 || (0, H.throwConcurrentModificationError)(t1), ++_i) {
@@ -7576,6 +7921,75 @@
         return node.namespaceURI == null;
       }
     },
+    _Html5NodeValidator: {
+      "^": "Object;uriPolicy",
+      allowsElement$1: function(element) {
+        return $.$get$_Html5NodeValidator__allowedElements().contains$1(0, element.tagName);
+      },
+      allowsAttribute$3: function(element, attributeName, value) {
+        var tagName, t1, validator;
+        tagName = element.tagName;
+        t1 = $.$get$_Html5NodeValidator__attributeValidators();
+        validator = t1.$index(0, H.S(tagName) + "::" + attributeName);
+        if (validator == null)
+          validator = t1.$index(0, "*::" + attributeName);
+        if (validator == null)
+          return false;
+        return validator.call$4(element, attributeName, value, this);
+      },
+      _Html5NodeValidator$1$uriPolicy: function(uriPolicy) {
+        var t1, _i;
+        t1 = $.$get$_Html5NodeValidator__attributeValidators();
+        if (t1.get$isEmpty(t1)) {
+          for (_i = 0; _i < 261; ++_i)
+            t1.$indexSet(0, C.List_1GN[_i], W.html__Html5NodeValidator__standardAttributeValidator$closure());
+          for (_i = 0; _i < 12; ++_i)
+            t1.$indexSet(0, C.List_yrN[_i], W.html__Html5NodeValidator__uriAttributeValidator$closure());
+        }
+      },
+      $isNodeValidator: 1,
+      static: {_Html5NodeValidator$: function(uriPolicy) {
+          var e, t1;
+          e = C.HtmlDocument_methods._createElement$2(document, "a", null);
+          t1 = new W._SameOriginUriPolicy(e, window.location);
+          t1 = new W._Html5NodeValidator(t1);
+          t1._Html5NodeValidator$1$uriPolicy(uriPolicy);
+          return t1;
+        }, _Html5NodeValidator__standardAttributeValidator: [function(element, attributeName, value, context) {
+          return true;
+        }, "call$4", "html__Html5NodeValidator__standardAttributeValidator$closure", 8, 0, 11, 13, 14, 4, 15], _Html5NodeValidator__uriAttributeValidator: [function(element, attributeName, value, context) {
+          var t1, t2, t3, t4, t5;
+          t1 = context.uriPolicy;
+          t2 = t1._hiddenAnchor;
+          t2.href = value;
+          t3 = t2.hostname;
+          t1 = t1._loc;
+          t4 = t1.hostname;
+          if (t3 == null ? t4 == null : t3 === t4) {
+            t4 = t2.port;
+            t5 = t1.port;
+            if (t4 == null ? t5 == null : t4 === t5) {
+              t4 = t2.protocol;
+              t1 = t1.protocol;
+              t1 = t4 == null ? t1 == null : t4 === t1;
+            } else
+              t1 = false;
+          } else
+            t1 = false;
+          if (!t1)
+            if (t3 === "")
+              if (t2.port === "") {
+                t1 = t2.protocol;
+                t1 = t1 === ":" || t1 === "";
+              } else
+                t1 = false;
+            else
+              t1 = false;
+          else
+            t1 = true;
+          return t1;
+        }, "call$4", "html__Html5NodeValidator__uriAttributeValidator$closure", 8, 0, 11, 13, 14, 4, 15]}
+    },
     ImmutableListMixin: {
       "^": "Object;",
       get$iterator: function(receiver) {
@@ -7601,6 +8015,104 @@
       $isEfficientLength: 1,
       $isIterable: 1,
       $asIterable: null
+    },
+    NodeValidatorBuilder: {
+      "^": "Object;_validators",
+      allowsElement$1: function(element) {
+        return C.JSArray_methods.any$1(this._validators, new W.NodeValidatorBuilder_allowsElement_closure(element));
+      },
+      allowsAttribute$3: function(element, attributeName, value) {
+        return C.JSArray_methods.any$1(this._validators, new W.NodeValidatorBuilder_allowsAttribute_closure(element, attributeName, value));
+      }
+    },
+    NodeValidatorBuilder_allowsElement_closure: {
+      "^": "Closure:0;_captured_element_0",
+      call$1: function(v) {
+        return v.allowsElement$1(this._captured_element_0);
+      }
+    },
+    NodeValidatorBuilder_allowsAttribute_closure: {
+      "^": "Closure:0;_captured_element_0,_captured_attributeName_1,_captured_value_2",
+      call$1: function(v) {
+        return v.allowsAttribute$3(this._captured_element_0, this._captured_attributeName_1, this._captured_value_2);
+      }
+    },
+    _SimpleNodeValidator: {
+      "^": "Object;",
+      allowsElement$1: function(element) {
+        return this.allowedElements.contains$1(0, element.tagName);
+      },
+      allowsAttribute$3: ["super$_SimpleNodeValidator$allowsAttribute", function(element, attributeName, value) {
+        var tagName, t1;
+        tagName = element.tagName;
+        t1 = this.allowedUriAttributes;
+        if (t1.contains$1(0, H.S(tagName) + "::" + attributeName))
+          return this.uriPolicy.allowsUri$1(value);
+        else if (t1.contains$1(0, "*::" + attributeName))
+          return this.uriPolicy.allowsUri$1(value);
+        else {
+          t1 = this.allowedAttributes;
+          if (t1.contains$1(0, H.S(tagName) + "::" + attributeName))
+            return true;
+          else if (t1.contains$1(0, "*::" + attributeName))
+            return true;
+          else if (t1.contains$1(0, H.S(tagName) + "::*"))
+            return true;
+          else if (t1.contains$1(0, "*::*"))
+            return true;
+        }
+        return false;
+      }],
+      _SimpleNodeValidator$4$allowedAttributes$allowedElements$allowedUriAttributes: function(uriPolicy, allowedAttributes, allowedElements, allowedUriAttributes) {
+        var legalAttributes, extraUriAttributes, t1;
+        this.allowedElements.addAll$1(0, allowedElements);
+        legalAttributes = allowedAttributes.where$1(0, new W._SimpleNodeValidator_closure());
+        extraUriAttributes = allowedAttributes.where$1(0, new W._SimpleNodeValidator_closure0());
+        this.allowedAttributes.addAll$1(0, legalAttributes);
+        t1 = this.allowedUriAttributes;
+        t1.addAll$1(0, C.List_empty);
+        t1.addAll$1(0, extraUriAttributes);
+      }
+    },
+    _SimpleNodeValidator_closure: {
+      "^": "Closure:0;",
+      call$1: function(x) {
+        return !C.JSArray_methods.contains$1(C.List_yrN, x);
+      }
+    },
+    _SimpleNodeValidator_closure0: {
+      "^": "Closure:0;",
+      call$1: function(x) {
+        return C.JSArray_methods.contains$1(C.List_yrN, x);
+      }
+    },
+    _TemplatingNodeValidator: {
+      "^": "_SimpleNodeValidator;_templateAttrs,allowedElements,allowedAttributes,allowedUriAttributes,uriPolicy",
+      allowsAttribute$3: function(element, attributeName, value) {
+        if (this.super$_SimpleNodeValidator$allowsAttribute(element, attributeName, value))
+          return true;
+        if (attributeName === "template" && value === "")
+          return true;
+        if (J.getAttribute$1$x(element, "template") === "")
+          return this._templateAttrs.contains$1(0, attributeName);
+        return false;
+      },
+      static: {_TemplatingNodeValidator$: function() {
+          var t1, t2, t3, t4;
+          t1 = H.setRuntimeTypeInfo(new H.MappedListIterable(C.List_wSV, new W._TemplatingNodeValidator_closure()), [null, null]);
+          t2 = P.LinkedHashSet_LinkedHashSet(null, null, null, P.String);
+          t3 = P.LinkedHashSet_LinkedHashSet(null, null, null, P.String);
+          t4 = P.LinkedHashSet_LinkedHashSet(null, null, null, P.String);
+          t4 = new W._TemplatingNodeValidator(P.LinkedHashSet_LinkedHashSet$from(C.List_wSV, P.String), t2, t3, t4, null);
+          t4._SimpleNodeValidator$4$allowedAttributes$allowedElements$allowedUriAttributes(null, t1, ["TEMPLATE"], null);
+          return t4;
+        }}
+    },
+    _TemplatingNodeValidator_closure: {
+      "^": "Closure:0;",
+      call$1: [function(attr) {
+        return "TEMPLATE::" + H.S(attr);
+      }, null, null, 2, 0, null, 29, "call"]
     },
     FixedSizeListIterator: {
       "^": "Object;_array,_html$_length,_position,_html$_current",
@@ -7637,6 +8149,129 @@
           else
             return new W._DOMWindowCrossFrame(w);
         }}
+    },
+    NodeValidator: {
+      "^": "Object;"
+    },
+    _SameOriginUriPolicy: {
+      "^": "Object;_hiddenAnchor,_loc"
+    },
+    _ValidatingTreeSanitizer: {
+      "^": "Object;validator",
+      sanitizeTree$1: function(node) {
+        new W._ValidatingTreeSanitizer_sanitizeTree_walk(this).call$2(node, null);
+      },
+      _removeNode$2: function(node, $parent) {
+        if ($parent == null)
+          J.remove$0$ax(node);
+        else
+          J._removeChild$1$x($parent, node);
+      },
+      _sanitizeUntrustedElement$2: function(element, $parent) {
+        var corrupted, attrs, isAttr, elementText, elementTagName, t1, exception;
+        corrupted = true;
+        attrs = null;
+        isAttr = null;
+        try {
+          t1 = element;
+          t1.toString;
+          attrs = new W._ElementAttributeMap(t1);
+          isAttr = J.getAttribute$1$x(attrs.get$_element(), "is");
+          corrupted = function(element) {
+            if (!(element.attributes instanceof NamedNodeMap))
+              return true;
+            var childNodes = element.childNodes;
+            if (element.lastChild && element.lastChild !== childNodes[childNodes.length - 1])
+              return true;
+            if (element.children)
+              if (!(element.children instanceof HTMLCollection || element.children instanceof NodeList))
+                return true;
+            return false;
+          }(element);
+        } catch (exception) {
+          H.unwrapException(exception);
+        }
+        elementText = "element unprintable";
+        try {
+          elementText = J.toString$0$(element);
+        } catch (exception) {
+          H.unwrapException(exception);
+        }
+        elementTagName = "element tag unavailable";
+        try {
+          elementTagName = J.get$tagName$x(element);
+        } catch (exception) {
+          H.unwrapException(exception);
+        }
+        this._sanitizeElement$7(element, $parent, corrupted, elementText, elementTagName, attrs, isAttr);
+      },
+      _sanitizeElement$7: function(element, $parent, corrupted, text, tag, attrs, isAttr) {
+        var t1, keys, i, t2, $name, t3;
+        if (corrupted) {
+          window;
+          t1 = "Removing element due to corrupted attributes on <" + text + ">";
+          if (typeof console != "undefined")
+            console.warn(t1);
+          this._removeNode$2(element, $parent);
+          return;
+        }
+        if (!this.validator.allowsElement$1(element)) {
+          window;
+          t1 = "Removing disallowed element <" + H.S(tag) + ">";
+          if (typeof console != "undefined")
+            console.warn(t1);
+          this._removeNode$2(element, $parent);
+          return;
+        }
+        if (isAttr != null)
+          if (!this.validator.allowsAttribute$3(element, "is", isAttr)) {
+            window;
+            t1 = "Removing disallowed type extension <" + H.S(tag) + " is=\"" + isAttr + "\">";
+            if (typeof console != "undefined")
+              console.warn(t1);
+            this._removeNode$2(element, $parent);
+            return;
+          }
+        t1 = attrs.get$keys();
+        keys = H.setRuntimeTypeInfo(t1.slice(), [H.getTypeArgumentByIndex(t1, 0)]);
+        for (i = attrs.get$keys().length - 1, t1 = attrs._element, t2 = J.getInterceptor$x(t1); i >= 0; --i) {
+          $name = keys[i];
+          if (!this.validator.allowsAttribute$3(element, J.toLowerCase$0$s($name), t2.getAttribute$1(t1, $name))) {
+            window;
+            t3 = "Removing disallowed attribute <" + H.S(tag) + " " + H.S($name) + "=\"" + H.S(t2.getAttribute$1(t1, $name)) + "\">";
+            if (typeof console != "undefined")
+              console.warn(t3);
+            t2.getAttribute$1(t1, $name);
+            t2._removeAttribute$1(t1, $name);
+          }
+        }
+        if (!!J.getInterceptor(element).$isTemplateElement)
+          this.sanitizeTree$1(element.content);
+      }
+    },
+    _ValidatingTreeSanitizer_sanitizeTree_walk: {
+      "^": "Closure:22;_html$_captured_this_0",
+      call$2: function(node, $parent) {
+        var t1, child, nextChild;
+        t1 = this._html$_captured_this_0;
+        switch (node.nodeType) {
+          case 1:
+            t1._sanitizeUntrustedElement$2(node, $parent);
+            break;
+          case 8:
+          case 11:
+          case 3:
+          case 4:
+            break;
+          default:
+            t1._removeNode$2(node, $parent);
+        }
+        child = node.lastChild;
+        for (; child != null; child = nextChild) {
+          nextChild = child.previousSibling;
+          this.call$2(child, node);
+        }
+      }
     }
   }], ["dart.dom.indexed_db", "dart:indexed_db",, P, {
     "^": "",
@@ -7863,7 +8498,7 @@
       }
       dartArgs = P.List_List$from(J.map$1$ax($arguments, P.js___convertToDart$closure()), true, null);
       return P._convertToJS(H.Primitives_applyFunctionWithPositionalArguments(callback, dartArgs));
-    }, null, null, 8, 0, null, 26, 34, 28, 6],
+    }, null, null, 8, 0, null, 39, 31, 45, 6],
     _defineProperty: function(o, $name, value) {
       var exception;
       if (Object.isExtensible(o) && !Object.prototype.hasOwnProperty.call(o, $name))
@@ -7894,7 +8529,7 @@
       if (!!t1.$isFunction)
         return P._getJsProxy(o, "$dart_jsFunction", new P._convertToJS_closure());
       return P._getJsProxy(o, "_$dart_jsObject", new P._convertToJS_closure0($.$get$_dartProxyCtor()));
-    }, "call$1", "js___convertToJS$closure", 2, 0, 0, 5],
+    }, "call$1", "js___convertToJS$closure", 2, 0, 0, 9],
     _getJsProxy: function(o, propertyName, createProxy) {
       var jsProxy = P._getOwnProperty(o, propertyName);
       if (jsProxy == null) {
@@ -7922,7 +8557,7 @@
         else
           return P._wrapToDart(o);
       }
-    }, "call$1", "js___convertToDart$closure", 2, 0, 25, 5],
+    }, "call$1", "js___convertToDart$closure", 2, 0, 28, 9],
     _wrapToDart: function(o) {
       if (typeof o == "function")
         return P._getDartProxy(o, $.$get$_DART_CLOSURE_PROPERTY_NAME(), new P._wrapToDart_closure());
@@ -8033,7 +8668,7 @@
           return convertedList;
         } else
           return P._convertToJS(o);
-      }, null, null, 2, 0, null, 5, "call"]
+      }, null, null, 2, 0, null, 9, "call"]
     },
     JsFunction: {
       "^": "JsObject;_jsObject",
@@ -8488,7 +9123,7 @@
     NativeUint8ClampedList: {
       "^": "NativeTypedArrayOfInt;",
       get$runtimeType: function(receiver) {
-        return C.Type_Jik;
+        return C.Type_Jik0;
       },
       get$length: function(receiver) {
         return receiver.length;
@@ -8590,14 +9225,7 @@
       $.Device__cachedCssPrefix = prefix;
       return prefix;
     }
-  }], ["", "index.bootstrap.initialize.dart",, M, {
-    "^": "",
-    main0: [function() {
-      $.$get$initializers().addAll$1(0, [H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_eNF, C.Type_hin), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_RA5, C.Type_yuB), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_Ier, C.Type_oSr), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_chs, C.Type_ouf), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_MGR, C.Type_l2Z), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_CBD, C.Type_6Hr), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_OaN, C.Type_MUs), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_0, C.Type_46c), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_dPR, C.Type_tRa), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_UoK, C.Type_2GH), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_00, C.Type_Rz5), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_FAV, C.Type_EGl), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_gc6, C.Type_as9), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_A0x, C.Type_uAF), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_AYZ, C.Type_e4R), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_si8, C.Type_6F1), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_l2R, C.Type_hYu), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_8aB, C.Type_R3X), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_zT2, C.Type_d0T), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_Gt8, C.Type_2fh), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_geJ, C.Type_KHg), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_Odg, C.Type_c0h), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_QOW, C.Type_z9V), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_2hE, C.Type_qjl), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_Dxz, C.Type_qv5), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_6L0, C.Type_aeF), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_qBh, C.Type_Slt), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.PolymerRegister_gs1, C.Type_cSk), [null])]);
-      $.data = $.$get$_data();
-      return O.main();
-    }, "call$0", "index__main$closure", 0, 0, 1]
-  }, 1], ["initialize", "package:initialize/initialize.dart",, B, {
+  }], ["initialize", "package:initialize/initialize.dart",, B, {
     "^": "",
     _runInitQueue: function(initializers) {
       var t1, val, val0;
@@ -8618,7 +9246,7 @@
       "^": "Closure:0;_captured_initializers_0",
       call$1: [function(_) {
         return B._runInitQueue(this._captured_initializers_0);
-      }, null, null, 2, 0, null, 3, "call"]
+      }, null, null, 2, 0, null, 5, "call"]
     }
   }], ["initialize.static_loader", "package:initialize/src/static_loader.dart",, A, {
     "^": "",
@@ -8655,7 +9283,7 @@
       "^": "Closure:0;",
       call$1: [function(i) {
         return new A.loadInitializers__closure(i);
-      }, null, null, 2, 0, null, 10, "call"]
+      }, null, null, 2, 0, null, 17, "call"]
     },
     loadInitializers__closure: {
       "^": "Closure:1;_captured_i_3",
@@ -8713,10 +9341,10 @@
       return H.asyncHelper(null, $async$initPolymer, $async$completer, null);
     },
     _setUpPropertyChanged: function() {
-      J.$indexSet$ax($.$get$_polymerDart0(), "propertyChanged", new U._setUpPropertyChanged_closure());
+      J.$indexSet$ax($.$get$_polymerDart1(), "propertyChanged", new U._setUpPropertyChanged_closure());
     },
     _setUpPropertyChanged_closure: {
-      "^": "Closure:19;",
+      "^": "Closure:23;",
       call$3: [function(instance, path, newValue) {
         var instanceMirror, t1, t2, splice, t3, index, removed, addedCount, original, exception;
         t1 = J.getInterceptor(instance);
@@ -8751,7 +9379,7 @@
         else if (!!t1.$isMap)
           t1.$indexSet(instance, path, E.convertToDart(newValue));
         else {
-          instanceMirror = Q._InstanceMirrorImpl$(instance, C.JsProxyReflectable_ibx);
+          instanceMirror = Q._InstanceMirrorImpl$(instance, C.JsProxyReflectable_wmj);
           try {
             instanceMirror.invokeSetter$2(path, E.convertToDart(newValue));
           } catch (exception) {
@@ -8764,7 +9392,7 @@
               throw exception;
           }
         }
-      }, null, null, 6, 0, null, 32, 33, 11, "call"]
+      }, null, null, 6, 0, null, 36, 37, 16, "call"]
     }
   }], ["polymer.lib.polymer_micro", "package:polymer/polymer_micro.dart",, N, {
     "^": "",
@@ -8794,7 +9422,7 @@
   }], ["polymer.src.common.declarations", "package:polymer/src/common/declarations.dart",, T, {
     "^": "",
     mixinsFor: function(type, reflectionClass, where) {
-      var mixins, superClass, t1, t2, t3, mixin;
+      var mixins, superClass, t1, t2;
       mixins = [];
       superClass = T._getSuper(reflectionClass.reflectType$1(type));
       while (true) {
@@ -8807,25 +9435,11 @@
             t2 = $.$get$data().$index(0, superClass._reflector);
             superClass._dataCache = t2;
           }
-          t1 = t2.classMirrors[t1];
-          t2 = t1._dataCache;
-          if (t2 == null) {
-            t2 = $.$get$data().$index(0, t1._reflector);
-            t1._dataCache = t2;
-          }
-          t3 = t1._classIndex;
-          if (!t2.types[t3].$eq(0, C.Type_rjf)) {
-            t2 = t1._dataCache;
-            if (t2 == null) {
-              t2 = $.$get$data().$index(0, t1._reflector);
-              t1._dataCache = t2;
-              t1 = t2;
-            } else
-              t1 = t2;
-            t3 = t1.types[t3].$eq(0, C.Type_wT1);
-            t1 = t3;
-          } else
-            t1 = true;
+          t1 = t2.typeMirrors[t1];
+          if (t1.get$hasReflectedType())
+            t1 = t1.get$reflectedType().$eq(0, C.Type_rjf) || t1.get$reflectedType().$eq(0, C.Type_wT1);
+          else
+            t1 = false;
           t1 = !t1;
         } else
           t1 = false;
@@ -8839,50 +9453,36 @@
           t2 = $.$get$data().$index(0, superClass._reflector);
           superClass._dataCache = t2;
         }
-        mixin = t2.classMirrors[t1];
-        if (mixin !== superClass)
-          t1 = true;
+        t1 = t2.typeMirrors[t1];
+        if (t1 !== superClass)
+          t2 = true;
         else
-          t1 = false;
-        if (t1)
-          C.JSArray_methods.add$1(mixins, mixin);
+          t2 = false;
+        if (t2)
+          C.JSArray_methods.add$1(mixins, t1);
         superClass = T._getSuper(superClass);
       }
       return H.setRuntimeTypeInfo(new H.ReversedListIterable(mixins), [H.getTypeArgumentByIndex(mixins, 0)]).toList$0(0);
     },
-    declarationsFor: function(type, reflectionClass, where) {
-      var typeMirror, declarations, superClass, t1, t2, t3;
+    declarationsFor: function(type, reflectionClass, includeSuper, where) {
+      var typeMirror, declarations, superClass, t1;
       typeMirror = reflectionClass.reflectType$1(type);
       declarations = P.LinkedHashMap__makeEmpty();
       superClass = typeMirror;
       while (true) {
         if (superClass != null) {
           t1 = superClass.get$mixin();
-          t2 = t1._dataCache;
-          if (t2 == null) {
-            t2 = $.$get$data().$index(0, t1._reflector);
-            t1._dataCache = t2;
-          }
-          t3 = t1._classIndex;
-          if (!t2.types[t3].$eq(0, C.Type_rjf)) {
-            t2 = t1._dataCache;
-            if (t2 == null) {
-              t2 = $.$get$data().$index(0, t1._reflector);
-              t1._dataCache = t2;
-              t1 = t2;
-            } else
-              t1 = t2;
-            t3 = t1.types[t3].$eq(0, C.Type_wT1);
-            t1 = t3;
-          } else
-            t1 = true;
+          if (t1.get$hasReflectedType())
+            t1 = t1.get$reflectedType().$eq(0, C.Type_rjf) || t1.get$reflectedType().$eq(0, C.Type_wT1);
+          else
+            t1 = false;
           t1 = !t1;
         } else
           t1 = false;
         if (!t1)
           break;
         superClass.get$declarations()._map.forEach$1(0, new T.declarationsFor_closure(where, declarations));
-        superClass = T._getSuper(superClass);
+        superClass = includeSuper ? T._getSuper(superClass) : null;
       }
       return declarations;
     },
@@ -8896,8 +9496,49 @@
         return;
       }
     },
+    isFinal: function(declaration) {
+      var t1 = J.getInterceptor(declaration);
+      if (!!t1.$isVariableMirror)
+        return declaration.get$isFinal();
+      if (!!t1.$isMethodMirror && declaration.get$isGetter())
+        return !T.hasSetter(declaration);
+      return false;
+    },
+    isProperty: function(declaration) {
+      var t1 = J.getInterceptor(declaration);
+      if (!!t1.$isVariableMirror)
+        return true;
+      if (!!t1.$isMethodMirror)
+        return !declaration.get$isRegularMethod();
+      return false;
+    },
     isRegularMethod: function(declaration) {
       return !!J.getInterceptor(declaration).$isMethodMirror && !declaration.get$isStatic() && declaration.get$isRegularMethod();
+    },
+    hasSetter: function(getterDeclaration) {
+      var owner, t1, t2;
+      H.assertHelper(getterDeclaration.get$isGetter());
+      owner = getterDeclaration.get$owner();
+      H.assertHelper(!!owner.$isClassMirror);
+      t1 = owner.get$declarations();
+      t2 = getterDeclaration.get$simpleName() + "=";
+      return t1._map.containsKey$1(t2);
+    },
+    addDeclarationToPrototype: function($name, type, declaration, $prototype) {
+      var t1, descriptor;
+      if (T.isProperty(declaration)) {
+        t1 = $.$get$_polymerDart0();
+        descriptor = P.LinkedHashMap__makeLiteral(["get", t1.callMethod$2("propertyAccessorFactory", [$name, new T.addDeclarationToPrototype_closure($name, type, declaration)]), "configurable", false]);
+        if (!T.isFinal(declaration))
+          descriptor.$indexSet(0, "set", t1.callMethod$2("propertySetterFactory", [$name, new T.addDeclarationToPrototype_closure0($name, type, declaration)]));
+        $.$get$context().$index(0, "Object").callMethod$2("defineProperty", [$prototype, $name, P.JsObject_JsObject$jsify(descriptor)]);
+      } else {
+        t1 = J.getInterceptor(declaration);
+        if (!!t1.$isMethodMirror)
+          $prototype.$indexSet(0, $name, $.$get$_polymerDart0().callMethod$2("invokeDartFactory", [new T.addDeclarationToPrototype_closure1($name, type, declaration)]));
+        else
+          throw H.wrapException("Unrecognized declaration `" + H.S($name) + "` for type `" + J.toString$0$(type) + "`: " + t1.toString$0(declaration));
+      }
     },
     declarationsFor_closure: {
       "^": "Closure:2;_captured_where_0,_captured_declarations_1",
@@ -8909,6 +9550,35 @@
           return;
         t1.$indexSet(0, $name, declaration);
       }
+    },
+    addDeclarationToPrototype_closure: {
+      "^": "Closure:0;_captured_name_0,_captured_type_1,_captured_declaration_2",
+      call$1: [function(dartInstance) {
+        var mirror = this._captured_declaration_2.get$isStatic() ? C.JsProxyReflectable_wmj.reflectType$1(this._captured_type_1) : Q._InstanceMirrorImpl$(dartInstance, C.JsProxyReflectable_wmj);
+        return E.convertToJs(mirror.invokeGetter$1(this._captured_name_0));
+      }, null, null, 2, 0, null, 0, "call"]
+    },
+    addDeclarationToPrototype_closure0: {
+      "^": "Closure:2;_captured_name_3,_captured_type_4,_captured_declaration_5",
+      call$2: [function(dartInstance, value) {
+        var mirror = this._captured_declaration_5.get$isStatic() ? C.JsProxyReflectable_wmj.reflectType$1(this._captured_type_4) : Q._InstanceMirrorImpl$(dartInstance, C.JsProxyReflectable_wmj);
+        mirror.invokeSetter$2(this._captured_name_3, E.convertToDart(value));
+      }, null, null, 4, 0, null, 0, 4, "call"]
+    },
+    addDeclarationToPrototype_closure1: {
+      "^": "Closure:2;_captured_name_6,_captured_type_7,_captured_declaration_8",
+      call$2: [function(dartInstance, $arguments) {
+        var newArgs, mirror;
+        newArgs = J.map$1$ax($arguments, new T.addDeclarationToPrototype__closure()).toList$0(0);
+        mirror = this._captured_declaration_8.get$isStatic() ? C.JsProxyReflectable_wmj.reflectType$1(this._captured_type_7) : Q._InstanceMirrorImpl$(dartInstance, C.JsProxyReflectable_wmj);
+        return E.convertToJs(mirror.invoke$2(this._captured_name_6, newArgs));
+      }, null, null, 4, 0, null, 0, 6, "call"]
+    },
+    addDeclarationToPrototype__closure: {
+      "^": "Closure:0;",
+      call$1: [function(arg) {
+        return E.convertToDart(arg);
+      }, null, null, 2, 0, null, 7, "call"]
     }
   }], ["polymer.src.common.polymer_js_proxy", "package:polymer/src/common/polymer_mixin.dart",, Q, {
     "^": "",
@@ -8931,15 +9601,20 @@
     PolymerRegister: {
       "^": "CustomElementProxy;hostAttributes,tagName,extendsTag",
       initialize$1: function(type) {
-        var t1, object, hostAttributes;
+        var t1, descriptor, hostAttributes;
         t1 = $.$get$context();
-        object = P.LinkedHashMap__makeLiteral(["is", this.tagName, "extends", this.extendsTag, "properties", U._buildPropertiesObject(type), "observers", U._buildObserversObject(type), "listeners", U._buildListenersObject(type), "behaviors", U._buildBehaviorsList(type), "__isPolymerDart__", true]);
-        U._setupLifecycleMethods(type, object);
-        U._setupReflectableMethods(type, object);
-        hostAttributes = D.readHostAttributes(C.JsProxyReflectable_ibx.reflectType$1(type));
+        descriptor = P.JsObject_JsObject$jsify(P.LinkedHashMap__makeLiteral(["properties", U._buildPropertiesObject(type), "observers", U._buildObserversObject(type), "listeners", U._buildListenersObject(type), "__isPolymerDart__", true]));
+        U._setupLifecycleMethods(type, descriptor, false);
+        U._setupReflectableMethods(type, descriptor);
+        U._setupReflectableProperties(type, descriptor);
+        hostAttributes = D.readHostAttributes(C.JsProxyReflectable_wmj.reflectType$1(type));
         if (hostAttributes != null)
-          object.$indexSet(0, "hostAttributes", hostAttributes);
-        t1.callMethod$2("Polymer", [P.JsObject_JsObject$jsify(object)]);
+          descriptor.$indexSet(0, "hostAttributes", hostAttributes);
+        U._setupRegistrationMethods(type, descriptor);
+        descriptor.$indexSet(0, "is", this.tagName);
+        descriptor.$indexSet(0, "extends", this.extendsTag);
+        descriptor.$indexSet(0, "behaviors", U._buildBehaviorsList(type));
+        t1.callMethod$2("Polymer", [descriptor]);
         this.super$CustomElementProxy$initialize(type);
       }
     }
@@ -8977,7 +9652,7 @@
   }], ["polymer.src.js.js_undefined", "package:polymer/src/js/undefined.dart",, T, {}], ["polymer.src.micro.properties", "package:polymer/src/common/polymer_descriptor.dart",, U, {
     "^": "",
     propertyDeclarationsFor: function(type) {
-      return T.declarationsFor(type, C.JsProxyReflectable_ibx, new U.propertyDeclarationsFor_closure());
+      return T.declarationsFor(type, C.JsProxyReflectable_wmj, false, new U.propertyDeclarationsFor_closure());
     },
     _buildPropertiesObject: function(type) {
       var declarations, properties;
@@ -8987,7 +9662,7 @@
       return properties;
     },
     _observeMethodsFor: function(type) {
-      return T.declarationsFor(type, C.JsProxyReflectable_ibx, new U._observeMethodsFor_closure());
+      return T.declarationsFor(type, C.JsProxyReflectable_wmj, false, new U._observeMethodsFor_closure());
     },
     _buildObserversObject: function(type) {
       var observers = [];
@@ -8995,7 +9670,7 @@
       return observers;
     },
     _listenMethodsFor: function(type) {
-      return T.declarationsFor(type, C.JsProxyReflectable_ibx, new U._listenMethodsFor_closure());
+      return T.declarationsFor(type, C.JsProxyReflectable_wmj, false, new U._listenMethodsFor_closure());
     },
     _buildListenersObject: function(type) {
       var declarations, listeners;
@@ -9005,38 +9680,51 @@
       return listeners;
     },
     _lifecycleMethodsFor: function(type) {
-      return T.declarationsFor(type, C.JsProxyReflectable_ibx, new U._lifecycleMethodsFor_closure());
+      return T.declarationsFor(type, C.JsProxyReflectable_wmj, false, new U._lifecycleMethodsFor_closure());
     },
-    _setupLifecycleMethods: function(type, descriptor) {
-      U._lifecycleMethodsFor(type).forEach$1(0, new U._setupLifecycleMethods_closure(descriptor));
+    _setupLifecycleMethods: function(type, $prototype, isBehavior) {
+      U._lifecycleMethodsFor(type).forEach$1(0, new U._setupLifecycleMethods_closure(type, $prototype, isBehavior));
     },
     _reflectableMethodsFor: function(type) {
-      return T.declarationsFor(type, C.JsProxyReflectable_ibx, new U._reflectableMethodsFor_closure());
+      return T.declarationsFor(type, C.JsProxyReflectable_wmj, false, new U._reflectableMethodsFor_closure());
     },
-    _setupReflectableMethods: function(type, descriptor) {
-      U._reflectableMethodsFor(type).forEach$1(0, new U._setupReflectableMethods_closure(descriptor));
+    _setupReflectableMethods: function(type, $prototype) {
+      U._reflectableMethodsFor(type).forEach$1(0, new U._setupReflectableMethods_closure(type, $prototype));
+    },
+    _reflectablePropertiesFor: function(type) {
+      return T.declarationsFor(type, C.JsProxyReflectable_wmj, false, new U._reflectablePropertiesFor_closure());
+    },
+    _setupReflectableProperties: function(type, $prototype) {
+      U._reflectablePropertiesFor(type).forEach$1(0, new U._setupReflectableProperties_closure(type, $prototype));
+    },
+    _setupRegistrationMethods: function(type, $prototype) {
+      var typeMirror, _i, $name, method;
+      typeMirror = C.JsProxyReflectable_wmj.reflectType$1(type);
+      for (_i = 0; _i < 2; ++_i) {
+        $name = C.List_registered_beforeRegister[_i];
+        method = typeMirror.get$staticMembers()._map.$index(0, $name);
+        if (method == null || !J.getInterceptor(method).$isMethodMirror)
+          continue;
+        $prototype.$indexSet(0, $name, $.$get$_polymerDart().callMethod$2("invokeDartFactory", [new U._setupRegistrationMethods_closure(typeMirror, $name)]));
+      }
     },
     _getPropertyInfoForType: function(type, declaration) {
-      var t1, t2, jsPropertyType, isFinal, owner, annotation, property;
+      var t1, t2, typeMirror, isFinal, jsPropertyType, annotation, property;
       t1 = J.getInterceptor(declaration);
       t2 = !!t1.$isVariableMirror;
       H.assertHelper(t2 || !!t1.$isMethodMirror);
       if (t2) {
-        jsPropertyType = U.jsType(t1.get$type(declaration).get$reflectedType());
+        typeMirror = t1.get$type(declaration);
         isFinal = declaration.get$isFinal();
       } else if (!!t1.$isMethodMirror) {
         H.assertHelper(declaration.get$isGetter());
-        jsPropertyType = U.jsType(declaration.get$returnType().get$reflectedType());
-        H.assertHelper(declaration.get$isGetter());
-        owner = declaration.get$owner();
-        H.assertHelper(true);
-        t1 = owner.get$declarations();
-        t2 = declaration.get$simpleName() + "=";
-        isFinal = !t1._map.containsKey$1(t2);
+        typeMirror = declaration.get$returnType();
+        isFinal = !T.hasSetter(declaration);
       } else {
-        jsPropertyType = null;
         isFinal = null;
+        typeMirror = null;
       }
+      jsPropertyType = !!J.getInterceptor(typeMirror).$isClassMirror && typeMirror.get$hasBestEffortReflectedType() ? U.jsType(typeMirror.get$bestEffortReflectedType()) : null;
       annotation = C.JSArray_methods.firstWhere$1(declaration.get$metadata(), new U._getPropertyInfoForType_closure());
       property = P.LinkedHashMap__makeLiteral(["defined", true, "notify", annotation.notify, "observer", annotation.observer, "reflectToAttribute", annotation.reflectToAttribute, "computed", annotation.computed, "value", $.$get$_polymerDart().callMethod$2("invokeDartFactory", [new U._getPropertyInfoForType_closure0(declaration)])]);
       if (isFinal)
@@ -9047,13 +9735,13 @@
     },
     _isBehavior: [function(instance) {
       return !!J.getInterceptor(instance).$isBehaviorAnnotation;
-    }, "call$1", "properties___isBehavior$closure", 2, 0, 26],
+    }, "call$1", "properties___isBehavior$closure", 2, 0, 29],
     _hasBehaviorMeta: [function(clazz) {
       return C.JSArray_methods.any$1(clazz.get$metadata(), U.properties___isBehavior$closure());
-    }, "call$1", "properties___hasBehaviorMeta$closure", 2, 0, 27],
+    }, "call$1", "properties___hasBehaviorMeta$closure", 2, 0, 30],
     _buildBehaviorsList: function(type) {
       var t1, allBehaviors, behaviorStack, t2, behavior, t3, t4, $interface;
-      t1 = T.mixinsFor(type, C.JsProxyReflectable_ibx, null);
+      t1 = T.mixinsFor(type, C.JsProxyReflectable_wmj, null);
       allBehaviors = H.setRuntimeTypeInfo(new H.WhereIterable(t1, U.properties___hasBehaviorMeta$closure()), [H.getTypeArgumentByIndex(t1, 0)]);
       behaviorStack = H.setRuntimeTypeInfo([], [O.ClassMirror]);
       for (t1 = H.setRuntimeTypeInfo(new H.WhereIterator(J.get$iterator$ax(allBehaviors._iterable), allBehaviors._f), [H.getTypeArgumentByIndex(allBehaviors, 0)]), t2 = t1._iterator; t1.moveNext$0();) {
@@ -9074,9 +9762,13 @@
         }
         C.JSArray_methods.add$1(behaviorStack, behavior);
       }
-      t1 = H.setRuntimeTypeInfo([$.$get$_polymerDart().$index(0, "InteropBehavior")], [P.JsObject]);
+      t1 = [$.$get$_polymerDart().$index(0, "InteropBehavior")];
       C.JSArray_methods.addAll$1(t1, H.setRuntimeTypeInfo(new H.MappedListIterable(behaviorStack, new U._buildBehaviorsList_closure()), [null, null]));
-      return t1;
+      t2 = [];
+      C.JSArray_methods.addAll$1(t2, C.JSArray_methods.map$1(t1, P.js___convertToJS$closure()));
+      t2 = H.setRuntimeTypeInfo(new P.JsArray(t2), [P.JsObject]);
+      H.assertHelper(t2._jsObject != null);
+      return t2;
     },
     _throwInvalidMixinOrder: function(type, mixin) {
       var t1, t2, expected;
@@ -9088,7 +9780,7 @@
       throw H.wrapException("Unexpected mixin ordering on type " + J.toString$0$(type) + ". The " + mixin.simpleName + " mixin must be  immediately preceded by the following mixins, in this order: " + expected);
     },
     jsType: function(type) {
-      var typeString = type.toString$0(0);
+      var typeString = J.toString$0$(type);
       if (J.startsWith$1$s(typeString, "JsArray<"))
         typeString = "List";
       if (C.JSString_methods.startsWith$1(typeString, "List<"))
@@ -9134,7 +9826,7 @@
       }
     },
     _buildPropertiesObject_closure: {
-      "^": "Closure:4;_captured_type_0,_captured_properties_1",
+      "^": "Closure:5;_captured_type_0,_captured_properties_1",
       call$2: function($name, declaration) {
         this._captured_properties_1.$indexSet(0, $name, U._getPropertyInfoForType(this._captured_type_0, declaration));
       }
@@ -9154,7 +9846,7 @@
       }
     },
     _buildObserversObject_closure: {
-      "^": "Closure:4;_captured_observers_0",
+      "^": "Closure:5;_captured_observers_0",
       call$2: function($name, declaration) {
         var observe = C.JSArray_methods.firstWhere$1(declaration.get$metadata(), new U._buildObserversObject__closure());
         C.JSArray_methods.add$1(this._captured_observers_0, H.S($name) + "(" + H.S(C.JSNull_methods.get$properties(observe)) + ")");
@@ -9181,7 +9873,7 @@
       }
     },
     _buildListenersObject_closure: {
-      "^": "Closure:4;_captured_listeners_0",
+      "^": "Closure:5;_captured_listeners_0",
       call$2: function($name, declaration) {
         var t1, t2, t3;
         for (t1 = declaration.get$metadata(), t1 = H.setRuntimeTypeInfo(new H.WhereIterable(t1, new U._buildListenersObject__closure()), [H.getTypeArgumentByIndex(t1, 0)]), t1 = H.setRuntimeTypeInfo(new H.WhereIterator(J.get$iterator$ax(t1._iterable), t1._f), [H.getTypeArgumentByIndex(t1, 0)]), t2 = t1._iterator, t3 = this._captured_listeners_0; t1.moveNext$0();)
@@ -9197,36 +9889,48 @@
     _lifecycleMethodsFor_closure: {
       "^": "Closure:2;",
       call$2: function($name, declaration) {
-        if (!T.isRegularMethod(declaration))
-          return false;
-        return C.JSArray_methods.contains$1(C.List_kmC, $name);
+        if (!!J.getInterceptor(declaration).$isMethodMirror && declaration.get$isRegularMethod())
+          return C.JSArray_methods.contains$1(C.List_AKW, $name) || C.JSArray_methods.contains$1(C.List_serialize_deserialize, $name);
+        return false;
       }
     },
     _setupLifecycleMethods_closure: {
-      "^": "Closure:4;_captured_descriptor_0",
+      "^": "Closure:9;_captured_type_0,_captured_prototype_1,_captured_isBehavior_2",
       call$2: function($name, declaration) {
-        this._captured_descriptor_0.$indexSet(0, $name, $.$get$_polymerDart().callMethod$2("invokeDartFactory", [new U._setupLifecycleMethods__closure($name)]));
+        if (C.JSArray_methods.contains$1(C.List_AKW, $name))
+          if (!declaration.get$isStatic() && this._captured_isBehavior_2)
+            throw H.wrapException("Lifecycle methods on behaviors must be static methods, found `" + H.S($name) + "` on `" + J.toString$0$(this._captured_type_0) + "`. The first argument to these methods is theinstance.");
+          else if (declaration.get$isStatic() && !this._captured_isBehavior_2)
+            throw H.wrapException("Lifecycle methods on elements must not be static methods, found `" + H.S($name) + "` on class `" + J.toString$0$(this._captured_type_0) + "`.");
+        this._captured_prototype_1.$indexSet(0, $name, $.$get$_polymerDart().callMethod$2("invokeDartFactory", [new U._setupLifecycleMethods__closure(this._captured_type_0, $name, declaration)]));
       }
     },
     _setupLifecycleMethods__closure: {
-      "^": "Closure:2;_captured_name_1",
+      "^": "Closure:2;_captured_type_3,_captured_name_4,_properties$_captured_declaration_5",
       call$2: [function(dartInstance, $arguments) {
-        var newArgs = J.map$1$ax($arguments, new U._setupLifecycleMethods___closure()).toList$0(0);
-        return Q._InstanceMirrorImpl$(dartInstance, C.JsProxyReflectable_ibx).invoke$2(this._captured_name_1, newArgs);
-      }, null, null, 4, 0, null, 4, 6, "call"]
+        var newArgs, mirror;
+        newArgs = [];
+        if (this._properties$_captured_declaration_5.get$isStatic()) {
+          mirror = C.JsProxyReflectable_wmj.reflectType$1(this._captured_type_3);
+          C.JSArray_methods.add$1(newArgs, dartInstance);
+        } else
+          mirror = Q._InstanceMirrorImpl$(dartInstance, C.JsProxyReflectable_wmj);
+        C.JSArray_methods.addAll$1(newArgs, J.map$1$ax($arguments, new U._setupLifecycleMethods___closure()));
+        return mirror.invoke$2(this._captured_name_4, newArgs);
+      }, null, null, 4, 0, null, 0, 6, "call"]
     },
     _setupLifecycleMethods___closure: {
       "^": "Closure:0;",
       call$1: [function(arg) {
         return E.convertToDart(arg);
-      }, null, null, 2, 0, null, 9, "call"]
+      }, null, null, 2, 0, null, 7, "call"]
     },
     _reflectableMethodsFor_closure: {
       "^": "Closure:2;",
       call$2: function($name, declaration) {
-        if (!T.isRegularMethod(declaration))
-          return false;
-        return C.JSArray_methods.any$1(declaration.get$metadata(), new U._reflectableMethodsFor__closure());
+        if (!!J.getInterceptor(declaration).$isMethodMirror && declaration.get$isRegularMethod())
+          return C.JSArray_methods.any$1(declaration.get$metadata(), new U._reflectableMethodsFor__closure());
+        return false;
       }
     },
     _reflectableMethodsFor__closure: {
@@ -9236,23 +9940,50 @@
       }
     },
     _setupReflectableMethods_closure: {
-      "^": "Closure:4;_captured_descriptor_0",
+      "^": "Closure:9;_captured_type_0,_captured_prototype_1",
       call$2: function($name, declaration) {
-        this._captured_descriptor_0.$indexSet(0, $name, $.$get$_polymerDart().callMethod$2("invokeDartFactory", [new U._setupReflectableMethods__closure($name)]));
+        if (C.JSArray_methods.contains$1(C.List_registered_beforeRegister, $name)) {
+          if (declaration.get$isStatic())
+            return;
+          throw H.wrapException("Disallowed instance method `" + H.S($name) + "` with @reflectable annotation on the `" + declaration.get$owner().get$simpleName() + "` class, since it has a special meaning in Polymer. You can either rename the method orchange it to a static method. If it is a static method it will be invoked with the JS prototype of the element at registration time.");
+        }
+        T.addDeclarationToPrototype($name, this._captured_type_0, declaration, this._captured_prototype_1);
       }
     },
-    _setupReflectableMethods__closure: {
-      "^": "Closure:2;_captured_name_1",
-      call$2: [function(dartInstance, $arguments) {
-        var newArgs = J.map$1$ax($arguments, new U._setupReflectableMethods___closure()).toList$0(0);
-        return Q._InstanceMirrorImpl$(dartInstance, C.JsProxyReflectable_ibx).invoke$2(this._captured_name_1, newArgs);
-      }, null, null, 4, 0, null, 4, 6, "call"]
+    _reflectablePropertiesFor_closure: {
+      "^": "Closure:2;",
+      call$2: function($name, declaration) {
+        if (!!J.getInterceptor(declaration).$isMethodMirror && declaration.get$isRegularMethod())
+          return false;
+        return C.JSArray_methods.any$1(declaration.get$metadata(), new U._reflectablePropertiesFor__closure());
+      }
     },
-    _setupReflectableMethods___closure: {
+    _reflectablePropertiesFor__closure: {
+      "^": "Closure:0;",
+      call$1: function(d) {
+        var t1 = J.getInterceptor(d);
+        return !!t1.$isPolymerReflectable && !t1.$isProperty;
+      }
+    },
+    _setupReflectableProperties_closure: {
+      "^": "Closure:2;_captured_type_0,_captured_prototype_1",
+      call$2: function($name, declaration) {
+        return T.addDeclarationToPrototype($name, this._captured_type_0, declaration, this._captured_prototype_1);
+      }
+    },
+    _setupRegistrationMethods_closure: {
+      "^": "Closure:2;_captured_typeMirror_0,_captured_name_1",
+      call$2: [function(dartInstance, $arguments) {
+        var newArgs = [!!J.getInterceptor(dartInstance).$isHtmlElement ? P.JsObject_JsObject$fromBrowserObject(dartInstance) : dartInstance];
+        C.JSArray_methods.addAll$1(newArgs, J.map$1$ax($arguments, new U._setupRegistrationMethods__closure()));
+        this._captured_typeMirror_0.invoke$2(this._captured_name_1, newArgs);
+      }, null, null, 4, 0, null, 0, 6, "call"]
+    },
+    _setupRegistrationMethods__closure: {
       "^": "Closure:0;",
       call$1: [function(arg) {
         return E.convertToDart(arg);
-      }, null, null, 2, 0, null, 9, "call"]
+      }, null, null, 2, 0, null, 7, "call"]
     },
     _getPropertyInfoForType_closure: {
       "^": "Closure:0;",
@@ -9263,23 +9994,26 @@
     _getPropertyInfoForType_closure0: {
       "^": "Closure:2;_captured_declaration_0",
       call$2: [function(dartInstance, _) {
-        var value = E.convertToJs(Q._InstanceMirrorImpl$(dartInstance, C.JsProxyReflectable_ibx).invokeGetter$1(this._captured_declaration_0.get$simpleName()));
+        var value = E.convertToJs(Q._InstanceMirrorImpl$(dartInstance, C.JsProxyReflectable_wmj).invokeGetter$1(this._captured_declaration_0.get$simpleName()));
         if (value == null)
           return $.$get$polymerDartUndefined();
         return value;
-      }, null, null, 4, 0, null, 4, 3, "call"]
+      }, null, null, 4, 0, null, 0, 5, "call"]
     },
     _buildBehaviorsList_closure: {
-      "^": "Closure:20;",
+      "^": "Closure:24;",
       call$1: [function(behavior) {
-        return C.JSArray_methods.firstWhere$1(behavior.get$metadata(), U.properties___isBehavior$closure()).getBehavior$1(behavior.get$reflectedType());
-      }, null, null, 2, 0, null, 36, "call"]
+        var meta = C.JSArray_methods.firstWhere$1(behavior.get$metadata(), U.properties___isBehavior$closure());
+        if (!behavior.get$hasBestEffortReflectedType())
+          throw H.wrapException("Unable to get `bestEffortReflectedType` for behavior " + behavior.simpleName + ".");
+        return meta.getBehavior$1(behavior.get$bestEffortReflectedType());
+      }, null, null, 2, 0, null, 40, "call"]
     },
     _throwInvalidMixinOrder_closure: {
       "^": "Closure:0;",
       call$1: [function(clazz) {
         return clazz.get$simpleName();
-      }, null, null, 2, 0, null, 37, "call"]
+      }, null, null, 2, 0, null, 41, "call"]
     }
   }], ["polymer.src.template.array_selector", "package:polymer/src/template/array_selector.dart",, U, {
     "^": "",
@@ -9363,6 +10097,25 @@
     TemplateElement_CustomElementProxyMixin_PolymerBase1: {
       "^": "TemplateElement_CustomElementProxyMixin1+PolymerBase;"
     }
+  }], ["polymer_elements.lib.src.iron_a11y_announcer.iron_a11y_announcer", "package:polymer_elements/iron_a11y_announcer.dart",, Q, {
+    "^": "",
+    IronA11yAnnouncer: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase0;CustomElementProxyMixin__proxy",
+      static: {IronA11yAnnouncer$created: function(receiver) {
+          receiver.toString;
+          C.IronA11yAnnouncer_methods.Element$created$0(receiver);
+          return receiver;
+        }}
+    },
+    HtmlElement_CustomElementProxyMixin0: {
+      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
+      set$_proxy: function(receiver, _proxy) {
+        receiver.CustomElementProxyMixin__proxy = _proxy;
+      }
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase0: {
+      "^": "HtmlElement_CustomElementProxyMixin0+PolymerBase;"
+    }
   }], ["polymer_elements.lib.src.iron_a11y_keys_behavior.iron_a11y_keys_behavior", "package:polymer_elements/iron_a11y_keys_behavior.dart",, E, {
     "^": "",
     IronA11yKeysBehavior: {
@@ -9381,37 +10134,10 @@
   }], ["polymer_elements.lib.src.iron_collapse.iron_collapse", "package:polymer_elements/iron_collapse.dart",, S, {
     "^": "",
     IronCollapse: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase0;CustomElementProxyMixin__proxy",
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase1;CustomElementProxyMixin__proxy",
       static: {IronCollapse$created: function(receiver) {
           receiver.toString;
           C.IronCollapse_methods.Element$created$0(receiver);
-          return receiver;
-        }}
-    },
-    HtmlElement_CustomElementProxyMixin0: {
-      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
-      set$_proxy: function(receiver, _proxy) {
-        receiver.CustomElementProxyMixin__proxy = _proxy;
-      }
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase0: {
-      "^": "HtmlElement_CustomElementProxyMixin0+PolymerBase;"
-    }
-  }], ["polymer_elements.lib.src.iron_form_element_behavior.iron_form_element_behavior", "package:polymer_elements/iron_form_element_behavior.dart",, V, {
-    "^": "",
-    IronFormElementBehavior: {
-      "^": "Object;",
-      get$name: function(receiver) {
-        return this.get$jsElement(receiver).$index(0, "name");
-      }
-    }
-  }], ["polymer_elements.lib.src.iron_icon.iron_icon", "package:polymer_elements/iron_icon.dart",, O, {
-    "^": "",
-    IronIcon: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase1;CustomElementProxyMixin__proxy",
-      static: {IronIcon$created: function(receiver) {
-          receiver.toString;
-          C.IronIcon_methods.Element$created$0(receiver);
           return receiver;
         }}
     },
@@ -9424,16 +10150,26 @@
     HtmlElement_CustomElementProxyMixin_PolymerBase1: {
       "^": "HtmlElement_CustomElementProxyMixin1+PolymerBase;"
     }
-  }], ["polymer_elements.lib.src.iron_iconset_svg.iron_iconset_svg", "package:polymer_elements/iron_iconset_svg.dart",, M, {
+  }], ["polymer_elements.lib.src.iron_fit_behavior.iron_fit_behavior", "package:polymer_elements/iron_fit_behavior.dart",, O, {
     "^": "",
-    IronIconsetSvg: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase2;CustomElementProxyMixin__proxy",
+    IronFitBehavior: {
+      "^": "Object;"
+    }
+  }], ["polymer_elements.lib.src.iron_form_element_behavior.iron_form_element_behavior", "package:polymer_elements/iron_form_element_behavior.dart",, V, {
+    "^": "",
+    IronFormElementBehavior: {
+      "^": "Object;",
       get$name: function(receiver) {
         return this.get$jsElement(receiver).$index(0, "name");
-      },
-      static: {IronIconsetSvg$created: function(receiver) {
+      }
+    }
+  }], ["polymer_elements.lib.src.iron_icon.iron_icon", "package:polymer_elements/iron_icon.dart",, O, {
+    "^": "",
+    IronIcon: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase2;CustomElementProxyMixin__proxy",
+      static: {IronIcon$created: function(receiver) {
           receiver.toString;
-          C.IronIconsetSvg_methods.Element$created$0(receiver);
+          C.IronIcon_methods.Element$created$0(receiver);
           return receiver;
         }}
     },
@@ -9445,6 +10181,28 @@
     },
     HtmlElement_CustomElementProxyMixin_PolymerBase2: {
       "^": "HtmlElement_CustomElementProxyMixin2+PolymerBase;"
+    }
+  }], ["polymer_elements.lib.src.iron_iconset_svg.iron_iconset_svg", "package:polymer_elements/iron_iconset_svg.dart",, M, {
+    "^": "",
+    IronIconsetSvg: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase3;CustomElementProxyMixin__proxy",
+      get$name: function(receiver) {
+        return this.get$jsElement(receiver).$index(0, "name");
+      },
+      static: {IronIconsetSvg$created: function(receiver) {
+          receiver.toString;
+          C.IronIconsetSvg_methods.Element$created$0(receiver);
+          return receiver;
+        }}
+    },
+    HtmlElement_CustomElementProxyMixin3: {
+      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
+      set$_proxy: function(receiver, _proxy) {
+        receiver.CustomElementProxyMixin__proxy = _proxy;
+      }
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase3: {
+      "^": "HtmlElement_CustomElementProxyMixin3+PolymerBase;"
     }
   }], ["polymer_elements.lib.src.iron_input.iron_input", "package:polymer_elements/iron_input.dart",, G, {
     "^": "",
@@ -9471,21 +10229,21 @@
   }], ["polymer_elements.lib.src.iron_media_query.iron_media_query", "package:polymer_elements/iron_media_query.dart",, Q, {
     "^": "",
     IronMediaQuery: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase3;CustomElementProxyMixin__proxy",
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase4;CustomElementProxyMixin__proxy",
       static: {IronMediaQuery$created: function(receiver) {
           receiver.toString;
           C.IronMediaQuery_methods.Element$created$0(receiver);
           return receiver;
         }}
     },
-    HtmlElement_CustomElementProxyMixin3: {
+    HtmlElement_CustomElementProxyMixin4: {
       "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
       set$_proxy: function(receiver, _proxy) {
         receiver.CustomElementProxyMixin__proxy = _proxy;
       }
     },
-    HtmlElement_CustomElementProxyMixin_PolymerBase3: {
-      "^": "HtmlElement_CustomElementProxyMixin3+PolymerBase;"
+    HtmlElement_CustomElementProxyMixin_PolymerBase4: {
+      "^": "HtmlElement_CustomElementProxyMixin4+PolymerBase;"
     }
   }], ["polymer_elements.lib.src.iron_menu_behavior.iron_menu_behavior", "package:polymer_elements/iron_menu_behavior.dart",, T, {
     "^": "",
@@ -9500,27 +10258,10 @@
   }], ["polymer_elements.lib.src.iron_meta.iron_meta", "package:polymer_elements/iron_meta.dart",, F, {
     "^": "",
     IronMeta: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase4;CustomElementProxyMixin__proxy",
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase5;CustomElementProxyMixin__proxy",
       static: {IronMeta$created: function(receiver) {
           receiver.toString;
           C.IronMeta_methods.Element$created$0(receiver);
-          return receiver;
-        }}
-    },
-    HtmlElement_CustomElementProxyMixin4: {
-      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
-      set$_proxy: function(receiver, _proxy) {
-        receiver.CustomElementProxyMixin__proxy = _proxy;
-      }
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase4: {
-      "^": "HtmlElement_CustomElementProxyMixin4+PolymerBase;"
-    },
-    IronMetaQuery: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase5;CustomElementProxyMixin__proxy",
-      static: {IronMetaQuery$created: function(receiver) {
-          receiver.toString;
-          C.IronMetaQuery_methods.Element$created$0(receiver);
           return receiver;
         }}
     },
@@ -9532,14 +10273,12 @@
     },
     HtmlElement_CustomElementProxyMixin_PolymerBase5: {
       "^": "HtmlElement_CustomElementProxyMixin5+PolymerBase;"
-    }
-  }], ["polymer_elements.lib.src.iron_pages.iron_pages", "package:polymer_elements/iron_pages.dart",, U, {
-    "^": "",
-    IronPages: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior;CustomElementProxyMixin__proxy",
-      static: {IronPages$created: function(receiver) {
+    },
+    IronMetaQuery: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase6;CustomElementProxyMixin__proxy",
+      static: {IronMetaQuery$created: function(receiver) {
           receiver.toString;
-          C.IronPages_methods.Element$created$0(receiver);
+          C.IronMetaQuery_methods.Element$created$0(receiver);
           return receiver;
         }}
     },
@@ -9551,9 +10290,52 @@
     },
     HtmlElement_CustomElementProxyMixin_PolymerBase6: {
       "^": "HtmlElement_CustomElementProxyMixin6+PolymerBase;"
+    }
+  }], ["polymer_elements.lib.src.iron_overlay_behavior.iron_overlay_backdrop", "package:polymer_elements/iron_overlay_backdrop.dart",, S, {
+    "^": "",
+    IronOverlayBackdrop: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase7;CustomElementProxyMixin__proxy",
+      static: {IronOverlayBackdrop$created: function(receiver) {
+          receiver.toString;
+          C.IronOverlayBackdrop_methods.Element$created$0(receiver);
+          return receiver;
+        }}
+    },
+    HtmlElement_CustomElementProxyMixin7: {
+      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
+      set$_proxy: function(receiver, _proxy) {
+        receiver.CustomElementProxyMixin__proxy = _proxy;
+      }
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase7: {
+      "^": "HtmlElement_CustomElementProxyMixin7+PolymerBase;"
+    }
+  }], ["polymer_elements.lib.src.iron_overlay_behavior.iron_overlay_behavior", "package:polymer_elements/iron_overlay_behavior.dart",, B, {
+    "^": "",
+    IronOverlayBehavior: {
+      "^": "Object;"
+    }
+  }], ["polymer_elements.lib.src.iron_pages.iron_pages", "package:polymer_elements/iron_pages.dart",, U, {
+    "^": "",
+    IronPages: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior;CustomElementProxyMixin__proxy",
+      static: {IronPages$created: function(receiver) {
+          receiver.toString;
+          C.IronPages_methods.Element$created$0(receiver);
+          return receiver;
+        }}
+    },
+    HtmlElement_CustomElementProxyMixin8: {
+      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
+      set$_proxy: function(receiver, _proxy) {
+        receiver.CustomElementProxyMixin__proxy = _proxy;
+      }
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase8: {
+      "^": "HtmlElement_CustomElementProxyMixin8+PolymerBase;"
     },
     HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase6+IronResizableBehavior;"
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase8+IronResizableBehavior;"
     },
     HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior: {
       "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior+IronSelectableBehavior;"
@@ -9587,17 +10369,17 @@
           return receiver;
         }}
     },
-    HtmlElement_CustomElementProxyMixin7: {
+    HtmlElement_CustomElementProxyMixin9: {
       "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
       set$_proxy: function(receiver, _proxy) {
         receiver.CustomElementProxyMixin__proxy = _proxy;
       }
     },
-    HtmlElement_CustomElementProxyMixin_PolymerBase7: {
-      "^": "HtmlElement_CustomElementProxyMixin7+PolymerBase;"
+    HtmlElement_CustomElementProxyMixin_PolymerBase9: {
+      "^": "HtmlElement_CustomElementProxyMixin9+PolymerBase;"
     },
     HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase7+IronSelectableBehavior;"
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase9+IronSelectableBehavior;"
     },
     HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior: {
       "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior+IronMultiSelectableBehavior;"
@@ -9612,54 +10394,18 @@
     PaperInkyFocusBehavior: {
       "^": "Object;"
     }
+  }], ["polymer_elements.lib.src.paper_behaviors.paper_ripple_behavior", "package:polymer_elements/paper_ripple_behavior.dart",, L, {
+    "^": "",
+    PaperRippleBehavior: {
+      "^": "Object;"
+    }
   }], ["polymer_elements.lib.src.paper_drawer_panel.paper_drawer_panel", "package:polymer_elements/paper_drawer_panel.dart",, X, {
     "^": "",
     PaperDrawerPanel: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase8;CustomElementProxyMixin__proxy",
-      set$selected: function(receiver, value) {
-        this.get$jsElement(receiver).$indexSet(0, "selected", value);
-      },
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior0;CustomElementProxyMixin__proxy",
       static: {PaperDrawerPanel$created: function(receiver) {
           receiver.toString;
           C.PaperDrawerPanel_methods.Element$created$0(receiver);
-          return receiver;
-        }}
-    },
-    HtmlElement_CustomElementProxyMixin8: {
-      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
-      set$_proxy: function(receiver, _proxy) {
-        receiver.CustomElementProxyMixin__proxy = _proxy;
-      }
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase8: {
-      "^": "HtmlElement_CustomElementProxyMixin8+PolymerBase;"
-    }
-  }], ["polymer_elements.lib.src.paper_header_panel.paper_header_panel", "package:polymer_elements/paper_header_panel.dart",, B, {
-    "^": "",
-    PaperHeaderPanel: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase9;CustomElementProxyMixin__proxy",
-      static: {PaperHeaderPanel$created: function(receiver) {
-          receiver.toString;
-          C.PaperHeaderPanel_methods.Element$created$0(receiver);
-          return receiver;
-        }}
-    },
-    HtmlElement_CustomElementProxyMixin9: {
-      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
-      set$_proxy: function(receiver, _proxy) {
-        receiver.CustomElementProxyMixin__proxy = _proxy;
-      }
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase9: {
-      "^": "HtmlElement_CustomElementProxyMixin9+PolymerBase;"
-    }
-  }], ["polymer_elements.lib.src.paper_icon_button.paper_icon_button", "package:polymer_elements/paper_icon_button.dart",, D, {
-    "^": "",
-    PaperIconButton: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperInkyFocusBehavior;CustomElementProxyMixin__proxy",
-      static: {PaperIconButton$created: function(receiver) {
-          receiver.toString;
-          C.PaperIconButton_methods.Element$created$0(receiver);
           return receiver;
         }}
     },
@@ -9672,25 +10418,16 @@
     HtmlElement_CustomElementProxyMixin_PolymerBase10: {
       "^": "HtmlElement_CustomElementProxyMixin10+PolymerBase;"
     },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase10+IronA11yKeysBehavior;"
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior+IronButtonState;"
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState+IronControlState;"
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperInkyFocusBehavior: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState+PaperInkyFocusBehavior;"
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior0: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase10+IronResizableBehavior;"
     }
-  }], ["polymer_elements.lib.src.paper_input.paper_input", "package:polymer_elements/paper_input.dart",, U, {
+  }], ["polymer_elements.lib.src.paper_header_panel.paper_header_panel", "package:polymer_elements/paper_header_panel.dart",, B, {
     "^": "",
-    PaperInput: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_PaperInputBehavior_IronControlState;CustomElementProxyMixin__proxy",
-      static: {PaperInput$created: function(receiver) {
+    PaperHeaderPanel: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase11;CustomElementProxyMixin__proxy",
+      static: {PaperHeaderPanel$created: function(receiver) {
           receiver.toString;
-          C.PaperInput_methods.Element$created$0(receiver);
+          C.PaperHeaderPanel_methods.Element$created$0(receiver);
           return receiver;
         }}
     },
@@ -9702,18 +10439,71 @@
     },
     HtmlElement_CustomElementProxyMixin_PolymerBase11: {
       "^": "HtmlElement_CustomElementProxyMixin11+PolymerBase;"
+    }
+  }], ["polymer_elements.lib.src.paper_icon_button.paper_icon_button", "package:polymer_elements/paper_icon_button.dart",, D, {
+    "^": "",
+    PaperIconButton: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperRippleBehavior_PaperInkyFocusBehavior;CustomElementProxyMixin__proxy",
+      static: {PaperIconButton$created: function(receiver) {
+          receiver.toString;
+          C.PaperIconButton_methods.Element$created$0(receiver);
+          return receiver;
+        }}
+    },
+    HtmlElement_CustomElementProxyMixin12: {
+      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
+      set$_proxy: function(receiver, _proxy) {
+        receiver.CustomElementProxyMixin__proxy = _proxy;
+      }
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase12: {
+      "^": "HtmlElement_CustomElementProxyMixin12+PolymerBase;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase12+IronA11yKeysBehavior;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior+IronButtonState;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState+IronControlState;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperRippleBehavior: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState+PaperRippleBehavior;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperRippleBehavior_PaperInkyFocusBehavior: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperRippleBehavior+PaperInkyFocusBehavior;"
+    }
+  }], ["polymer_elements.lib.src.paper_input.paper_input", "package:polymer_elements/paper_input.dart",, U, {
+    "^": "",
+    PaperInput: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_IronA11yKeysBehavior_PaperInputBehavior;CustomElementProxyMixin__proxy",
+      static: {PaperInput$created: function(receiver) {
+          receiver.toString;
+          C.PaperInput_methods.Element$created$0(receiver);
+          return receiver;
+        }}
+    },
+    HtmlElement_CustomElementProxyMixin13: {
+      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
+      set$_proxy: function(receiver, _proxy) {
+        receiver.CustomElementProxyMixin__proxy = _proxy;
+      }
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase13: {
+      "^": "HtmlElement_CustomElementProxyMixin13+PolymerBase;"
     },
     HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase11+IronFormElementBehavior;"
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase13+IronFormElementBehavior;"
     },
     HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState: {
       "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior+IronControlState;"
     },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_PaperInputBehavior: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState+PaperInputBehavior;"
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_IronA11yKeysBehavior: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState+IronA11yKeysBehavior;"
     },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_PaperInputBehavior_IronControlState: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_PaperInputBehavior+IronControlState;"
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_IronA11yKeysBehavior_PaperInputBehavior: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_IronA11yKeysBehavior+PaperInputBehavior;"
     }
   }], ["polymer_elements.lib.src.paper_input.paper_input_addon_behavior", "package:polymer_elements/paper_input_addon_behavior.dart",, G, {
     "^": "",
@@ -9738,47 +10528,6 @@
           return receiver;
         }}
     },
-    HtmlElement_CustomElementProxyMixin12: {
-      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
-      set$_proxy: function(receiver, _proxy) {
-        receiver.CustomElementProxyMixin__proxy = _proxy;
-      }
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase12: {
-      "^": "HtmlElement_CustomElementProxyMixin12+PolymerBase;"
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_PaperInputAddonBehavior: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase12+PaperInputAddonBehavior;"
-    }
-  }], ["polymer_elements.lib.src.paper_input.paper_input_container", "package:polymer_elements/paper_input_container.dart",, T, {
-    "^": "",
-    PaperInputContainer: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase13;CustomElementProxyMixin__proxy",
-      static: {PaperInputContainer$created: function(receiver) {
-          receiver.toString;
-          C.PaperInputContainer_methods.Element$created$0(receiver);
-          return receiver;
-        }}
-    },
-    HtmlElement_CustomElementProxyMixin13: {
-      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
-      set$_proxy: function(receiver, _proxy) {
-        receiver.CustomElementProxyMixin__proxy = _proxy;
-      }
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase13: {
-      "^": "HtmlElement_CustomElementProxyMixin13+PolymerBase;"
-    }
-  }], ["polymer_elements.lib.src.paper_input.paper_input_error", "package:polymer_elements/paper_input_error.dart",, Y, {
-    "^": "",
-    PaperInputError: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_PaperInputAddonBehavior0;CustomElementProxyMixin__proxy",
-      static: {PaperInputError$created: function(receiver) {
-          receiver.toString;
-          C.PaperInputError_methods.Element$created$0(receiver);
-          return receiver;
-        }}
-    },
     HtmlElement_CustomElementProxyMixin14: {
       "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
       set$_proxy: function(receiver, _proxy) {
@@ -9788,16 +10537,16 @@
     HtmlElement_CustomElementProxyMixin_PolymerBase14: {
       "^": "HtmlElement_CustomElementProxyMixin14+PolymerBase;"
     },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_PaperInputAddonBehavior0: {
+    HtmlElement_CustomElementProxyMixin_PolymerBase_PaperInputAddonBehavior: {
       "^": "HtmlElement_CustomElementProxyMixin_PolymerBase14+PaperInputAddonBehavior;"
     }
-  }], ["polymer_elements.lib.src.paper_item.paper_item", "package:polymer_elements/paper_item.dart",, Z, {
+  }], ["polymer_elements.lib.src.paper_input.paper_input_container", "package:polymer_elements/paper_input_container.dart",, T, {
     "^": "",
-    PaperItem: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState;CustomElementProxyMixin__proxy",
-      static: {PaperItem$created: function(receiver) {
+    PaperInputContainer: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase15;CustomElementProxyMixin__proxy",
+      static: {PaperInputContainer$created: function(receiver) {
           receiver.toString;
-          C.PaperItem_methods.Element$created$0(receiver);
+          C.PaperInputContainer_methods.Element$created$0(receiver);
           return receiver;
         }}
     },
@@ -9809,23 +10558,14 @@
     },
     HtmlElement_CustomElementProxyMixin_PolymerBase15: {
       "^": "HtmlElement_CustomElementProxyMixin15+PolymerBase;"
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase15+IronControlState;"
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState+IronA11yKeysBehavior;"
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior+IronButtonState;"
     }
-  }], ["polymer_elements.lib.src.paper_menu.paper_menu", "package:polymer_elements/paper_menu.dart",, V, {
+  }], ["polymer_elements.lib.src.paper_input.paper_input_error", "package:polymer_elements/paper_input_error.dart",, Y, {
     "^": "",
-    PaperMenu: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior;CustomElementProxyMixin__proxy",
-      static: {PaperMenu$created: function(receiver) {
+    PaperInputError: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_PaperInputAddonBehavior0;CustomElementProxyMixin__proxy",
+      static: {PaperInputError$created: function(receiver) {
           receiver.toString;
-          C.PaperMenu_methods.Element$created$0(receiver);
+          C.PaperInputError_methods.Element$created$0(receiver);
           return receiver;
         }}
     },
@@ -9838,8 +10578,85 @@
     HtmlElement_CustomElementProxyMixin_PolymerBase16: {
       "^": "HtmlElement_CustomElementProxyMixin16+PolymerBase;"
     },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_PaperInputAddonBehavior0: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase16+PaperInputAddonBehavior;"
+    }
+  }], ["polymer_elements.lib.src.paper_item.paper_item", "package:polymer_elements/paper_item.dart",, Z, {
+    "^": "",
+    PaperItem: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperItemBehavior;CustomElementProxyMixin__proxy",
+      static: {PaperItem$created: function(receiver) {
+          receiver.toString;
+          C.PaperItem_methods.Element$created$0(receiver);
+          return receiver;
+        }}
+    },
+    HtmlElement_CustomElementProxyMixin17: {
+      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
+      set$_proxy: function(receiver, _proxy) {
+        receiver.CustomElementProxyMixin__proxy = _proxy;
+      }
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase17: {
+      "^": "HtmlElement_CustomElementProxyMixin17+PolymerBase;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior0: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase17+IronA11yKeysBehavior;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState0: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior0+IronButtonState;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState0: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState0+IronControlState;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperItemBehavior: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState0+PaperItemBehavior;"
+    }
+  }], ["polymer_elements.lib.src.paper_item.paper_item_behavior", "package:polymer_elements/paper_item_behavior.dart",, N, {
+    "^": "",
+    PaperItemBehavior: {
+      "^": "Object;"
+    }
+  }], ["polymer_elements.lib.src.paper_material.paper_material", "package:polymer_elements/paper_material.dart",, S, {
+    "^": "",
+    PaperMaterial: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase18;CustomElementProxyMixin__proxy",
+      static: {PaperMaterial$created: function(receiver) {
+          receiver.toString;
+          C.PaperMaterial_methods.Element$created$0(receiver);
+          return receiver;
+        }}
+    },
+    HtmlElement_CustomElementProxyMixin18: {
+      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
+      set$_proxy: function(receiver, _proxy) {
+        receiver.CustomElementProxyMixin__proxy = _proxy;
+      }
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase18: {
+      "^": "HtmlElement_CustomElementProxyMixin18+PolymerBase;"
+    }
+  }], ["polymer_elements.lib.src.paper_menu.paper_menu", "package:polymer_elements/paper_menu.dart",, V, {
+    "^": "",
+    PaperMenu: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior;CustomElementProxyMixin__proxy",
+      static: {PaperMenu$created: function(receiver) {
+          receiver.toString;
+          C.PaperMenu_methods.Element$created$0(receiver);
+          return receiver;
+        }}
+    },
+    HtmlElement_CustomElementProxyMixin19: {
+      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
+      set$_proxy: function(receiver, _proxy) {
+        receiver.CustomElementProxyMixin__proxy = _proxy;
+      }
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase19: {
+      "^": "HtmlElement_CustomElementProxyMixin19+PolymerBase;"
+    },
     HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior0: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase16+IronSelectableBehavior;"
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase19+IronSelectableBehavior;"
     },
     HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior0: {
       "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior0+IronMultiSelectableBehavior;"
@@ -9853,89 +10670,10 @@
   }], ["polymer_elements.lib.src.paper_menu.paper_submenu", "package:polymer_elements/paper_submenu.dart",, M, {
     "^": "",
     PaperSubmenu: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState0;CustomElementProxyMixin__proxy",
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState;CustomElementProxyMixin__proxy",
       static: {PaperSubmenu$created: function(receiver) {
           receiver.toString;
           C.PaperSubmenu_methods.Element$created$0(receiver);
-          return receiver;
-        }}
-    },
-    HtmlElement_CustomElementProxyMixin17: {
-      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
-      set$_proxy: function(receiver, _proxy) {
-        receiver.CustomElementProxyMixin__proxy = _proxy;
-      }
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase17: {
-      "^": "HtmlElement_CustomElementProxyMixin17+PolymerBase;"
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState0: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase17+IronControlState;"
-    }
-  }], ["polymer_elements.lib.src.paper_ripple.paper_ripple", "package:polymer_elements/paper_ripple.dart",, X, {
-    "^": "",
-    PaperRipple: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior0;CustomElementProxyMixin__proxy",
-      get$target: function(receiver) {
-        return this.get$jsElement(receiver).$index(0, "target");
-      },
-      static: {PaperRipple$created: function(receiver) {
-          receiver.toString;
-          C.PaperRipple_methods.Element$created$0(receiver);
-          return receiver;
-        }}
-    },
-    HtmlElement_CustomElementProxyMixin18: {
-      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
-      set$_proxy: function(receiver, _proxy) {
-        receiver.CustomElementProxyMixin__proxy = _proxy;
-      }
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase18: {
-      "^": "HtmlElement_CustomElementProxyMixin18+PolymerBase;"
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior0: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase18+IronA11yKeysBehavior;"
-    }
-  }], ["polymer_elements.lib.src.paper_tabs.paper_tab", "package:polymer_elements/paper_tab.dart",, R, {
-    "^": "",
-    PaperTab: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState0;CustomElementProxyMixin__proxy",
-      static: {PaperTab$created: function(receiver) {
-          receiver.toString;
-          C.PaperTab_methods.Element$created$0(receiver);
-          return receiver;
-        }}
-    },
-    HtmlElement_CustomElementProxyMixin19: {
-      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
-      set$_proxy: function(receiver, _proxy) {
-        receiver.CustomElementProxyMixin__proxy = _proxy;
-      }
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase19: {
-      "^": "HtmlElement_CustomElementProxyMixin19+PolymerBase;"
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState1: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase19+IronControlState;"
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior0: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState1+IronA11yKeysBehavior;"
-    },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState0: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior0+IronButtonState;"
-    }
-  }], ["polymer_elements.lib.src.paper_tabs.paper_tabs", "package:polymer_elements/paper_tabs.dart",, L, {
-    "^": "",
-    PaperTabs: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior_IronMenubarBehavior;CustomElementProxyMixin__proxy",
-      set$selected: function(receiver, value) {
-        var t1 = this.get$jsElement(receiver);
-        t1.$indexSet(0, "selected", value);
-      },
-      static: {PaperTabs$created: function(receiver) {
-          receiver.toString;
-          C.PaperTabs_methods.Element$created$0(receiver);
           return receiver;
         }}
     },
@@ -9948,11 +10686,111 @@
     HtmlElement_CustomElementProxyMixin_PolymerBase20: {
       "^": "HtmlElement_CustomElementProxyMixin20+PolymerBase;"
     },
-    HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior0: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase20+IronResizableBehavior;"
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase20+IronControlState;"
+    }
+  }], ["polymer_elements.lib.src.paper_ripple.paper_ripple", "package:polymer_elements/paper_ripple.dart",, X, {
+    "^": "",
+    PaperRipple: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior1;CustomElementProxyMixin__proxy",
+      get$target: function(receiver) {
+        return this.get$jsElement(receiver).$index(0, "target");
+      },
+      static: {PaperRipple$created: function(receiver) {
+          receiver.toString;
+          C.PaperRipple_methods.Element$created$0(receiver);
+          return receiver;
+        }}
+    },
+    HtmlElement_CustomElementProxyMixin21: {
+      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
+      set$_proxy: function(receiver, _proxy) {
+        receiver.CustomElementProxyMixin__proxy = _proxy;
+      }
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase21: {
+      "^": "HtmlElement_CustomElementProxyMixin21+PolymerBase;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior1: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase21+IronA11yKeysBehavior;"
+    }
+  }], ["polymer_elements.lib.src.paper_scroll_header_panel.paper_scroll_header_panel", "package:polymer_elements/paper_scroll_header_panel.dart",, E, {
+    "^": "",
+    PaperScrollHeaderPanel: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior1;CustomElementProxyMixin__proxy",
+      static: {PaperScrollHeaderPanel$created: function(receiver) {
+          receiver.toString;
+          C.PaperScrollHeaderPanel_methods.Element$created$0(receiver);
+          return receiver;
+        }}
+    },
+    HtmlElement_CustomElementProxyMixin22: {
+      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
+      set$_proxy: function(receiver, _proxy) {
+        receiver.CustomElementProxyMixin__proxy = _proxy;
+      }
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase22: {
+      "^": "HtmlElement_CustomElementProxyMixin22+PolymerBase;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior1: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase22+IronResizableBehavior;"
+    }
+  }], ["polymer_elements.lib.src.paper_tabs.paper_tab", "package:polymer_elements/paper_tab.dart",, R, {
+    "^": "",
+    PaperTab: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState_PaperRippleBehavior;CustomElementProxyMixin__proxy",
+      static: {PaperTab$created: function(receiver) {
+          receiver.toString;
+          C.PaperTab_methods.Element$created$0(receiver);
+          return receiver;
+        }}
+    },
+    HtmlElement_CustomElementProxyMixin23: {
+      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
+      set$_proxy: function(receiver, _proxy) {
+        receiver.CustomElementProxyMixin__proxy = _proxy;
+      }
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase23: {
+      "^": "HtmlElement_CustomElementProxyMixin23+PolymerBase;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState0: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase23+IronControlState;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState0+IronA11yKeysBehavior;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior+IronButtonState;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState_PaperRippleBehavior: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState+PaperRippleBehavior;"
+    }
+  }], ["polymer_elements.lib.src.paper_tabs.paper_tabs", "package:polymer_elements/paper_tabs.dart",, L, {
+    "^": "",
+    PaperTabs: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior_IronMenubarBehavior;CustomElementProxyMixin__proxy",
+      static: {PaperTabs$created: function(receiver) {
+          receiver.toString;
+          C.PaperTabs_methods.Element$created$0(receiver);
+          return receiver;
+        }}
+    },
+    HtmlElement_CustomElementProxyMixin24: {
+      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
+      set$_proxy: function(receiver, _proxy) {
+        receiver.CustomElementProxyMixin__proxy = _proxy;
+      }
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase24: {
+      "^": "HtmlElement_CustomElementProxyMixin24+PolymerBase;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior2: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase24+IronResizableBehavior;"
     },
     HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior0: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior0+IronSelectableBehavior;"
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior2+IronSelectableBehavior;"
     },
     HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior: {
       "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior0+IronMultiSelectableBehavior;"
@@ -9966,24 +10804,52 @@
     HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior_IronMenubarBehavior: {
       "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior+IronMenubarBehavior;"
     }
+  }], ["polymer_elements.lib.src.paper_toast.paper_toast", "package:polymer_elements/paper_toast.dart",, Z, {
+    "^": "",
+    PaperToast: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronFitBehavior_IronResizableBehavior_IronOverlayBehavior;CustomElementProxyMixin__proxy",
+      static: {PaperToast$created: function(receiver) {
+          receiver.toString;
+          C.PaperToast_methods.Element$created$0(receiver);
+          return receiver;
+        }}
+    },
+    HtmlElement_CustomElementProxyMixin25: {
+      "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
+      set$_proxy: function(receiver, _proxy) {
+        receiver.CustomElementProxyMixin__proxy = _proxy;
+      }
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase25: {
+      "^": "HtmlElement_CustomElementProxyMixin25+PolymerBase;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronFitBehavior: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase25+IronFitBehavior;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronFitBehavior_IronResizableBehavior: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronFitBehavior+IronResizableBehavior;"
+    },
+    HtmlElement_CustomElementProxyMixin_PolymerBase_IronFitBehavior_IronResizableBehavior_IronOverlayBehavior: {
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronFitBehavior_IronResizableBehavior+IronOverlayBehavior;"
+    }
   }], ["polymer_elements.lib.src.paper_toolbar.paper_toolbar", "package:polymer_elements/paper_toolbar.dart",, T, {
     "^": "",
     PaperToolbar: {
-      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase21;CustomElementProxyMixin__proxy",
+      "^": "HtmlElement_CustomElementProxyMixin_PolymerBase26;CustomElementProxyMixin__proxy",
       static: {PaperToolbar$created: function(receiver) {
           receiver.toString;
           C.PaperToolbar_methods.Element$created$0(receiver);
           return receiver;
         }}
     },
-    HtmlElement_CustomElementProxyMixin21: {
+    HtmlElement_CustomElementProxyMixin26: {
       "^": "HtmlElement+CustomElementProxyMixin;_proxy:CustomElementProxyMixin__proxy=",
       set$_proxy: function(receiver, _proxy) {
         receiver.CustomElementProxyMixin__proxy = _proxy;
       }
     },
-    HtmlElement_CustomElementProxyMixin_PolymerBase21: {
-      "^": "HtmlElement_CustomElementProxyMixin21+PolymerBase;"
+    HtmlElement_CustomElementProxyMixin_PolymerBase26: {
+      "^": "HtmlElement_CustomElementProxyMixin26+PolymerBase;"
     }
   }], ["polymer_interop.lib.src.convert", "package:polymer_interop/src/convert.dart",, E, {
     "^": "",
@@ -10067,13 +10933,19 @@
             return dartMap;
           }
         }
-      } else if (!!t1.$isCustomEvent) {
-        if (!!t1.$isCustomEventWrapper)
-          return jsValue;
-        return new F.CustomEventWrapper(jsValue);
+      } else {
+        if (!t1.$isCustomEvent)
+          t2 = !!t1.$isEvent && P.JsObject_JsObject$fromBrowserObject(jsValue).$index(0, "detail") != null;
+        else
+          t2 = true;
+        if (t2) {
+          if (!!t1.$isCustomEventWrapper)
+            return jsValue;
+          return new F.CustomEventWrapper(jsValue, null);
+        }
       }
       return jsValue;
-    }, "call$1", "convert__convertToDart$closure", 2, 0, 0, 38],
+    }, "call$1", "convert__convertToDart$closure", 2, 0, 0, 42],
     _dartType: function(jsValue) {
       if (jsValue.$eq(0, $.$get$_String()))
         return C.Type_k8F;
@@ -10093,7 +10965,7 @@
       "^": "Closure:0;",
       call$1: [function(item) {
         return E.convertToJs(item);
-      }, null, null, 2, 0, null, 8, "call"]
+      }, null, null, 2, 0, null, 10, "call"]
     },
     convertToJs_closure0: {
       "^": "Closure:2;_convert$_box_0",
@@ -10105,12 +10977,12 @@
       "^": "Closure:0;",
       call$1: [function(item) {
         return E.convertToDart(item);
-      }, null, null, 2, 0, null, 8, "call"]
+      }, null, null, 2, 0, null, 10, "call"]
     }
   }], ["polymer_interop.src.custom_event_wrapper", "package:polymer_interop/src/custom_event_wrapper.dart",, F, {
     "^": "",
     CustomEventWrapper: {
-      "^": "Object;original",
+      "^": "Object;original,blink_jsObject",
       get$target: function(_) {
         return J.get$target$x(this.original);
       },
@@ -10126,13 +10998,16 @@
         this.get$jsElement(receiver).callMethod$2("serializeValueToAttribute", [E.convertToJs(value), attribute, node]);
       }, function($receiver, value, attribute) {
         return this.serializeValueToAttribute$3($receiver, value, attribute, null);
-      }, "serializeValueToAttribute$2", "call$3", "call$2", "get$serializeValueToAttribute", 4, 2, 21, 0, 12, 40, 27],
+      }, "serializeValueToAttribute$2", "call$3", "call$2", "get$serializeValueToAttribute", 4, 2, 25, 1, 4, 44, 32],
       $set$2: function(receiver, path, value) {
         return this.get$jsElement(receiver).callMethod$2("set", [path, E.convertToJs(value)]);
       }
     }
   }], ["reflectable.capability", "package:reflectable/capability.dart",, T, {
     "^": "",
+    reflectableNoSuchMethodError: function(receiver, memberName, positionalArguments, namedArguments, existingArgumentNames) {
+      throw H.wrapException(new T.ReflectableNoSuchMethodError(receiver, memberName, positionalArguments, namedArguments, existingArgumentNames, C.StringInvocationKind_0));
+    },
     ReflectCapability: {
       "^": "Object;"
     },
@@ -10152,26 +11027,30 @@
       "^": "NamePatternCapability;namePattern",
       $isTypeCapability: 1
     },
+    StaticInvokeMetaCapability: {
+      "^": "MetadataQuantifiedCapability;metadataType",
+      $isTypeCapability: 1
+    },
+    MetadataCapability: {
+      "^": "Object;",
+      $isTypeCapability: 1
+    },
     TypeCapability: {
       "^": "Object;"
+    },
+    TypeRelationsCapability: {
+      "^": "Object;",
+      $isTypeCapability: 1
+    },
+    DeclarationsCapability: {
+      "^": "Object;",
+      $isTypeCapability: 1
     },
     SuperclassQuantifyCapability: {
       "^": "Object;upperBound,excludeUpperBound"
     },
     TypeAnnotationQuantifyCapability: {
       "^": "Object;transitive"
-    },
-    _MetadataCapability: {
-      "^": "Object;",
-      $isTypeCapability: 1
-    },
-    _TypeRelationsCapability: {
-      "^": "Object;",
-      $isTypeCapability: 1
-    },
-    _DeclarationsCapability: {
-      "^": "Object;",
-      $isTypeCapability: 1
     },
     _SubtypeQuantifyCapability: {
       "^": "Object;"
@@ -10189,11 +11068,30 @@
           return new T._NoSuchCapabilityErrorImpl(message);
         }}
     },
-    NoSuchInvokeCapabilityError: {
-      "^": "Error;receiver,memberName,positionalArguments,namedArguments,existingArgumentNames",
+    StringInvocationKind: {
+      "^": "Object;index",
       toString$0: function(_) {
-        var description, t1;
-        description = "NoSuchCapabilityError: no capability to invoke '" + H.S(this.memberName) + "'\nReceiver: " + H.S(this.receiver) + "\nArguments: " + H.S(this.positionalArguments) + "\n";
+        return C.Map_sg6WV.$index(0, this.index);
+      }
+    },
+    ReflectableNoSuchMethodError: {
+      "^": "Error;receiver,memberName,positionalArguments,namedArguments,existingArgumentNames,kind",
+      toString$0: function(_) {
+        var kindName, description, t1;
+        switch (this.kind) {
+          case C.StringInvocationKind_1:
+            kindName = "getter";
+            break;
+          case C.StringInvocationKind_2:
+            kindName = "setter";
+            break;
+          case C.StringInvocationKind_0:
+            kindName = "method";
+            break;
+          default:
+            kindName = "";
+        }
+        description = "NoSuchCapabilityError: no capability to invoke the " + kindName + " '" + H.S(this.memberName) + "'\nReceiver: " + H.S(this.receiver) + "\nArguments: " + H.S(this.positionalArguments) + "\n";
         t1 = this.namedArguments;
         if (t1 != null)
           description += "Named arguments: " + J.toString$0$(t1) + "\n";
@@ -10205,6 +11103,10 @@
     "^": "",
     DeclarationMirror: {
       "^": "Object;"
+    },
+    TypeMirror: {
+      "^": "Object;",
+      $isDeclarationMirror: 1
     },
     ClassMirror: {
       "^": "Object;",
@@ -10224,20 +11126,48 @@
     Reflectable: {
       "^": "ReflectableImpl;"
     }
+  }], ["reflectable.src.incompleteness", "package:reflectable/src/incompleteness.dart",, S, {
+    "^": "",
+    unreachableError: function(message) {
+      throw H.wrapException(new S.UnreachableError("*** Unexpected situation encountered!\nPlease report a bug on github.com/dart-lang/reflectable: " + message + "."));
+    },
+    UnreachableError: {
+      "^": "Error;message",
+      toString$0: function(_) {
+        return this.message;
+      }
+    }
   }], ["reflectable.src.mirrors_unimpl", "package:reflectable/src/reflectable_transformer_based.dart",, Q, {
     "^": "",
-    _unsupported: function() {
-      return H.throwExpression(new P.UnimplementedError(null));
+    _createInstantiatedGenericClass: function(genericClassMirror, reflectedType) {
+      return new Q.InstantiatedGenericClassMirrorImpl(genericClassMirror, reflectedType, genericClassMirror._reflector, genericClassMirror._descriptor, genericClassMirror._classIndex, genericClassMirror._ownerIndex, genericClassMirror._superclassIndex, genericClassMirror._mixinIndex, genericClassMirror._declarationIndices, genericClassMirror._instanceMemberIndices, genericClassMirror._staticMemberIndices, genericClassMirror._superinterfaceIndices, genericClassMirror.simpleName, genericClassMirror.qualifiedName, genericClassMirror._metadata, genericClassMirror._getters, genericClassMirror._setters, genericClassMirror._constructors, genericClassMirror._parameterListShapes, null, null, null, null);
     },
     ReflectorData: {
-      "^": "Object;classMirrors,libraryMirrors,memberMirrors,parameterMirrors,types,getters,setters,_typeToClassMirrorCache",
+      "^": "Object;typeMirrors,libraryMirrors,memberMirrors,parameterMirrors,types,supportedClassCount,getters,setters,parameterListShapes,_typeToClassMirrorCache",
       set$_typeToClassMirrorCache: function(_typeToClassMirrorCache) {
         this._typeToClassMirrorCache = _typeToClassMirrorCache;
       },
       classMirrorForType$1: function(type) {
-        if (this._typeToClassMirrorCache == null)
-          this.set$_typeToClassMirrorCache(P.LinkedHashMap_LinkedHashMap$fromIterables(this.types, this.classMirrors, null, null));
+        var t1;
+        if (this._typeToClassMirrorCache == null) {
+          t1 = this.supportedClassCount;
+          this.set$_typeToClassMirrorCache(P.LinkedHashMap_LinkedHashMap$fromIterables(C.JSArray_methods.sublist$2(this.types, 0, t1), C.JSArray_methods.sublist$2(this.typeMirrors, 0, t1), null, null));
+        }
         return this._typeToClassMirrorCache.$index(0, type);
+      },
+      classMirrorForInstance$1: function(instance) {
+        var t1, result, t2, classMirror;
+        t1 = J.getInterceptor(instance);
+        result = this.classMirrorForType$1(t1.get$runtimeType(instance));
+        if (result != null)
+          return result;
+        for (t2 = this._typeToClassMirrorCache, t2 = t2.get$values(t2), t2 = t2.get$iterator(t2); t2.moveNext$0();) {
+          classMirror = t2.get$current();
+          if (classMirror instanceof Q.GenericClassMirrorImpl)
+            if (classMirror._isGenericRuntimeTypeOf$1(instance))
+              return Q._createInstantiatedGenericClass(classMirror, t1.get$runtimeType(instance));
+        }
+        return;
       }
     },
     _DataCaching: {
@@ -10254,13 +11184,19 @@
     _InstanceMirrorImpl: {
       "^": "_DataCaching;_reflector<,reflectee,_type,_dataCache",
       invoke$3: function(methodName, positionalArguments, namedArguments) {
-        var methodTearer, t1;
+        var t1, methodTearer, t2, t3;
+        t1 = new Q._InstanceMirrorImpl_invoke_fail(this, methodName, positionalArguments, namedArguments);
         methodTearer = this.get$_data().getters.$index(0, methodName);
-        if (methodTearer != null) {
-          t1 = methodTearer.call$1(this.reflectee);
-          return H.Primitives_applyFunctionWithPositionalArguments(t1, positionalArguments);
-        }
-        throw H.wrapException(new T.NoSuchInvokeCapabilityError(this.reflectee, methodName, positionalArguments, namedArguments, null));
+        if (methodTearer == null)
+          t1.call$0();
+        t2 = this._type;
+        if (t2 == null)
+          throw H.wrapException(S.unreachableError("Attempt to `invoke` without class mirrors"));
+        t3 = positionalArguments.length;
+        if (!t2._checkInstanceParameterListShape$3(methodName, t3, namedArguments))
+          t1.call$0();
+        t1 = methodTearer.call$1(this.reflectee);
+        return H.Primitives_applyFunctionWithPositionalArguments(t1, positionalArguments);
       },
       invoke$2: function(methodName, positionalArguments) {
         return this.invoke$3(methodName, positionalArguments, null);
@@ -10271,32 +11207,32 @@
         return other instanceof Q._InstanceMirrorImpl && other._reflector === this._reflector && J.$eq$(other.reflectee, this.reflectee);
       },
       get$hashCode: function(_) {
-        return (J.get$hashCode$(this.reflectee) ^ H.Primitives_objectHashCode(this._reflector)) >>> 0;
+        return C.JSInt_methods.$xor(H.Primitives_objectHashCode(this._reflector), J.get$hashCode$(this.reflectee));
       },
       invokeGetter$1: function(getterName) {
         var getter = this.get$_data().getters.$index(0, getterName);
         if (getter != null)
           return getter.call$1(this.reflectee);
-        throw H.wrapException(new T.NoSuchInvokeCapabilityError(this.reflectee, getterName, [], P.LinkedHashMap__makeEmpty(), null));
+        throw H.wrapException(T.reflectableNoSuchMethodError(this.reflectee, getterName, [], P.LinkedHashMap__makeEmpty(), null));
       },
-      invokeSetter$2: function(setterName, value) {
-        var setter;
-        if (J.substring$1$s(setterName, setterName.length - 1) !== "=")
-          setterName += "=";
+      invokeSetter$2: function($name, value) {
+        var setterName, setter;
+        setterName = J.endsWith$1$s($name, "=") ? $name : $name + "=";
         setter = this.get$_data().setters.$index(0, setterName);
         if (setter != null)
           return setter.call$2(this.reflectee, value);
-        throw H.wrapException(new T.NoSuchInvokeCapabilityError(this.reflectee, setterName, [value], P.LinkedHashMap__makeEmpty(), null));
+        throw H.wrapException(T.reflectableNoSuchMethodError(this.reflectee, setterName, [value], P.LinkedHashMap__makeEmpty(), null));
       },
       _InstanceMirrorImpl$2: function(reflectee, _reflector) {
-        var t1, t2, t3;
+        var t1, t2;
         t1 = this.reflectee;
-        t2 = J.getInterceptor(t1);
-        t3 = this.get$_data().classMirrorForType$1(t2.get$runtimeType(t1));
-        this._type = t3;
-        if (t3 == null)
+        t2 = H.interceptedTypeCheck(this.get$_data().classMirrorForInstance$1(t1), "$isClassMirrorBase");
+        this._type = t2;
+        if (t2 == null) {
+          t2 = J.getInterceptor(t1);
           if (!C.JSArray_methods.contains$1(this.get$_data().types, t2.get$runtimeType(t1)))
             throw H.wrapException(T._NoSuchCapabilityErrorImpl$("Reflecting on un-marked type '" + t2.get$runtimeType(t1).toString$0(0) + "'"));
+        }
       },
       static: {_InstanceMirrorImpl$: function(reflectee, _reflector) {
           var t1 = new Q._InstanceMirrorImpl(_reflector, reflectee, null, null);
@@ -10304,21 +11240,30 @@
           return t1;
         }}
     },
-    ClassMirrorImpl: {
-      "^": "_DataCaching;_reflector<,_descriptor,_classIndex,_ownerIndex,_superclassIndex,_mixinIndex,_declarationIndices,_instanceMemberIndices,_staticMemberIndices,_superinterfaceIndices,simpleName<,qualifiedName,_metadata,_getters,_setters,_constructors,_declarations,_instanceMembers,_staticMembers,_dataCache",
+    _InstanceMirrorImpl_invoke_fail: {
+      "^": "Closure:3;_mirrors_unimpl$_captured_this_0,_captured_methodName_1,_captured_positionalArguments_2,_captured_namedArguments_3",
+      call$0: function() {
+        throw H.wrapException(T.reflectableNoSuchMethodError(this._mirrors_unimpl$_captured_this_0.reflectee, this._captured_methodName_1, this._captured_positionalArguments_2, this._captured_namedArguments_3, null));
+      }
+    },
+    ClassMirrorBase: {
+      "^": "_DataCaching;_reflector<,simpleName<,qualifiedName<,_declarations,_instanceMembers,_staticMembers",
       set$_declarations: function(_declarations) {
         this._declarations = _declarations;
+      },
+      set$_instanceMembers: function(_instanceMembers) {
+        this._instanceMembers = _instanceMembers;
       },
       set$_staticMembers: function(_staticMembers) {
         this._staticMembers = _staticMembers;
       },
       get$superinterfaces: function() {
-        return H.setRuntimeTypeInfo(new H.MappedListIterable(this._superinterfaceIndices, new Q.ClassMirrorImpl_superinterfaces_closure(this)), [null, null]).toList$0(0);
+        return H.setRuntimeTypeInfo(new H.MappedListIterable(this._superinterfaceIndices, new Q.ClassMirrorBase_superinterfaces_closure(this)), [null, null]).toList$0(0);
       },
       get$declarations: function() {
         var result, t1, t2, t3, _i, declarationIndex, t4, declarationMirror;
         if (this._declarations == null) {
-          result = P.LinkedHashMap_LinkedHashMap(null, null, null, P.String, O.DeclarationMirror);
+          result = P.LinkedHashMap_LinkedHashMap$_empty(P.String, O.DeclarationMirror);
           for (t1 = this._declarationIndices, t2 = t1.length, t3 = this._reflector, _i = 0; _i < t2; ++_i) {
             declarationIndex = t1[_i];
             if (declarationIndex === -1)
@@ -10335,10 +11280,29 @@
         }
         return this._declarations;
       },
+      get$instanceMembers: function() {
+        var result, t1, t2, t3, _i, instanceMemberIndex, t4, declarationMirror;
+        if (this._instanceMembers == null) {
+          result = P.LinkedHashMap_LinkedHashMap$_empty(P.String, O.MethodMirror);
+          for (t1 = this._instanceMemberIndices, t2 = t1.length, t3 = this._reflector, _i = 0; _i < t2; ++_i) {
+            instanceMemberIndex = t1[_i];
+            t4 = this._dataCache;
+            if (t4 == null) {
+              t4 = $.$get$data().$index(0, t3);
+              this._dataCache = t4;
+            }
+            declarationMirror = t4.memberMirrors[instanceMemberIndex];
+            H.assertHelper(!!declarationMirror.$isMethodMirror);
+            result.$indexSet(0, declarationMirror.get$simpleName(), declarationMirror);
+          }
+          this.set$_instanceMembers(H.setRuntimeTypeInfo(new P.UnmodifiableMapView(result), [P.String, O.MethodMirror]));
+        }
+        return this._instanceMembers;
+      },
       get$staticMembers: function() {
         var result, t1, t2, _i, staticMemberIndex, t3, declarationMirror;
         if (this._staticMembers == null) {
-          result = P.LinkedHashMap_LinkedHashMap(null, null, null, P.String, O.MethodMirror);
+          result = P.LinkedHashMap_LinkedHashMap$_empty(P.String, O.MethodMirror);
           for (t1 = this._staticMemberIndices, t2 = this._reflector, _i = 0; false; ++_i) {
             staticMemberIndex = t1[_i];
             t3 = this._dataCache;
@@ -10358,42 +11322,203 @@
         var t1 = this._mixinIndex;
         if (t1 === -1)
           throw H.wrapException(T._NoSuchCapabilityErrorImpl$("Attempt to get mixin from '" + this.simpleName + "' without capability"));
-        return this.get$_data().classMirrors[t1];
+        return this.get$_data().typeMirrors[t1];
+      },
+      _checkParameterListShape$4: function(methodName, numberOfPositionalArguments, namedArgumentNames, methodMirrorProvider) {
+        var methodMirror, t1;
+        methodMirror = methodMirrorProvider.call$1(methodName);
+        if (methodMirror == null)
+          return false;
+        if (!!methodMirror.$isImplicitGetterMirrorImpl) {
+          if (numberOfPositionalArguments === 0)
+            t1 = true;
+          else
+            t1 = false;
+          return t1;
+        } else if (!!methodMirror.$isImplicitSetterMirrorImpl) {
+          if (numberOfPositionalArguments === 1)
+            t1 = true;
+          else
+            t1 = false;
+          return t1;
+        }
+        return methodMirror._isArgumentListShapeAppropriate$2(numberOfPositionalArguments, namedArgumentNames);
+      },
+      _checkInstanceParameterListShape$3: function(methodName, numberOfPositionalArguments, namedArgumentNames) {
+        return this._checkParameterListShape$4(methodName, numberOfPositionalArguments, namedArgumentNames, new Q.ClassMirrorBase__checkInstanceParameterListShape_closure(this));
+      },
+      _checkStaticParameterListShape$3: function(methodName, numberOfPositionalArguments, namedArgumentNames) {
+        return this._checkParameterListShape$4(methodName, numberOfPositionalArguments, namedArgumentNames, new Q.ClassMirrorBase__checkStaticParameterListShape_closure(this));
+      },
+      invoke$3: function(memberName, positionalArguments, namedArguments) {
+        var t1, getter, t2;
+        t1 = new Q.ClassMirrorBase_invoke_fail(this, memberName, positionalArguments, namedArguments);
+        getter = this._getters.$index(0, memberName);
+        t1.call$0();
+        t2 = positionalArguments.length;
+        if (!this._checkStaticParameterListShape$3(memberName, t2, namedArguments))
+          t1.call$0();
+        t1 = getter.call$0();
+        return H.Primitives_applyFunctionWithPositionalArguments(t1, positionalArguments);
+      },
+      invoke$2: function(memberName, positionalArguments) {
+        return this.invoke$3(memberName, positionalArguments, null);
       },
       invokeGetter$1: function(getterName) {
         this._getters.$index(0, getterName);
-        throw H.wrapException(new T.NoSuchInvokeCapabilityError(this.get$reflectedType(), getterName, [], P.LinkedHashMap__makeEmpty(), null));
+        throw H.wrapException(T.reflectableNoSuchMethodError(this.get$reflectedType(), getterName, [], P.LinkedHashMap__makeEmpty(), null));
       },
-      invokeSetter$2: function(setterName, value) {
+      invokeSetter$2: function($name, value) {
+        var setterName = J.endsWith$1$s($name, "=") ? $name : $name + "=";
         this._setters.$index(0, setterName);
-        throw H.wrapException(new T.NoSuchInvokeCapabilityError(this.get$reflectedType(), setterName, [value], P.LinkedHashMap__makeEmpty(), null));
+        throw H.wrapException(T.reflectableNoSuchMethodError(this.get$reflectedType(), setterName, [value], P.LinkedHashMap__makeEmpty(), null));
       },
       get$metadata: function() {
         return this._metadata;
-      },
-      get$reflectedType: function() {
-        return this.get$_data().types[this._classIndex];
       },
       get$superclass: function() {
         var t1 = this._superclassIndex;
         if (t1 === -1)
           throw H.wrapException(T._NoSuchCapabilityErrorImpl$("Requesting mirror on un-marked class, superclass of '" + this.simpleName + "'"));
-        return this.get$_data().classMirrors[t1];
+        if (t1 == null)
+          return;
+        return C.JSArray_methods.$index(this.get$_data().typeMirrors, t1);
       },
-      toString$0: function(_) {
-        return "ClassMirrorImpl(" + this.qualifiedName + ")";
+      get$hasBestEffortReflectedType: function() {
+        return this.get$hasReflectedType() || this.get$hasDynamicReflectedType();
+      },
+      get$bestEffortReflectedType: function() {
+        return this.get$hasReflectedType() ? this.get$reflectedType() : this.get$dynamicReflectedType();
+      },
+      $isClassMirror: 1
+    },
+    ClassMirrorBase_superinterfaces_closure: {
+      "^": "Closure:10;_mirrors_unimpl$_captured_this_0",
+      call$1: [function(i) {
+        return C.JSArray_methods.$index(this._mirrors_unimpl$_captured_this_0.get$_data().typeMirrors, i);
+      }, null, null, 2, 0, null, 17, "call"]
+    },
+    ClassMirrorBase__checkInstanceParameterListShape_closure: {
+      "^": "Closure:4;_mirrors_unimpl$_captured_this_0",
+      call$1: function($name) {
+        return this._mirrors_unimpl$_captured_this_0.get$instanceMembers()._map.$index(0, $name);
       }
     },
-    ClassMirrorImpl_superinterfaces_closure: {
-      "^": "Closure:22;_mirrors_unimpl$_captured_this_0",
-      call$1: [function(i) {
-        return C.JSArray_methods.$index(this._mirrors_unimpl$_captured_this_0.get$_data().classMirrors, i);
-      }, null, null, 2, 0, null, 10, "call"]
+    ClassMirrorBase__checkStaticParameterListShape_closure: {
+      "^": "Closure:4;_mirrors_unimpl$_captured_this_0",
+      call$1: function($name) {
+        return this._mirrors_unimpl$_captured_this_0.get$staticMembers()._map.$index(0, $name);
+      }
+    },
+    ClassMirrorBase_invoke_fail: {
+      "^": "Closure:1;_mirrors_unimpl$_captured_this_0,_captured_memberName_1,_captured_positionalArguments_2,_captured_namedArguments_3",
+      call$0: function() {
+        throw H.wrapException(T.reflectableNoSuchMethodError(this._mirrors_unimpl$_captured_this_0.get$reflectedType(), this._captured_memberName_1, this._captured_positionalArguments_2, this._captured_namedArguments_3, null));
+      }
+    },
+    NonGenericClassMirrorImpl: {
+      "^": "ClassMirrorBase;_reflector,_descriptor,_classIndex,_ownerIndex,_superclassIndex,_mixinIndex,_declarationIndices,_instanceMemberIndices,_staticMemberIndices,_superinterfaceIndices,simpleName,qualifiedName,_metadata,_getters,_setters,_constructors,_parameterListShapes,_declarations,_instanceMembers,_staticMembers,_dataCache",
+      get$hasReflectedType: function() {
+        return true;
+      },
+      get$reflectedType: function() {
+        return this.get$_data().types[this._classIndex];
+      },
+      get$hasDynamicReflectedType: function() {
+        return true;
+      },
+      get$dynamicReflectedType: function() {
+        return this.get$_data().types[this._classIndex];
+      },
+      toString$0: function(_) {
+        return "NonGenericClassMirrorImpl(" + this.qualifiedName + ")";
+      },
+      static: {NonGenericClassMirrorImpl$: function(simpleName, qualifiedName, descriptor, classIndex, reflector, declarationIndices, instanceMemberIndices, staticMemberIndices, superclassIndex, getters, setters, constructors, ownerIndex, mixinIndex, superinterfaceIndices, metadata, parameterListShapes) {
+          return new Q.NonGenericClassMirrorImpl(reflector, descriptor, classIndex, ownerIndex, superclassIndex, mixinIndex, declarationIndices, instanceMemberIndices, staticMemberIndices, superinterfaceIndices, simpleName, qualifiedName, metadata, getters, setters, constructors, parameterListShapes, null, null, null, null);
+        }}
+    },
+    GenericClassMirrorImpl: {
+      "^": "ClassMirrorBase;_isGenericRuntimeTypeOf,_typeVariableIndices,_dynamicReflectedTypeIndex,_reflector,_descriptor,_classIndex,_ownerIndex,_superclassIndex,_mixinIndex,_declarationIndices,_instanceMemberIndices,_staticMemberIndices,_superinterfaceIndices,simpleName,qualifiedName,_metadata,_getters,_setters,_constructors,_parameterListShapes,_declarations,_instanceMembers,_staticMembers,_dataCache",
+      get$hasReflectedType: function() {
+        return false;
+      },
+      get$reflectedType: function() {
+        throw H.wrapException(new P.UnsupportedError("Attempt to obtain `reflectedType` from generic class '" + this.qualifiedName + "'."));
+      },
+      get$hasDynamicReflectedType: function() {
+        return true;
+      },
+      get$dynamicReflectedType: function() {
+        return this.get$_data().types[this._dynamicReflectedTypeIndex];
+      },
+      toString$0: function(_) {
+        return "GenericClassMirrorImpl(" + this.qualifiedName + ")";
+      },
+      _isGenericRuntimeTypeOf$1: function(arg0) {
+        return this._isGenericRuntimeTypeOf.call$1(arg0);
+      }
+    },
+    InstantiatedGenericClassMirrorImpl: {
+      "^": "ClassMirrorBase;_originalDeclaration,_reflectedType,_reflector,_descriptor,_classIndex,_ownerIndex,_superclassIndex,_mixinIndex,_declarationIndices,_instanceMemberIndices,_staticMemberIndices,_superinterfaceIndices,simpleName,qualifiedName,_metadata,_getters,_setters,_constructors,_parameterListShapes,_declarations,_instanceMembers,_staticMembers,_dataCache",
+      get$hasReflectedType: function() {
+        return this._reflectedType != null;
+      },
+      get$reflectedType: function() {
+        var t1 = this._reflectedType;
+        if (t1 != null)
+          return t1;
+        throw H.wrapException(new P.UnsupportedError("Cannot provide `reflectedType` of instance of generic type '" + this.simpleName + "'."));
+      },
+      get$hasDynamicReflectedType: function() {
+        return true;
+      },
+      get$dynamicReflectedType: function() {
+        var t1 = this._originalDeclaration;
+        return t1.get$_data().types[t1._dynamicReflectedTypeIndex];
+      },
+      $eq: function(_, other) {
+        var t1;
+        if (other == null)
+          return false;
+        if (other === this)
+          return true;
+        if (other instanceof Q.InstantiatedGenericClassMirrorImpl) {
+          if (this._originalDeclaration !== other._originalDeclaration)
+            return false;
+          t1 = this._reflectedType;
+          if (t1 != null && other._reflectedType != null)
+            return J.$eq$(t1, other._reflectedType);
+          else
+            return false;
+        } else
+          return false;
+      },
+      get$hashCode: function(_) {
+        return (H.Primitives_objectHashCode(this._originalDeclaration) ^ J.get$hashCode$(this._reflectedType)) >>> 0;
+      },
+      toString$0: function(_) {
+        return "InstantiatedGenericClassMirrorImpl(" + this.qualifiedName + ")";
+      }
+    },
+    TypeVariableMirrorImpl: {
+      "^": "_DataCaching;simpleName<,qualifiedName<,_reflector<,_upperBoundIndex,_ownerIndex,_metadata,_dataCache",
+      get$isStatic: function() {
+        return false;
+      },
+      get$metadata: function() {
+        return H.setRuntimeTypeInfo([], [P.Object]);
+      }
     },
     MethodMirrorImpl: {
-      "^": "_DataCaching;_descriptor,_mirrors_unimpl$_name,_ownerIndex,_returnTypeIndex,_reflectedReturnType,_parameterIndices,_reflector<,_metadata,_dataCache",
+      "^": "_DataCaching;_descriptor,_mirrors_unimpl$_name,_ownerIndex,_returnTypeIndex,_reflectedReturnTypeIndex,_dynamicReflectedReturnTypeIndex,_parameterIndices,_reflector<,_metadata,_numberOfPositionalParameters,_numberOfOptionalPositionalParameters,_namesOfNamedParameters,_dataCache",
+      set$_namesOfNamedParameters: function(_namesOfNamedParameters) {
+        this._namesOfNamedParameters = _namesOfNamedParameters;
+      },
       get$owner: function() {
-        return this.get$_data().classMirrors[this._ownerIndex];
+        var t1 = this._ownerIndex;
+        if (t1 === -1)
+          throw H.wrapException(T._NoSuchCapabilityErrorImpl$("Trying to get owner of method '" + this.get$qualifiedName() + "' without 'LibraryCapability'"));
+        return (this._descriptor & 1048576) !== 0 ? C.JSNull_methods.$index(this.get$_data().libraryMirrors, t1) : this.get$_data().typeMirrors[t1];
       },
       get$isGetter: function() {
         return (this._descriptor & 15) === 3;
@@ -10410,6 +11535,12 @@
       get$metadata: function() {
         return this._metadata;
       },
+      get$parameters: function() {
+        return H.setRuntimeTypeInfo(new H.MappedListIterable(this._parameterIndices, new Q.MethodMirrorImpl_parameters_closure(this)), [null, null]).toList$0(0);
+      },
+      get$qualifiedName: function() {
+        return this.get$owner().get$qualifiedName() + "." + this._mirrors_unimpl$_name;
+      },
       get$returnType: function() {
         var t1, t2;
         t1 = this._returnTypeIndex;
@@ -10421,30 +11552,67 @@
         if ((t2 & 262144) !== 0)
           return new Q.VoidMirrorImpl();
         if ((t2 & 131072) !== 0)
-          return C.JSArray_methods.$index(this.get$_data().classMirrors, t1);
-        return Q._unsupported();
+          return (t2 & 4194304) !== 0 ? Q._createInstantiatedGenericClass(C.JSArray_methods.$index(this.get$_data().typeMirrors, t1), null) : C.JSArray_methods.$index(this.get$_data().typeMirrors, t1);
+        throw H.wrapException(S.unreachableError("Unexpected kind of returnType"));
       },
       get$simpleName: function() {
-        var t1, t2;
-        t1 = this._descriptor & 15;
+        var t1 = this._descriptor & 15;
         if (t1 === 1 || t1 === 0) {
           t1 = this._mirrors_unimpl$_name;
-          t2 = this._ownerIndex;
-          t1 = t1 === "" ? this.get$_data().classMirrors[t2].simpleName : this.get$_data().classMirrors[t2].simpleName + "." + t1;
+          t1 = t1 === "" ? this.get$owner().get$simpleName() : this.get$owner().get$simpleName() + "." + t1;
         } else
           t1 = this._mirrors_unimpl$_name;
         return t1;
       },
+      _setupParameterListInfo$0: function() {
+        var t1, t2, _i, parameterMirror, t3;
+        this._numberOfPositionalParameters = 0;
+        this._numberOfOptionalPositionalParameters = 0;
+        this.set$_namesOfNamedParameters(P.LinkedHashSet_LinkedHashSet(null, null, null, P.Symbol));
+        for (t1 = this.get$parameters(), t2 = t1.length, _i = 0; _i < t1.length; t1.length === t2 || (0, H.throwConcurrentModificationError)(t1), ++_i) {
+          parameterMirror = t1[_i];
+          t3 = parameterMirror._descriptor;
+          if ((t3 & 8192) !== 0)
+            this._namesOfNamedParameters.add$1(0, parameterMirror._nameSymbol);
+          else {
+            this._numberOfPositionalParameters = this._numberOfPositionalParameters + 1;
+            if ((t3 & 4096) !== 0)
+              this._numberOfOptionalPositionalParameters = this._numberOfOptionalPositionalParameters + 1;
+          }
+        }
+      },
+      _isArgumentListShapeAppropriate$2: function(numberOfPositionalArguments, namedArgumentNames) {
+        var t1;
+        if (this._numberOfPositionalParameters == null)
+          this._setupParameterListInfo$0();
+        t1 = this._numberOfPositionalParameters;
+        if (this._numberOfOptionalPositionalParameters == null)
+          this._setupParameterListInfo$0();
+        if (numberOfPositionalArguments >= C.JSInt_methods.$sub(t1, this._numberOfOptionalPositionalParameters)) {
+          if (this._numberOfPositionalParameters == null)
+            this._setupParameterListInfo$0();
+          t1 = C.JSInt_methods.$gt(numberOfPositionalArguments, this._numberOfPositionalParameters);
+        } else
+          t1 = true;
+        if (t1)
+          return false;
+        return true;
+      },
       toString$0: function(_) {
-        return "MethodMirrorImpl(" + (this.get$_data().classMirrors[this._ownerIndex].qualifiedName + "." + this._mirrors_unimpl$_name) + ")";
+        return "MethodMirrorImpl(" + (this.get$owner().get$qualifiedName() + "." + this._mirrors_unimpl$_name) + ")";
       },
       $isMethodMirror: 1
+    },
+    MethodMirrorImpl_parameters_closure: {
+      "^": "Closure:10;_mirrors_unimpl$_captured_this_0",
+      call$1: [function(parameterIndex) {
+        return C.JSArray_methods.$index(this._mirrors_unimpl$_captured_this_0.get$_data().parameterMirrors, parameterIndex);
+      }, null, null, 2, 0, null, 30, "call"]
     },
     ImplicitAccessorMirrorImpl: {
       "^": "_DataCaching;_reflector<",
       get$owner: function() {
-        var t1 = this.get$_data().memberMirrors[this._variableMirrorIndex];
-        return t1.get$_data().classMirrors[t1._ownerIndex];
+        return this.get$_data().memberMirrors[this._variableMirrorIndex].get$owner();
       },
       get$isRegularMethod: function() {
         return false;
@@ -10462,41 +11630,49 @@
       $isMethodMirror: 1
     },
     ImplicitGetterMirrorImpl: {
-      "^": "ImplicitAccessorMirrorImpl;_reflector,_variableMirrorIndex,_reflectedType,_selfIndex,_dataCache",
+      "^": "ImplicitAccessorMirrorImpl;_reflector,_variableMirrorIndex,_reflectedTypeIndex,_dynamicReflectedTypeIndex,_selfIndex,_dataCache",
       get$isGetter: function() {
         return true;
       },
       get$isSetter: function() {
         return false;
+      },
+      get$qualifiedName: function() {
+        var t1 = this.get$_data().memberMirrors[this._variableMirrorIndex];
+        return t1.get$owner().get$qualifiedName() + "." + t1._mirrors_unimpl$_name;
       },
       get$simpleName: function() {
         return this.get$_data().memberMirrors[this._variableMirrorIndex]._mirrors_unimpl$_name;
       },
       toString$0: function(_) {
         var t1 = this.get$_data().memberMirrors[this._variableMirrorIndex];
-        return "ImplicitGetterMirrorImpl(" + (t1.get$owner().qualifiedName + "." + t1._mirrors_unimpl$_name) + ")";
+        return "ImplicitGetterMirrorImpl(" + (t1.get$owner().get$qualifiedName() + "." + t1._mirrors_unimpl$_name) + ")";
       },
-      static: {ImplicitGetterMirrorImpl$: function(reflector, variableMirrorIndex, reflectedType, selfIndex) {
-          return new Q.ImplicitGetterMirrorImpl(reflector, variableMirrorIndex, reflectedType, selfIndex, null);
+      static: {ImplicitGetterMirrorImpl$: function(reflector, variableMirrorIndex, reflectedTypeIndex, dynamicReflectedTypeIndex, selfIndex) {
+          return new Q.ImplicitGetterMirrorImpl(reflector, variableMirrorIndex, reflectedTypeIndex, dynamicReflectedTypeIndex, selfIndex, null);
         }}
     },
     ImplicitSetterMirrorImpl: {
-      "^": "ImplicitAccessorMirrorImpl;_reflector,_variableMirrorIndex,_reflectedType,_selfIndex,_dataCache",
+      "^": "ImplicitAccessorMirrorImpl;_reflector,_variableMirrorIndex,_reflectedTypeIndex,_dynamicReflectedTypeIndex,_selfIndex,_dataCache",
       get$isGetter: function() {
         return false;
       },
       get$isSetter: function() {
         return true;
       },
+      get$qualifiedName: function() {
+        var t1 = this.get$_data().memberMirrors[this._variableMirrorIndex];
+        return t1.get$owner().get$qualifiedName() + "." + t1._mirrors_unimpl$_name + "=";
+      },
       get$simpleName: function() {
         return this.get$_data().memberMirrors[this._variableMirrorIndex]._mirrors_unimpl$_name + "=";
       },
       toString$0: function(_) {
         var t1 = this.get$_data().memberMirrors[this._variableMirrorIndex];
-        return "ImplicitSetterMirrorImpl(" + (t1.get$owner().qualifiedName + "." + t1._mirrors_unimpl$_name + "=") + ")";
+        return "ImplicitSetterMirrorImpl(" + (t1.get$owner().get$qualifiedName() + "." + t1._mirrors_unimpl$_name + "=") + ")";
       },
-      static: {ImplicitSetterMirrorImpl$: function(reflector, variableMirrorIndex, reflectedType, selfIndex) {
-          return new Q.ImplicitSetterMirrorImpl(reflector, variableMirrorIndex, reflectedType, selfIndex, null);
+      static: {ImplicitSetterMirrorImpl$: function(reflector, variableMirrorIndex, reflectedTypeIndex, dynamicReflectedTypeIndex, selfIndex) {
+          return new Q.ImplicitSetterMirrorImpl(reflector, variableMirrorIndex, reflectedTypeIndex, dynamicReflectedTypeIndex, selfIndex, null);
         }}
     },
     VariableMirrorBase: {
@@ -10507,16 +11683,11 @@
       get$metadata: function() {
         return this._metadata;
       },
-      $eq: function(_, other) {
-        if (other == null)
-          return false;
-        return Q._unsupported();
-      },
-      get$hashCode: function(_) {
-        return Q._unsupported();
-      },
       get$simpleName: function() {
         return this._mirrors_unimpl$_name;
+      },
+      get$qualifiedName: function() {
+        return this.get$owner().get$qualifiedName() + "." + this._mirrors_unimpl$_name;
       },
       get$type: function(_) {
         var t1, t2;
@@ -10527,32 +11698,57 @@
         if ((t2 & 16384) !== 0)
           return new Q.DynamicMirrorImpl();
         if ((t2 & 32768) !== 0)
-          return C.JSArray_methods.$index(this.get$_data().classMirrors, t1);
-        return Q._unsupported();
+          return (t2 & 2097152) !== 0 ? Q._createInstantiatedGenericClass(C.JSArray_methods.$index(this.get$_data().typeMirrors, t1), null) : C.JSArray_methods.$index(this.get$_data().typeMirrors, t1);
+        throw H.wrapException(S.unreachableError("Unexpected kind of type"));
+      },
+      get$hashCode: function(_) {
+        var t1, t2;
+        t1 = C.JSString_methods.get$hashCode(this._mirrors_unimpl$_name);
+        t2 = this.get$owner();
+        return (t1 ^ t2.get$hashCode(t2)) >>> 0;
       },
       $isVariableMirror: 1
     },
     VariableMirrorImpl: {
-      "^": "VariableMirrorBase;_mirrors_unimpl$_name,_descriptor,_ownerIndex,_reflector,_classMirrorIndex,_reflectedType,_metadata,_dataCache",
+      "^": "VariableMirrorBase;_mirrors_unimpl$_name,_descriptor,_ownerIndex,_reflector,_classMirrorIndex,_reflectedTypeIndex,_dynamicReflectedTypeIndex,_metadata,_dataCache",
       get$owner: function() {
-        return this.get$_data().classMirrors[this._ownerIndex];
+        var t1 = this._ownerIndex;
+        if (t1 === -1)
+          throw H.wrapException(T._NoSuchCapabilityErrorImpl$("Trying to get owner of variable '" + this.get$qualifiedName() + "' without capability"));
+        return (this._descriptor & 1048576) !== 0 ? C.JSNull_methods.$index(this.get$_data().libraryMirrors, t1) : this.get$_data().typeMirrors[t1];
       },
-      static: {VariableMirrorImpl$: function($name, descriptor, ownerIndex, reflectable, classMirrorIndex, reflectedType, metadata) {
-          return new Q.VariableMirrorImpl($name, descriptor, ownerIndex, reflectable, classMirrorIndex, reflectedType, metadata, null);
+      get$isStatic: function() {
+        return (this._descriptor & 16) !== 0;
+      },
+      $eq: function(_, other) {
+        if (other == null)
+          return false;
+        return other instanceof Q.VariableMirrorImpl && other._mirrors_unimpl$_name === this._mirrors_unimpl$_name && other.get$owner() === this.get$owner();
+      },
+      static: {VariableMirrorImpl$: function($name, descriptor, ownerIndex, reflectable, classMirrorIndex, reflectedTypeIndex, dynamicReflectedTypeIndex, metadata) {
+          return new Q.VariableMirrorImpl($name, descriptor, ownerIndex, reflectable, classMirrorIndex, reflectedTypeIndex, dynamicReflectedTypeIndex, metadata, null);
         }}
     },
     ParameterMirrorImpl: {
-      "^": "VariableMirrorBase;defaultValue,_mirrors_unimpl$_name,_descriptor,_ownerIndex,_reflector,_classMirrorIndex,_reflectedType,_metadata,_dataCache",
+      "^": "VariableMirrorBase;defaultValue,_nameSymbol,_mirrors_unimpl$_name,_descriptor,_ownerIndex,_reflector,_classMirrorIndex,_reflectedTypeIndex,_dynamicReflectedTypeIndex,_metadata,_dataCache",
+      get$isStatic: function() {
+        return (this._descriptor & 16) !== 0;
+      },
+      get$owner: function() {
+        return this.get$_data().memberMirrors[this._ownerIndex];
+      },
+      $eq: function(_, other) {
+        if (other == null)
+          return false;
+        return other instanceof Q.ParameterMirrorImpl && other._mirrors_unimpl$_name === this._mirrors_unimpl$_name && other.get$_data().memberMirrors[other._ownerIndex] === this.get$_data().memberMirrors[this._ownerIndex];
+      },
       $isVariableMirror: 1,
-      static: {ParameterMirrorImpl$: function($name, descriptor, ownerIndex, reflectable, classMirrorIndex, reflectedType, metadata, defaultValue) {
-          return new Q.ParameterMirrorImpl(defaultValue, $name, descriptor, ownerIndex, reflectable, classMirrorIndex, reflectedType, metadata, null);
+      static: {ParameterMirrorImpl$: function($name, descriptor, ownerIndex, reflectable, classMirrorIndex, reflectedTypeIndex, dynamicReflectedTypeIndex, metadata, defaultValue, _nameSymbol) {
+          return new Q.ParameterMirrorImpl(defaultValue, _nameSymbol, $name, descriptor, ownerIndex, reflectable, classMirrorIndex, reflectedTypeIndex, dynamicReflectedTypeIndex, metadata, null);
         }}
     },
     DynamicMirrorImpl: {
       "^": "Object;",
-      get$reflectedType: function() {
-        return C.Type_dynamic;
-      },
       get$simpleName: function() {
         return "dynamic";
       },
@@ -10562,9 +11758,6 @@
     },
     VoidMirrorImpl: {
       "^": "Object;",
-      get$reflectedType: function() {
-        return H.throwExpression(T._NoSuchCapabilityErrorImpl$("Attempt to get the reflected type of 'void'"));
-      },
       get$simpleName: function() {
         return "void";
       },
@@ -10585,7 +11778,7 @@
       }
     },
     ReflectableImpl__hasTypeCapability_closure: {
-      "^": "Closure:23;",
+      "^": "Closure:26;",
       call$1: function(capability) {
         return !!J.getInterceptor(capability).$isTypeCapability;
       }
@@ -10620,129 +11813,141 @@
       }
     },
     ReflectableBase_capabilities_add: {
-      "^": "Closure:24;_captured_result_0",
+      "^": "Closure:27;_captured_result_0",
       call$1: function(cap) {
       }
     }
-  }], ["reflectable_generated_main_library", "index.dart",, K, {
+  }], ["reflectable_generated_main_library", "index.bootstrap.initialize.dart",, K, {
     "^": "",
+    main0: [function() {
+      $.data = $.$get$_data();
+      $.memberSymbolMap = null;
+      $.$get$initializers().addAll$1(0, [H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_eNF, C.Type_hin), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_RA5, C.Type_yuB), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_Ier, C.Type_oSr), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_chs, C.Type_ouf), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_qBh, C.Type_Slt), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_CBD, C.Type_6Hr), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_0, C.Type_46c), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_MGR, C.Type_l2Z), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_OaN, C.Type_MUs), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_gc6, C.Type_as9), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_A0x, C.Type_uAF), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_Gt8, C.Type_2fh), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_wmT, C.Type_ouN), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_geJ, C.Type_KHg), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_QON, C.Type_YYn), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_FGf, C.Type_JAZ), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_KNi, C.Type_COL), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_bAD, C.Type_Jik), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_6L0, C.Type_aeF), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_dPR, C.Type_tRa), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_UoK, C.Type_2GH), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_00, C.Type_Rz5), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_FAV, C.Type_EGl), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_AYZ, C.Type_e4R), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_8aB, C.Type_R3X), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_si8, C.Type_6F1), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_l2R, C.Type_hYu), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_zT2, C.Type_d0T), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_Odg, C.Type_c0h), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_QOW, C.Type_z9V), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_2hE, C.Type_qjl), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_Dxz, C.Type_qv5), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.PolymerRegister_gs1, C.Type_cSk), [null])]);
+      return O.main();
+    }, "call$0", "reflectable_generated_main_library__main$closure", 0, 0, 1],
     closure: {
       "^": "Closure:0;",
-      call$1: function(instance) {
-        return J.get$attached$x(instance);
+      call$1: function(o) {
+        return false;
       }
     },
     closure0: {
       "^": "Closure:0;",
       call$1: function(instance) {
-        return J.get$detached$x(instance);
+        return J.get$attached$x(instance);
       }
     },
     closure1: {
       "^": "Closure:0;",
       call$1: function(instance) {
-        return J.get$attributeChanged$x(instance);
+        return J.get$detached$x(instance);
       }
     },
     closure2: {
       "^": "Closure:0;",
       call$1: function(instance) {
-        return instance.get$serialize();
+        return J.get$attributeChanged$x(instance);
       }
     },
     closure3: {
       "^": "Closure:0;",
       call$1: function(instance) {
-        return instance.get$deserialize();
+        return instance.get$serialize();
       }
     },
     closure4: {
       "^": "Closure:0;",
       call$1: function(instance) {
-        return J.get$serializeValueToAttribute$x(instance);
+        return instance.get$deserialize();
       }
     },
     closure5: {
       "^": "Closure:0;",
       call$1: function(instance) {
-        return J.get$coreSelectHandler$x(instance);
+        return J.get$serializeValueToAttribute$x(instance);
       }
     },
     closure6: {
       "^": "Closure:0;",
       call$1: function(instance) {
-        return J.get$reverseText$x(instance);
+        return J.get$coreSelectHandler$x(instance);
       }
     },
     closure7: {
       "^": "Closure:0;",
       call$1: function(instance) {
-        return J.get$page$x(instance);
+        return J.get$reverseText$x(instance);
       }
     },
     closure8: {
       "^": "Closure:0;",
       call$1: function(instance) {
-        return J.get$subPage$x(instance);
+        return J.get$page$x(instance);
       }
     },
     closure9: {
       "^": "Closure:0;",
       call$1: function(instance) {
-        return J.get$tabs$x(instance);
+        return J.get$subPage$x(instance);
       }
     },
     closure10: {
       "^": "Closure:0;",
       call$1: function(instance) {
-        return J.get$allPages$x(instance);
+        return J.get$tabs$x(instance);
       }
     },
     closure11: {
       "^": "Closure:0;",
       call$1: function(instance) {
-        return J.get$allSubPages$x(instance);
+        return J.get$allPages$x(instance);
       }
     },
     closure12: {
+      "^": "Closure:0;",
+      call$1: function(instance) {
+        return J.get$allSubPages$x(instance);
+      }
+    },
+    closure13: {
       "^": "Closure:2;",
       call$2: function(instance, value) {
         J.set$page$x(instance, value);
         return value;
       }
     },
-    closure13: {
+    closure14: {
       "^": "Closure:2;",
       call$2: function(instance, value) {
         J.set$subPage$x(instance, value);
         return value;
       }
     },
-    closure14: {
+    closure15: {
       "^": "Closure:2;",
       call$2: function(instance, value) {
         J.set$tabs$x(instance, value);
         return value;
       }
     },
-    closure15: {
+    closure16: {
       "^": "Closure:2;",
       call$2: function(instance, value) {
         J.set$allPages$x(instance, value);
         return value;
       }
     },
-    closure16: {
+    closure17: {
       "^": "Closure:2;",
       call$2: function(instance, value) {
         J.set$allSubPages$x(instance, value);
         return value;
       }
     }
-  }], ["web_components.custom_element_proxy", "package:web_components/custom_element_proxy.dart",, X, {
+  }, 1], ["web_components.custom_element_proxy", "package:web_components/custom_element_proxy.dart",, X, {
     "^": "",
     CustomElementProxy: {
-      "^": "Object;tagName,extendsTag",
+      "^": "Object;tagName>,extendsTag",
       initialize$1: ["super$CustomElementProxy$initialize", function(t) {
         N.registerDartType(this.tagName, t, this.extendsTag);
       }]
@@ -10803,7 +12008,7 @@
           Object.defineProperty(e, init.dispatchPropertyName, {value: H.makeLeafDispatchRecord(t2._interceptor), enumerable: false, writable: true, configurable: true});
           t2._constructor(e);
         }
-      }, null, null, 2, 0, null, 7, "call"]
+      }, null, null, 2, 0, null, 8, "call"]
     }
   }], ["web_components.src.init", "package:web_components/src/init.dart",, X, {
     "^": "",
@@ -10901,6 +12106,9 @@
   J.set$allSubPages$x = function(receiver, value) {
     return J.getInterceptor$x(receiver).set$allSubPages(receiver, value);
   };
+  J.set$href$x = function(receiver, value) {
+    return J.getInterceptor$x(receiver).set$href(receiver, value);
+  };
   J.set$page$x = function(receiver, value) {
     return J.getInterceptor$x(receiver).set$page(receiver, value);
   };
@@ -10924,9 +12132,6 @@
   };
   J.get$attributeChanged$x = function(receiver) {
     return J.getInterceptor$x(receiver).get$attributeChanged(receiver);
-  };
-  J.get$attributes$x = function(receiver) {
-    return J.getInterceptor$x(receiver).get$attributes(receiver);
   };
   J.get$coreSelectHandler$x = function(receiver) {
     return J.getInterceptor$x(receiver).get$coreSelectHandler(receiver);
@@ -10967,6 +12172,9 @@
   J.get$tabs$x = function(receiver) {
     return J.getInterceptor$x(receiver).get$tabs(receiver);
   };
+  J.get$tagName$x = function(receiver) {
+    return J.getInterceptor$x(receiver).get$tagName(receiver);
+  };
   J.get$target$x = function(receiver) {
     return J.getInterceptor$x(receiver).get$target(receiver);
   };
@@ -10994,8 +12202,17 @@
       return receiver < a0;
     return J.getInterceptor$n(receiver).$lt(receiver, a0);
   };
+  J._removeChild$1$x = function(receiver, a0) {
+    return J.getInterceptor$x(receiver)._removeChild$1(receiver, a0);
+  };
+  J._replaceChild$2$x = function(receiver, a0, a1) {
+    return J.getInterceptor$x(receiver)._replaceChild$2(receiver, a0, a1);
+  };
   J.abs$0$n = function(receiver) {
     return J.getInterceptor$n(receiver).abs$0(receiver);
+  };
+  J.append$1$x = function(receiver, a0) {
+    return J.getInterceptor$x(receiver).append$1(receiver, a0);
   };
   J.contains$2$asx = function(receiver, a0, a1) {
     return J.getInterceptor$asx(receiver).contains$2(receiver, a0, a1);
@@ -11003,17 +12220,26 @@
   J.elementAt$1$ax = function(receiver, a0) {
     return J.getInterceptor$ax(receiver).elementAt$1(receiver, a0);
   };
+  J.endsWith$1$s = function(receiver, a0) {
+    return J.getInterceptor$s(receiver).endsWith$1(receiver, a0);
+  };
   J.forEach$1$ax = function(receiver, a0) {
     return J.getInterceptor$ax(receiver).forEach$1(receiver, a0);
   };
   J.getAttribute$1$x = function(receiver, a0) {
     return J.getInterceptor$x(receiver).getAttribute$1(receiver, a0);
   };
+  J.insertAllBefore$2$x = function(receiver, a0, a1) {
+    return J.getInterceptor$x(receiver).insertAllBefore$2(receiver, a0, a1);
+  };
   J.map$1$ax = function(receiver, a0) {
     return J.getInterceptor$ax(receiver).map$1(receiver, a0);
   };
   J.matchAsPrefix$2$s = function(receiver, a0, a1) {
     return J.getInterceptor$s(receiver).matchAsPrefix$2(receiver, a0, a1);
+  };
+  J.remove$0$ax = function(receiver) {
+    return J.getInterceptor$ax(receiver).remove$0(receiver);
   };
   J.send$1$x = function(receiver, a0) {
     return J.getInterceptor$x(receiver).send$1(receiver, a0);
@@ -11027,8 +12253,8 @@
   J.startsWith$1$s = function(receiver, a0) {
     return J.getInterceptor$s(receiver).startsWith$1(receiver, a0);
   };
-  J.substring$1$s = function(receiver, a0) {
-    return J.getInterceptor$s(receiver).substring$1(receiver, a0);
+  J.toLowerCase$0$s = function(receiver) {
+    return J.getInterceptor$s(receiver).toLowerCase$0(receiver);
   };
   J.get$hashCode$ = function(receiver) {
     return J.getInterceptor(receiver).get$hashCode(receiver);
@@ -11056,10 +12282,14 @@
   };
   var $ = Isolate.$isolateProperties;
   C.ArraySelector_methods = U.ArraySelector.prototype;
+  C.BodyElement_methods = W.BodyElement.prototype;
   C.DomBind_methods = X.DomBind.prototype;
   C.DomIf_methods = M.DomIf.prototype;
+  C.DomImplementation_methods = W.DomImplementation.prototype;
   C.DomRepeat_methods = Y.DomRepeat.prototype;
+  C.HeadElement_methods = W.HeadElement.prototype;
   C.HtmlDocument_methods = W.HtmlDocument.prototype;
+  C.IronA11yAnnouncer_methods = Q.IronA11yAnnouncer.prototype;
   C.IronCollapse_methods = S.IronCollapse.prototype;
   C.IronIcon_methods = O.IronIcon.prototype;
   C.IronIconsetSvg_methods = M.IronIconsetSvg.prototype;
@@ -11067,6 +12297,7 @@
   C.IronMediaQuery_methods = Q.IronMediaQuery.prototype;
   C.IronMetaQuery_methods = F.IronMetaQuery.prototype;
   C.IronMeta_methods = F.IronMeta.prototype;
+  C.IronOverlayBackdrop_methods = S.IronOverlayBackdrop.prototype;
   C.IronPages_methods = U.IronPages.prototype;
   C.IronSelector_methods = E.IronSelector.prototype;
   C.JSArray_methods = J.JSArray.prototype;
@@ -11075,6 +12306,7 @@
   C.JSNumber_methods = J.JSNumber.prototype;
   C.JSString_methods = J.JSString.prototype;
   C.MainApp_methods = S.MainApp.prototype;
+  C.NodeList_methods = W.NodeList.prototype;
   C.PaperDrawerPanel_methods = X.PaperDrawerPanel.prototype;
   C.PaperHeaderPanel_methods = B.PaperHeaderPanel.prototype;
   C.PaperIconButton_methods = D.PaperIconButton.prototype;
@@ -11083,14 +12315,18 @@
   C.PaperInputError_methods = Y.PaperInputError.prototype;
   C.PaperInput_methods = U.PaperInput.prototype;
   C.PaperItem_methods = Z.PaperItem.prototype;
+  C.PaperMaterial_methods = S.PaperMaterial.prototype;
   C.PaperMenu_methods = V.PaperMenu.prototype;
   C.PaperRipple_methods = X.PaperRipple.prototype;
+  C.PaperScrollHeaderPanel_methods = E.PaperScrollHeaderPanel.prototype;
   C.PaperSubmenu_methods = M.PaperSubmenu.prototype;
   C.PaperTab_methods = R.PaperTab.prototype;
   C.PaperTabs_methods = L.PaperTabs.prototype;
+  C.PaperToast_methods = Z.PaperToast.prototype;
   C.PaperToolbar_methods = T.PaperToolbar.prototype;
   C.PlainJavaScriptObject_methods = J.PlainJavaScriptObject.prototype;
   C.PolymerElement_methods = N.PolymerElement.prototype;
+  C.Range_methods = W.Range.prototype;
   C.UnknownJavaScriptObject_methods = J.UnknownJavaScriptObject.prototype;
   C.C_DynamicRuntimeType = new H.DynamicRuntimeType();
   C.C__RootZone = new P._RootZone();
@@ -11104,14 +12340,18 @@
   C.CustomElementProxy_CBD = new X.CustomElementProxy("iron-selector", null);
   C.CustomElementProxy_Dxz = new X.CustomElementProxy("paper-tabs", null);
   C.CustomElementProxy_FAV = new X.CustomElementProxy("dom-repeat", "template");
+  C.CustomElementProxy_FGf = new X.CustomElementProxy("iron-a11y-announcer", null);
   C.CustomElementProxy_Gt8 = new X.CustomElementProxy("paper-item", null);
   C.CustomElementProxy_Ier = new X.CustomElementProxy("iron-icon", null);
+  C.CustomElementProxy_KNi = new X.CustomElementProxy("iron-overlay-backdrop", null);
   C.CustomElementProxy_MGR = new X.CustomElementProxy("iron-media-query", null);
   C.CustomElementProxy_OaN = new X.CustomElementProxy("paper-drawer-panel", null);
   C.CustomElementProxy_Odg = new X.CustomElementProxy("iron-collapse", null);
+  C.CustomElementProxy_QON = new X.CustomElementProxy("paper-scroll-header-panel", null);
   C.CustomElementProxy_QOW = new X.CustomElementProxy("paper-submenu", null);
   C.CustomElementProxy_RA5 = new X.CustomElementProxy("iron-meta-query", null);
   C.CustomElementProxy_UoK = new X.CustomElementProxy("dom-bind", "template");
+  C.CustomElementProxy_bAD = new X.CustomElementProxy("paper-toast", null);
   C.CustomElementProxy_chs = new X.CustomElementProxy("iron-iconset-svg", null);
   C.CustomElementProxy_dPR = new X.CustomElementProxy("array-selector", null);
   C.CustomElementProxy_eNF = new X.CustomElementProxy("iron-meta", null);
@@ -11120,8 +12360,11 @@
   C.CustomElementProxy_l2R = new X.CustomElementProxy("paper-input-error", null);
   C.CustomElementProxy_qBh = new X.CustomElementProxy("iron-pages", null);
   C.CustomElementProxy_si8 = new X.CustomElementProxy("paper-input-container", null);
+  C.CustomElementProxy_wmT = new X.CustomElementProxy("paper-material", null);
   C.CustomElementProxy_zT2 = new X.CustomElementProxy("paper-input", null);
   C.Duration_0 = new P.Duration(0);
+  C.FakeType_1CP = new Q.FakeType("polymer.lib.polymer_micro.dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin");
+  C.FakeType_GEQ = new Q.FakeType("polymer.lib.polymer_micro.dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin, polymer_interop.src.js_element_proxy.PolymerBase");
   C.JS_CONST_9Uv = function() {  function typeNameInChrome(o) {    var constructor = o.constructor;    if (constructor) {      var name = constructor.name;      if (name) return name;    }    var s = Object.prototype.toString.call(o);    return s.substring(8, s.length - 1);  }  function getUnknownTag(object, tag) {    if (/^HTML[A-Z].*Element$/.test(tag)) {      var name = Object.prototype.toString.call(object);      if (name == "[object Object]") return null;      return "HTMLElement";    }  }  function getUnknownTagGenericBrowser(object, tag) {    if (self.HTMLElement && object instanceof HTMLElement) return "HTMLElement";    return getUnknownTag(object, tag);  }  function prototypeForTag(tag) {    if (typeof window == "undefined") return null;    if (typeof window[tag] == "undefined") return null;    var constructor = window[tag];    if (typeof constructor != "function") return null;    return constructor.prototype;  }  function discriminator(tag) { return null; }  var isBrowser = typeof navigator == "object";  return {    getTag: typeNameInChrome,    getUnknownTag: isBrowser ? getUnknownTagGenericBrowser : getUnknownTag,    prototypeForTag: prototypeForTag,    discriminator: discriminator };};
   C.JS_CONST_AgZ = function(hooks) { return hooks; };
   C.JS_CONST_EKH = function(hooks) {  if (typeof dartExperimentalFixupGetTag != "function") return hooks;  hooks.getTag = dartExperimentalFixupGetTag(hooks.getTag);};
@@ -11133,23 +12376,26 @@
   C.JS_CONST_s8I = function(_, letter) { return letter.toUpperCase(); };
   C.Type_wEo = H.createRuntimeType("PolymerReflectable");
   C.InstanceInvokeMetaCapability_kmC = new T.InstanceInvokeMetaCapability(C.Type_wEo);
-  C.InstanceInvokeCapability_qlV = new T.InstanceInvokeCapability("hostAttributes|created|attached|detached|attributeChanged|ready|serialize|deserialize");
-  C.C__MetadataCapability = new T._MetadataCapability();
-  C.C__DeclarationsCapability = new T._DeclarationsCapability();
+  C.InstanceInvokeCapability_woc = new T.InstanceInvokeCapability("hostAttributes|created|attached|detached|attributeChanged|ready|serialize|deserialize|registered|beforeRegister");
+  C.C_MetadataCapability = new T.MetadataCapability();
+  C.C_DeclarationsCapability = new T.DeclarationsCapability();
   C.TypeAnnotationQuantifyCapability_false = new T.TypeAnnotationQuantifyCapability(false);
   C.C_TypeCapability = new T.TypeCapability();
-  C.C__TypeRelationsCapability = new T._TypeRelationsCapability();
+  C.C_TypeRelationsCapability = new T.TypeRelationsCapability();
   C.C__SubtypeQuantifyCapability = new T._SubtypeQuantifyCapability();
   C.Type_cwF = H.createRuntimeType("HtmlElement");
   C.SuperclassQuantifyCapability_KrF = new T.SuperclassQuantifyCapability(C.Type_cwF, true);
-  C.StaticInvokeCapability_EOZ = new T.StaticInvokeCapability("hostAttributes|created|attached|detached|attributeChanged|ready|serialize|deserialize");
+  C.StaticInvokeCapability_BHz = new T.StaticInvokeCapability("hostAttributes|created|attached|detached|attributeChanged|ready|serialize|deserialize|registered|beforeRegister");
+  C.StaticInvokeMetaCapability_HRg = new T.StaticInvokeMetaCapability(C.Type_wEo);
   C.C__CorrespondingSetterQuantifyCapability = new T._CorrespondingSetterQuantifyCapability();
-  C.List_PTB = Isolate.makeConstantList([C.InstanceInvokeMetaCapability_kmC, C.InstanceInvokeCapability_qlV, C.C__MetadataCapability, C.C__DeclarationsCapability, C.TypeAnnotationQuantifyCapability_false, C.C_TypeCapability, C.C__TypeRelationsCapability, C.C__SubtypeQuantifyCapability, C.SuperclassQuantifyCapability_KrF, C.StaticInvokeCapability_EOZ, C.C__CorrespondingSetterQuantifyCapability]);
-  C.JsProxyReflectable_ibx = new B.JsProxyReflectable(true, null, null, null, null, null, null, null, null, null, null, C.List_PTB);
+  C.List_QuW = Isolate.makeConstantList([C.InstanceInvokeMetaCapability_kmC, C.InstanceInvokeCapability_woc, C.C_MetadataCapability, C.C_DeclarationsCapability, C.TypeAnnotationQuantifyCapability_false, C.C_TypeCapability, C.C_TypeRelationsCapability, C.C__SubtypeQuantifyCapability, C.SuperclassQuantifyCapability_KrF, C.StaticInvokeCapability_BHz, C.StaticInvokeMetaCapability_HRg, C.C__CorrespondingSetterQuantifyCapability]);
+  C.JsProxyReflectable_wmj = new B.JsProxyReflectable(true, null, null, null, null, null, null, null, null, null, null, C.List_QuW);
   C.List_0 = H.setRuntimeTypeInfo(Isolate.makeConstantList([0]), [P.$int]);
   C.List_0_1_2 = H.setRuntimeTypeInfo(Isolate.makeConstantList([0, 1, 2]), [P.$int]);
   C.List_10 = H.setRuntimeTypeInfo(Isolate.makeConstantList([10]), [P.$int]);
   C.List_11 = H.setRuntimeTypeInfo(Isolate.makeConstantList([11]), [P.$int]);
+  C.List_14 = H.setRuntimeTypeInfo(Isolate.makeConstantList([14]), [P.$int]);
+  C.List_1GN = H.setRuntimeTypeInfo(Isolate.makeConstantList(["*::class", "*::dir", "*::draggable", "*::hidden", "*::id", "*::inert", "*::itemprop", "*::itemref", "*::itemscope", "*::lang", "*::spellcheck", "*::title", "*::translate", "A::accesskey", "A::coords", "A::hreflang", "A::name", "A::shape", "A::tabindex", "A::target", "A::type", "AREA::accesskey", "AREA::alt", "AREA::coords", "AREA::nohref", "AREA::shape", "AREA::tabindex", "AREA::target", "AUDIO::controls", "AUDIO::loop", "AUDIO::mediagroup", "AUDIO::muted", "AUDIO::preload", "BDO::dir", "BODY::alink", "BODY::bgcolor", "BODY::link", "BODY::text", "BODY::vlink", "BR::clear", "BUTTON::accesskey", "BUTTON::disabled", "BUTTON::name", "BUTTON::tabindex", "BUTTON::type", "BUTTON::value", "CANVAS::height", "CANVAS::width", "CAPTION::align", "COL::align", "COL::char", "COL::charoff", "COL::span", "COL::valign", "COL::width", "COLGROUP::align", "COLGROUP::char", "COLGROUP::charoff", "COLGROUP::span", "COLGROUP::valign", "COLGROUP::width", "COMMAND::checked", "COMMAND::command", "COMMAND::disabled", "COMMAND::label", "COMMAND::radiogroup", "COMMAND::type", "DATA::value", "DEL::datetime", "DETAILS::open", "DIR::compact", "DIV::align", "DL::compact", "FIELDSET::disabled", "FONT::color", "FONT::face", "FONT::size", "FORM::accept", "FORM::autocomplete", "FORM::enctype", "FORM::method", "FORM::name", "FORM::novalidate", "FORM::target", "FRAME::name", "H1::align", "H2::align", "H3::align", "H4::align", "H5::align", "H6::align", "HR::align", "HR::noshade", "HR::size", "HR::width", "HTML::version", "IFRAME::align", "IFRAME::frameborder", "IFRAME::height", "IFRAME::marginheight", "IFRAME::marginwidth", "IFRAME::width", "IMG::align", "IMG::alt", "IMG::border", "IMG::height", "IMG::hspace", "IMG::ismap", "IMG::name", "IMG::usemap", "IMG::vspace", "IMG::width", "INPUT::accept", "INPUT::accesskey", "INPUT::align", "INPUT::alt", "INPUT::autocomplete", "INPUT::checked", "INPUT::disabled", "INPUT::inputmode", "INPUT::ismap", "INPUT::list", "INPUT::max", "INPUT::maxlength", "INPUT::min", "INPUT::multiple", "INPUT::name", "INPUT::placeholder", "INPUT::readonly", "INPUT::required", "INPUT::size", "INPUT::step", "INPUT::tabindex", "INPUT::type", "INPUT::usemap", "INPUT::value", "INS::datetime", "KEYGEN::disabled", "KEYGEN::keytype", "KEYGEN::name", "LABEL::accesskey", "LABEL::for", "LEGEND::accesskey", "LEGEND::align", "LI::type", "LI::value", "LINK::sizes", "MAP::name", "MENU::compact", "MENU::label", "MENU::type", "METER::high", "METER::low", "METER::max", "METER::min", "METER::value", "OBJECT::typemustmatch", "OL::compact", "OL::reversed", "OL::start", "OL::type", "OPTGROUP::disabled", "OPTGROUP::label", "OPTION::disabled", "OPTION::label", "OPTION::selected", "OPTION::value", "OUTPUT::for", "OUTPUT::name", "P::align", "PRE::width", "PROGRESS::max", "PROGRESS::min", "PROGRESS::value", "SELECT::autocomplete", "SELECT::disabled", "SELECT::multiple", "SELECT::name", "SELECT::required", "SELECT::size", "SELECT::tabindex", "SOURCE::type", "TABLE::align", "TABLE::bgcolor", "TABLE::border", "TABLE::cellpadding", "TABLE::cellspacing", "TABLE::frame", "TABLE::rules", "TABLE::summary", "TABLE::width", "TBODY::align", "TBODY::char", "TBODY::charoff", "TBODY::valign", "TD::abbr", "TD::align", "TD::axis", "TD::bgcolor", "TD::char", "TD::charoff", "TD::colspan", "TD::headers", "TD::height", "TD::nowrap", "TD::rowspan", "TD::scope", "TD::valign", "TD::width", "TEXTAREA::accesskey", "TEXTAREA::autocomplete", "TEXTAREA::cols", "TEXTAREA::disabled", "TEXTAREA::inputmode", "TEXTAREA::name", "TEXTAREA::placeholder", "TEXTAREA::readonly", "TEXTAREA::required", "TEXTAREA::rows", "TEXTAREA::tabindex", "TEXTAREA::wrap", "TFOOT::align", "TFOOT::char", "TFOOT::charoff", "TFOOT::valign", "TH::abbr", "TH::align", "TH::axis", "TH::bgcolor", "TH::char", "TH::charoff", "TH::colspan", "TH::headers", "TH::height", "TH::nowrap", "TH::rowspan", "TH::scope", "TH::valign", "TH::width", "THEAD::align", "THEAD::char", "THEAD::charoff", "THEAD::valign", "TR::align", "TR::bgcolor", "TR::char", "TR::charoff", "TR::valign", "TRACK::default", "TRACK::kind", "TRACK::label", "TRACK::srclang", "UL::compact", "UL::type", "VIDEO::controls", "VIDEO::height", "VIDEO::loop", "VIDEO::mediagroup", "VIDEO::muted", "VIDEO::preload", "VIDEO::width"]), [P.String]);
   C.List_3 = H.setRuntimeTypeInfo(Isolate.makeConstantList([3]), [P.$int]);
   C.List_4_5 = H.setRuntimeTypeInfo(Isolate.makeConstantList([4, 5]), [P.$int]);
   C.List_5_6_7 = H.setRuntimeTypeInfo(Isolate.makeConstantList([5, 6, 7]), [P.$int]);
@@ -11157,38 +12403,33 @@
   C.List_6_7_8 = H.setRuntimeTypeInfo(Isolate.makeConstantList([6, 7, 8]), [P.$int]);
   C.List_8_9 = H.setRuntimeTypeInfo(Isolate.makeConstantList([8, 9]), [P.$int]);
   C.List_9_10 = H.setRuntimeTypeInfo(Isolate.makeConstantList([9, 10]), [P.$int]);
+  C.List_AKW = Isolate.makeConstantList(["ready", "attached", "created", "detached", "attributeChanged"]);
+  C.List_Awx = H.setRuntimeTypeInfo(Isolate.makeConstantList([C.JsProxyReflectable_wmj]), [P.Object]);
   C.List_E7y = H.setRuntimeTypeInfo(Isolate.makeConstantList([0, 1, 2, 3, 4, 11, 12]), [P.$int]);
   C.Property_false_null_false_null = new D.Property(false, null, false, null);
   C.List_H1L = H.setRuntimeTypeInfo(Isolate.makeConstantList([C.Property_false_null_false_null]), [P.Object]);
   C.Property_true_null_false_null = new D.Property(true, null, false, null);
   C.List_H1L0 = H.setRuntimeTypeInfo(Isolate.makeConstantList([C.Property_true_null_false_null]), [P.Object]);
-  C.Type_rjf = H.createRuntimeType("PolymerMixin");
-  C.Type_ahs = H.createRuntimeType("JsProxy");
-  C.FakeType_1CP = new Q.FakeType("polymer.lib.polymer_micro.dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin");
-  C.Type_gug = H.createRuntimeType("PolymerSerialize");
-  C.FakeType_GEQ = new Q.FakeType("polymer.lib.polymer_micro.dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin, polymer_interop.src.js_element_proxy.PolymerBase");
-  C.Type_QKd = H.createRuntimeType("PolymerElement");
-  C.Type_cSk = H.createRuntimeType("MainApp");
-  C.Type_wT1 = H.createRuntimeType("PolymerBase");
-  C.Type_k8F = H.createRuntimeType("String");
-  C.Type_o8I = H.createRuntimeType("Type");
-  C.Type_O1c = H.createRuntimeType("Element");
-  C.Type_naM = H.createRuntimeType("List");
-  C.Type_i1z = H.createRuntimeType("Event");
-  C.List_IqA = H.setRuntimeTypeInfo(Isolate.makeConstantList([C.Type_rjf, C.Type_ahs, C.FakeType_1CP, C.Type_gug, C.FakeType_GEQ, C.Type_QKd, C.Type_cSk, C.Type_wT1, C.Type_k8F, C.Type_o8I, C.Type_O1c, C.Type_naM, C.Type_i1z]), [P.Type]);
   C.C_PolymerReflectable = new V.PolymerReflectable();
   C.List_PolymerReflectable = H.setRuntimeTypeInfo(Isolate.makeConstantList([C.C_PolymerReflectable]), [P.Object]);
   C.List_cGl = H.setRuntimeTypeInfo(Isolate.makeConstantList([5, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]), [P.$int]);
+  C.List_ego = Isolate.makeConstantList(["HEAD", "AREA", "BASE", "BASEFONT", "BR", "COL", "COLGROUP", "EMBED", "FRAME", "FRAMESET", "HR", "IMAGE", "IMG", "INPUT", "ISINDEX", "LINK", "META", "PARAM", "SOURCE", "STYLE", "TITLE", "WBR"]);
   C.List_empty0 = H.setRuntimeTypeInfo(Isolate.makeConstantList([]), [P.$int]);
   C.List_empty1 = H.setRuntimeTypeInfo(Isolate.makeConstantList([]), [P.Object]);
   C.List_empty = Isolate.makeConstantList([]);
-  C.List_kmC = Isolate.makeConstantList(["ready", "attached", "detached", "attributeChanged", "serialize", "deserialize"]);
-  C.List_o8i = H.setRuntimeTypeInfo(Isolate.makeConstantList([C.JsProxyReflectable_ibx]), [P.Object]);
   C.PolymerRegister_gs1 = new T.PolymerRegister(null, "main-app", null);
   C.List_od9 = H.setRuntimeTypeInfo(Isolate.makeConstantList([C.PolymerRegister_gs1]), [P.Object]);
+  C.List_registered_beforeRegister = Isolate.makeConstantList(["registered", "beforeRegister"]);
+  C.List_serialize_deserialize = Isolate.makeConstantList(["serialize", "deserialize"]);
+  C.List_wSV = H.setRuntimeTypeInfo(Isolate.makeConstantList(["bind", "if", "ref", "repeat", "syntax"]), [P.String]);
+  C.List_yrN = H.setRuntimeTypeInfo(Isolate.makeConstantList(["A::href", "AREA::href", "BLOCKQUOTE::cite", "BODY::background", "COMMAND::icon", "DEL::cite", "FORM::action", "IMG::src", "INPUT::src", "INS::cite", "Q::cite", "VIDEO::poster"]), [P.String]);
   C.List_empty2 = H.setRuntimeTypeInfo(Isolate.makeConstantList([]), [P.Symbol]);
   C.Map_empty = H.setRuntimeTypeInfo(new H.ConstantStringMap(0, {}, C.List_empty2), [P.Symbol, null]);
   C.Map_empty0 = new H.ConstantStringMap(0, {}, C.List_empty);
+  C.Map_sg6WV = new H.GeneralConstantMap([0, "StringInvocationKind.method", 1, "StringInvocationKind.getter", 2, "StringInvocationKind.setter"]);
+  C.StringInvocationKind_0 = new T.StringInvocationKind(0);
+  C.StringInvocationKind_1 = new T.StringInvocationKind(1);
+  C.StringInvocationKind_2 = new T.StringInvocationKind(2);
   C.Symbol_call = new H.Symbol0("call");
   C.Type_2GH = H.createRuntimeType("DomBind");
   C.Type_2Zi = H.createRuntimeType("Map");
@@ -11200,43 +12441,59 @@
   C.Type_6Hr = H.createRuntimeType("IronSelector");
   C.Type_8AS = H.createRuntimeType("DateTime");
   C.Type_8k0 = H.createRuntimeType("JSObject");
+  C.Type_COL = H.createRuntimeType("IronOverlayBackdrop");
   C.Type_EGl = H.createRuntimeType("DomRepeat");
-  C.Type_Jik = H.createRuntimeType("Uint8ClampedList");
+  C.Type_JAZ = H.createRuntimeType("IronA11yAnnouncer");
+  C.Type_Jik0 = H.createRuntimeType("Uint8ClampedList");
+  C.Type_Jik = H.createRuntimeType("PaperToast");
   C.Type_K1J = H.createRuntimeType("$double");
   C.Type_KHg = H.createRuntimeType("PaperMenu");
   C.Type_LB70 = H.createRuntimeType("Float64List");
   C.Type_LB7 = H.createRuntimeType("Float32List");
   C.Type_MUs = H.createRuntimeType("PaperDrawerPanel");
+  C.Type_O1c = H.createRuntimeType("Element");
   C.Type_O50 = H.createRuntimeType("Int32List");
+  C.Type_QKd = H.createRuntimeType("PolymerElement");
   C.Type_R3X = H.createRuntimeType("PaperInputCharCounter");
   C.Type_RkP = H.createRuntimeType("ByteBuffer");
   C.Type_Rz5 = H.createRuntimeType("DomIf");
   C.Type_Slt = H.createRuntimeType("IronPages");
   C.Type_WLA = H.createRuntimeType("Uint8List");
   C.Type_Wnd = H.createRuntimeType("PolymerRegister");
+  C.Type_YYn = H.createRuntimeType("PaperScrollHeaderPanel");
   C.Type_Yyn = H.createRuntimeType("Null");
   C.Type_aeF = H.createRuntimeType("PaperToolbar");
+  C.Type_ahs = H.createRuntimeType("JsProxy");
   C.Type_as9 = H.createRuntimeType("PaperRipple");
   C.Type_c0h = H.createRuntimeType("IronCollapse");
+  C.Type_cSk = H.createRuntimeType("MainApp");
   C.Type_cv7 = H.createRuntimeType("num");
   C.Type_d0T = H.createRuntimeType("PaperInput");
-  C.Type_dynamic = H.createRuntimeType("dynamic");
   C.Type_e4R = H.createRuntimeType("IronInput");
   C.Type_ekJ = H.createRuntimeType("Int8List");
   C.Type_gUe = H.createRuntimeType("HtmlImport");
+  C.Type_gug = H.createRuntimeType("PolymerSerialize");
   C.Type_hYu = H.createRuntimeType("PaperInputError");
   C.Type_hin = H.createRuntimeType("IronMeta");
+  C.Type_i1z = H.createRuntimeType("Event");
+  C.Type_k8F = H.createRuntimeType("String");
   C.Type_l2Z = H.createRuntimeType("IronMediaQuery");
   C.Type_lhE = H.createRuntimeType("bool");
+  C.Type_naM = H.createRuntimeType("List");
+  C.Type_o8I = H.createRuntimeType("Type");
   C.Type_oSr = H.createRuntimeType("IronIcon");
+  C.Type_ouN = H.createRuntimeType("PaperMaterial");
   C.Type_ouf = H.createRuntimeType("IronIconsetSvg");
   C.Type_qRH = H.createRuntimeType("CustomElement");
   C.Type_qjl = H.createRuntimeType("PaperTab");
   C.Type_qv5 = H.createRuntimeType("PaperTabs");
+  C.Type_rjf = H.createRuntimeType("PolymerMixin");
   C.Type_tHn = H.createRuntimeType("$int");
   C.Type_tRa = H.createRuntimeType("ArraySelector");
   C.Type_uAF = H.createRuntimeType("PaperIconButton");
   C.Type_uXf = H.createRuntimeType("Int16List");
+  C.Type_wT1 = H.createRuntimeType("PolymerBase");
+  C.Type_xQ6 = H.createRuntimeType("Object");
   C.Type_yuB = H.createRuntimeType("IronMetaQuery");
   C.Type_z6k = H.createRuntimeType("CustomElementProxy");
   C.Type_z9V = H.createRuntimeType("PaperSubmenu");
@@ -11258,6 +12515,10 @@
   $._isInCallbackLoop = false;
   $.Zone__current = C.C__RootZone;
   $.Expando__keyCount = 0;
+  $.Element__parseDocument = null;
+  $.Element__parseRange = null;
+  $.Element__defaultValidator = null;
+  $.Element__defaultSanitizer = null;
   $.Device__isOpera = null;
   $.Device__isIE = null;
   $.Device__isFirefox = null;
@@ -11276,7 +12537,7 @@
   };
   init.deferredLibraryUris = {};
   init.deferredLibraryHashes = {};
-  init.typeToInterceptorMap = [C.Type_cwF, W.HtmlElement, {}, C.Type_QKd, N.PolymerElement, {created: N.PolymerElement$created}, C.Type_cSk, S.MainApp, {created: S.MainApp$created}, C.Type_2GH, X.DomBind, {created: X.DomBind$created}, C.Type_2fh, Z.PaperItem, {created: Z.PaperItem$created}, C.Type_46c, B.PaperHeaderPanel, {created: B.PaperHeaderPanel$created}, C.Type_6F1, T.PaperInputContainer, {created: T.PaperInputContainer$created}, C.Type_6Hr, E.IronSelector, {created: E.IronSelector$created}, C.Type_EGl, Y.DomRepeat, {created: Y.DomRepeat$created}, C.Type_KHg, V.PaperMenu, {created: V.PaperMenu$created}, C.Type_MUs, X.PaperDrawerPanel, {created: X.PaperDrawerPanel$created}, C.Type_R3X, N.PaperInputCharCounter, {created: N.PaperInputCharCounter$created}, C.Type_Rz5, M.DomIf, {created: M.DomIf$created}, C.Type_Slt, U.IronPages, {created: U.IronPages$created}, C.Type_aeF, T.PaperToolbar, {created: T.PaperToolbar$created}, C.Type_as9, X.PaperRipple, {created: X.PaperRipple$created}, C.Type_c0h, S.IronCollapse, {created: S.IronCollapse$created}, C.Type_d0T, U.PaperInput, {created: U.PaperInput$created}, C.Type_e4R, G.IronInput, {created: G.IronInput$created}, C.Type_hYu, Y.PaperInputError, {created: Y.PaperInputError$created}, C.Type_hin, F.IronMeta, {created: F.IronMeta$created}, C.Type_l2Z, Q.IronMediaQuery, {created: Q.IronMediaQuery$created}, C.Type_oSr, O.IronIcon, {created: O.IronIcon$created}, C.Type_ouf, M.IronIconsetSvg, {created: M.IronIconsetSvg$created}, C.Type_qjl, R.PaperTab, {created: R.PaperTab$created}, C.Type_qv5, L.PaperTabs, {created: L.PaperTabs$created}, C.Type_tRa, U.ArraySelector, {created: U.ArraySelector$created}, C.Type_uAF, D.PaperIconButton, {created: D.PaperIconButton$created}, C.Type_yuB, F.IronMetaQuery, {created: F.IronMetaQuery$created}, C.Type_z9V, M.PaperSubmenu, {created: M.PaperSubmenu$created}];
+  init.typeToInterceptorMap = [C.Type_cwF, W.HtmlElement, {}, C.Type_2GH, X.DomBind, {created: X.DomBind$created}, C.Type_2fh, Z.PaperItem, {created: Z.PaperItem$created}, C.Type_46c, B.PaperHeaderPanel, {created: B.PaperHeaderPanel$created}, C.Type_6F1, T.PaperInputContainer, {created: T.PaperInputContainer$created}, C.Type_6Hr, E.IronSelector, {created: E.IronSelector$created}, C.Type_COL, S.IronOverlayBackdrop, {created: S.IronOverlayBackdrop$created}, C.Type_EGl, Y.DomRepeat, {created: Y.DomRepeat$created}, C.Type_JAZ, Q.IronA11yAnnouncer, {created: Q.IronA11yAnnouncer$created}, C.Type_Jik, Z.PaperToast, {created: Z.PaperToast$created}, C.Type_KHg, V.PaperMenu, {created: V.PaperMenu$created}, C.Type_MUs, X.PaperDrawerPanel, {created: X.PaperDrawerPanel$created}, C.Type_QKd, N.PolymerElement, {created: N.PolymerElement$created}, C.Type_R3X, N.PaperInputCharCounter, {created: N.PaperInputCharCounter$created}, C.Type_Rz5, M.DomIf, {created: M.DomIf$created}, C.Type_Slt, U.IronPages, {created: U.IronPages$created}, C.Type_YYn, E.PaperScrollHeaderPanel, {created: E.PaperScrollHeaderPanel$created}, C.Type_aeF, T.PaperToolbar, {created: T.PaperToolbar$created}, C.Type_as9, X.PaperRipple, {created: X.PaperRipple$created}, C.Type_c0h, S.IronCollapse, {created: S.IronCollapse$created}, C.Type_cSk, S.MainApp, {created: S.MainApp$created}, C.Type_d0T, U.PaperInput, {created: U.PaperInput$created}, C.Type_e4R, G.IronInput, {created: G.IronInput$created}, C.Type_hYu, Y.PaperInputError, {created: Y.PaperInputError$created}, C.Type_hin, F.IronMeta, {created: F.IronMeta$created}, C.Type_i1z, W.Event, {}, C.Type_l2Z, Q.IronMediaQuery, {created: Q.IronMediaQuery$created}, C.Type_oSr, O.IronIcon, {created: O.IronIcon$created}, C.Type_ouN, S.PaperMaterial, {created: S.PaperMaterial$created}, C.Type_ouf, M.IronIconsetSvg, {created: M.IronIconsetSvg$created}, C.Type_qjl, R.PaperTab, {created: R.PaperTab$created}, C.Type_qv5, L.PaperTabs, {created: L.PaperTabs$created}, C.Type_tRa, U.ArraySelector, {created: U.ArraySelector$created}, C.Type_uAF, D.PaperIconButton, {created: D.PaperIconButton$created}, C.Type_yuB, F.IronMetaQuery, {created: F.IronMetaQuery$created}, C.Type_z9V, M.PaperSubmenu, {created: M.PaperSubmenu$created}];
   (function(lazies) {
     for (var i = 0; i < lazies.length;) {
       var fieldName = lazies[i++];
@@ -11345,6 +12606,10 @@
     return [];
   }, "CssStyleDeclaration__propertyCache", "$get$CssStyleDeclaration__propertyCache", "_propertyCache", function() {
     return {};
+  }, "_Html5NodeValidator__allowedElements", "$get$_Html5NodeValidator__allowedElements", "_allowedElements", function() {
+    return P.LinkedHashSet_LinkedHashSet$from(["A", "ABBR", "ACRONYM", "ADDRESS", "AREA", "ARTICLE", "ASIDE", "AUDIO", "B", "BDI", "BDO", "BIG", "BLOCKQUOTE", "BR", "BUTTON", "CANVAS", "CAPTION", "CENTER", "CITE", "CODE", "COL", "COLGROUP", "COMMAND", "DATA", "DATALIST", "DD", "DEL", "DETAILS", "DFN", "DIR", "DIV", "DL", "DT", "EM", "FIELDSET", "FIGCAPTION", "FIGURE", "FONT", "FOOTER", "FORM", "H1", "H2", "H3", "H4", "H5", "H6", "HEADER", "HGROUP", "HR", "I", "IFRAME", "IMG", "INPUT", "INS", "KBD", "LABEL", "LEGEND", "LI", "MAP", "MARK", "MENU", "METER", "NAV", "NOBR", "OL", "OPTGROUP", "OPTION", "OUTPUT", "P", "PRE", "PROGRESS", "Q", "S", "SAMP", "SECTION", "SELECT", "SMALL", "SOURCE", "SPAN", "STRIKE", "STRONG", "SUB", "SUMMARY", "SUP", "TABLE", "TBODY", "TD", "TEXTAREA", "TFOOT", "TH", "THEAD", "TIME", "TR", "TRACK", "TT", "U", "UL", "VAR", "VIDEO", "WBR"], null);
+  }, "_Html5NodeValidator__attributeValidators", "$get$_Html5NodeValidator__attributeValidators", "_attributeValidators", function() {
+    return P.LinkedHashMap__makeEmpty();
   }, "context", "$get$context", "context", function() {
     return P._wrapToDart(self);
   }, "_DART_OBJECT_PROPERTY_NAME", "$get$_DART_OBJECT_PROPERTY_NAME", "_DART_OBJECT_PROPERTY_NAME", function() {
@@ -11357,6 +12622,8 @@
     };
   }, "initializers", "$get$initializers", "initializers", function() {
     return P.ListQueue$(null, A.InitEntry);
+  }, "_polymerDart1", "$get$_polymerDart1", "_polymerDart", function() {
+    return J.$index$asx($.$get$context().$index(0, "Polymer"), "Dart");
   }, "_polymerDart0", "$get$_polymerDart0", "_polymerDart", function() {
     return J.$index$asx($.$get$context().$index(0, "Polymer"), "Dart");
   }, "polymerDartUndefined", "$get$polymerDartUndefined", "polymerDartUndefined", function() {
@@ -11385,15 +12652,17 @@
     return $.$get$context().$index(0, "Date");
   }, "data", "$get$data", "data", function() {
     return H.throwExpression(new P.StateError("Reflectable has not been initialized. Did you forget to add the main file to the reflectable transformer's entry_points in pubspec.yaml?"));
+  }, "memberSymbolMap", "$get$memberSymbolMap", "memberSymbolMap", function() {
+    return H.throwExpression(new P.StateError("Reflectable has not been initialized. Did you forget to add the main file to the reflectable transformer's entry_points in pubspec.yaml?"));
   }, "_data", "$get$_data", "_data", function() {
-    return P.LinkedHashMap__makeLiteral([C.JsProxyReflectable_ibx, new Q.ReflectorData(H.setRuntimeTypeInfo([new Q.ClassMirrorImpl(C.JsProxyReflectable_ibx, 519, 0, -1, -1, 0, C.List_empty0, C.List_empty0, C.List_empty0, C.List_empty0, "PolymerMixin", "polymer.src.common.polymer_js_proxy.PolymerMixin", C.List_o8i, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, null, null, null, null), new Q.ClassMirrorImpl(C.JsProxyReflectable_ibx, 519, 1, -1, -1, 1, C.List_empty0, C.List_empty0, C.List_empty0, C.List_empty0, "JsProxy", "polymer.lib.src.common.js_proxy.JsProxy", C.List_o8i, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, null, null, null, null), new Q.ClassMirrorImpl(C.JsProxyReflectable_ibx, 583, 2, -1, -1, 0, C.List_empty0, C.List_5_6_7, C.List_empty0, C.List_empty0, "dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin", "polymer.lib.polymer_micro.dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin", C.List_empty, C.Map_empty0, C.Map_empty0, C.Map_empty0, null, null, null, null), new Q.ClassMirrorImpl(C.JsProxyReflectable_ibx, 519, 3, -1, -1, 3, C.List_8_9, C.List_8_9, C.List_empty0, C.List_0, "PolymerSerialize", "polymer.src.common.polymer_serialize.PolymerSerialize", C.List_empty1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, null, null, null, null), new Q.ClassMirrorImpl(C.JsProxyReflectable_ibx, 583, 4, -1, 2, 7, C.List_10, C.List_5_6_7_10, C.List_empty0, C.List_empty0, "dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin, polymer_interop.src.js_element_proxy.PolymerBase", "polymer.lib.polymer_micro.dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin, polymer_interop.src.js_element_proxy.PolymerBase", C.List_empty, C.Map_empty0, C.Map_empty0, C.Map_empty0, null, null, null, null), new Q.ClassMirrorImpl(C.JsProxyReflectable_ibx, 7, 5, -1, 4, 5, C.List_empty0, C.List_5_6_7_10, C.List_empty0, C.List_empty0, "PolymerElement", "polymer.lib.polymer_micro.PolymerElement", C.List_empty1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), null, null, null, null), new Q.ClassMirrorImpl(C.JsProxyReflectable_ibx, 7, 6, -1, 5, 6, C.List_E7y, C.List_cGl, C.List_empty0, C.List_empty0, "MainApp", "d004.lib.main_app.MainApp", C.List_od9, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), null, null, null, null), new Q.ClassMirrorImpl(C.JsProxyReflectable_ibx, 519, 7, -1, -1, 7, C.List_10, C.List_10, C.List_empty0, C.List_empty0, "PolymerBase", "polymer_interop.src.js_element_proxy.PolymerBase", C.List_empty1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, null, null, null, null), new Q.ClassMirrorImpl(C.JsProxyReflectable_ibx, 519, 8, -1, -1, 8, C.List_empty0, C.List_empty0, C.List_empty0, C.List_empty0, "String", "dart.core.String", C.List_empty1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, null, null, null, null), new Q.ClassMirrorImpl(C.JsProxyReflectable_ibx, 519, 9, -1, -1, 9, C.List_empty0, C.List_empty0, C.List_empty0, C.List_empty0, "Type", "dart.core.Type", C.List_empty1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, null, null, null, null), new Q.ClassMirrorImpl(C.JsProxyReflectable_ibx, 519, 10, -1, -1, 10, C.List_5_6_7, C.List_5_6_7, C.List_empty0, C.List_empty0, "Element", "dart.dom.html.Element", C.List_empty1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, null, null, null, null), new Q.ClassMirrorImpl(C.JsProxyReflectable_ibx, 519, 11, -1, -1, 11, C.List_empty0, C.List_empty0, C.List_empty0, C.List_empty0, "List", "dart.core.List", C.List_empty1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, null, null, null, null), new Q.ClassMirrorImpl(C.JsProxyReflectable_ibx, 7, 12, -1, -1, 12, C.List_empty0, C.List_empty0, C.List_empty0, C.List_empty0, "Event", "dart.dom.html.Event", C.List_empty1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), null, null, null, null)], [O.ClassMirror]), null, H.setRuntimeTypeInfo([Q.VariableMirrorImpl$("page", 32773, 6, C.JsProxyReflectable_ibx, 8, null, C.List_H1L), Q.VariableMirrorImpl$("subPage", 32773, 6, C.JsProxyReflectable_ibx, 8, null, C.List_H1L0), Q.VariableMirrorImpl$("tabs", 32773, 6, C.JsProxyReflectable_ibx, 11, null, C.List_H1L), Q.VariableMirrorImpl$("allPages", 32773, 6, C.JsProxyReflectable_ibx, 11, null, C.List_H1L), Q.VariableMirrorImpl$("allSubPages", 32773, 6, C.JsProxyReflectable_ibx, 11, null, C.List_H1L), new Q.MethodMirrorImpl(262146, "attached", 10, null, null, C.List_empty0, C.JsProxyReflectable_ibx, C.List_empty1, null), new Q.MethodMirrorImpl(262146, "detached", 10, null, null, C.List_empty0, C.JsProxyReflectable_ibx, C.List_empty1, null), new Q.MethodMirrorImpl(262146, "attributeChanged", 10, null, null, C.List_0_1_2, C.JsProxyReflectable_ibx, C.List_empty1, null), new Q.MethodMirrorImpl(131074, "serialize", 3, 8, C.Type_k8F, C.List_3, C.JsProxyReflectable_ibx, C.List_empty1, null), new Q.MethodMirrorImpl(65538, "deserialize", 3, null, C.Type_dynamic, C.List_4_5, C.JsProxyReflectable_ibx, C.List_empty1, null), new Q.MethodMirrorImpl(262146, "serializeValueToAttribute", 7, null, null, C.List_6_7_8, C.JsProxyReflectable_ibx, C.List_empty1, null), new Q.MethodMirrorImpl(262146, "coreSelectHandler", 6, null, null, C.List_9_10, C.JsProxyReflectable_ibx, C.List_PolymerReflectable, null), new Q.MethodMirrorImpl(131074, "reverseText", 6, 8, C.Type_k8F, C.List_11, C.JsProxyReflectable_ibx, C.List_PolymerReflectable, null), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_ibx, 0, null, 13), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_ibx, 0, null, 14), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_ibx, 1, null, 15), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_ibx, 1, null, 16), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_ibx, 2, null, 17), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_ibx, 2, null, 18), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_ibx, 3, null, 19), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_ibx, 3, null, 20), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_ibx, 4, null, 21), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_ibx, 4, null, 22)], [O.DeclarationMirror]), H.setRuntimeTypeInfo([Q.ParameterMirrorImpl$("name", 32774, 7, C.JsProxyReflectable_ibx, 8, null, C.List_empty1, null), Q.ParameterMirrorImpl$("oldValue", 32774, 7, C.JsProxyReflectable_ibx, 8, null, C.List_empty1, null), Q.ParameterMirrorImpl$("newValue", 32774, 7, C.JsProxyReflectable_ibx, 8, null, C.List_empty1, null), Q.ParameterMirrorImpl$("value", 16390, 8, C.JsProxyReflectable_ibx, null, null, C.List_empty1, null), Q.ParameterMirrorImpl$("value", 32774, 9, C.JsProxyReflectable_ibx, 8, null, C.List_empty1, null), Q.ParameterMirrorImpl$("type", 32774, 9, C.JsProxyReflectable_ibx, 9, null, C.List_empty1, null), Q.ParameterMirrorImpl$("value", 16390, 10, C.JsProxyReflectable_ibx, null, null, C.List_empty1, null), Q.ParameterMirrorImpl$("attribute", 32774, 10, C.JsProxyReflectable_ibx, 8, null, C.List_empty1, null), Q.ParameterMirrorImpl$("node", 36870, 10, C.JsProxyReflectable_ibx, 10, null, C.List_empty1, null), Q.ParameterMirrorImpl$("e", 32774, 11, C.JsProxyReflectable_ibx, 12, null, C.List_empty1, null), Q.ParameterMirrorImpl$("_", 20518, 11, C.JsProxyReflectable_ibx, null, null, C.List_empty1, null), Q.ParameterMirrorImpl$("text", 32774, 12, C.JsProxyReflectable_ibx, 8, null, C.List_empty1, null), Q.ParameterMirrorImpl$("_page", 32870, 14, C.JsProxyReflectable_ibx, 8, null, C.List_empty, null), Q.ParameterMirrorImpl$("_subPage", 32870, 16, C.JsProxyReflectable_ibx, 8, null, C.List_empty, null), Q.ParameterMirrorImpl$("_tabs", 32870, 18, C.JsProxyReflectable_ibx, 11, null, C.List_empty, null), Q.ParameterMirrorImpl$("_allPages", 32870, 20, C.JsProxyReflectable_ibx, 11, null, C.List_empty, null), Q.ParameterMirrorImpl$("_allSubPages", 32870, 22, C.JsProxyReflectable_ibx, 11, null, C.List_empty, null)], [O.ParameterMirror]), C.List_IqA, P.LinkedHashMap__makeLiteral(["attached", new K.closure(), "detached", new K.closure0(), "attributeChanged", new K.closure1(), "serialize", new K.closure2(), "deserialize", new K.closure3(), "serializeValueToAttribute", new K.closure4(), "coreSelectHandler", new K.closure5(), "reverseText", new K.closure6(), "page", new K.closure7(), "subPage", new K.closure8(), "tabs", new K.closure9(), "allPages", new K.closure10(), "allSubPages", new K.closure11()]), P.LinkedHashMap__makeLiteral(["page=", new K.closure12(), "subPage=", new K.closure13(), "tabs=", new K.closure14(), "allPages=", new K.closure15(), "allSubPages=", new K.closure16()]), null)]);
+    return P.LinkedHashMap__makeLiteral([C.JsProxyReflectable_wmj, new Q.ReflectorData(H.setRuntimeTypeInfo([Q.NonGenericClassMirrorImpl$("PolymerMixin", "polymer.src.common.polymer_js_proxy.PolymerMixin", 519, 0, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 0, C.List_empty0, C.List_Awx, null), Q.NonGenericClassMirrorImpl$("JsProxy", "polymer.lib.src.common.js_proxy.JsProxy", 519, 1, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 1, C.List_empty0, C.List_Awx, null), Q.NonGenericClassMirrorImpl$("dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin", "polymer.lib.polymer_micro.dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin", 583, 2, C.JsProxyReflectable_wmj, C.List_empty0, C.List_5_6_7, C.List_empty0, -1, C.Map_empty0, C.Map_empty0, C.Map_empty0, -1, 0, C.List_empty0, C.List_empty, null), Q.NonGenericClassMirrorImpl$("PolymerSerialize", "polymer.src.common.polymer_serialize.PolymerSerialize", 519, 3, C.JsProxyReflectable_wmj, C.List_8_9, C.List_8_9, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 3, C.List_0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin, polymer_interop.src.js_element_proxy.PolymerBase", "polymer.lib.polymer_micro.dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin, polymer_interop.src.js_element_proxy.PolymerBase", 583, 4, C.JsProxyReflectable_wmj, C.List_10, C.List_5_6_7_10, C.List_empty0, 2, C.Map_empty0, C.Map_empty0, C.Map_empty0, -1, 7, C.List_empty0, C.List_empty, null), Q.NonGenericClassMirrorImpl$("PolymerElement", "polymer.lib.polymer_micro.PolymerElement", 7, 5, C.JsProxyReflectable_wmj, C.List_empty0, C.List_5_6_7_10, C.List_empty0, 4, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), -1, 5, C.List_empty0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("MainApp", "d004.lib.main_app.MainApp", 7, 6, C.JsProxyReflectable_wmj, C.List_E7y, C.List_cGl, C.List_empty0, 5, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), -1, 6, C.List_empty0, C.List_od9, null), Q.NonGenericClassMirrorImpl$("PolymerBase", "polymer_interop.src.js_element_proxy.PolymerBase", 519, 7, C.JsProxyReflectable_wmj, C.List_10, C.List_10, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 7, C.List_empty0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("String", "dart.core.String", 519, 8, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 8, C.List_empty0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("Type", "dart.core.Type", 519, 9, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 9, C.List_empty0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("Element", "dart.dom.html.Element", 519, 10, C.JsProxyReflectable_wmj, C.List_5_6_7, C.List_5_6_7, C.List_empty0, -1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 10, C.List_empty0, C.List_empty1, null), new Q.GenericClassMirrorImpl(new K.closure(), C.List_14, 11, C.JsProxyReflectable_wmj, 519, 11, -1, 13, 11, C.List_empty0, C.List_empty0, C.List_empty0, C.List_empty0, "List", "dart.core.List", C.List_empty1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, null, null, null, null, null), Q.NonGenericClassMirrorImpl$("Event", "dart.dom.html.Event", 7, 12, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, -1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), -1, 12, C.List_empty0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("Object", "dart.core.Object", 7, 13, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, null, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), -1, 13, C.List_empty0, C.List_empty1, null), new Q.TypeVariableMirrorImpl("E", "dart.core.List.E", C.JsProxyReflectable_wmj, 13, 11, H.setRuntimeTypeInfo([], [P.Object]), null)], [O.TypeMirror]), null, H.setRuntimeTypeInfo([Q.VariableMirrorImpl$("page", 32773, 6, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_H1L), Q.VariableMirrorImpl$("subPage", 32773, 6, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_H1L0), Q.VariableMirrorImpl$("tabs", 2129925, 6, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_H1L), Q.VariableMirrorImpl$("allPages", 2129925, 6, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_H1L), Q.VariableMirrorImpl$("allSubPages", 2129925, 6, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_H1L), new Q.MethodMirrorImpl(262146, "attached", 10, null, -1, -1, C.List_empty0, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(262146, "detached", 10, null, -1, -1, C.List_empty0, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(262146, "attributeChanged", 10, null, -1, -1, C.List_0_1_2, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(131074, "serialize", 3, 8, 8, 8, C.List_3, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(65538, "deserialize", 3, null, null, null, C.List_4_5, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(262146, "serializeValueToAttribute", 7, null, -1, -1, C.List_6_7_8, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(262146, "coreSelectHandler", 6, null, -1, -1, C.List_9_10, C.JsProxyReflectable_wmj, C.List_PolymerReflectable, null, null, null, null), new Q.MethodMirrorImpl(131074, "reverseText", 6, 8, 8, 8, C.List_11, C.JsProxyReflectable_wmj, C.List_PolymerReflectable, null, null, null, null), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_wmj, 0, -1, -1, 13), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_wmj, 0, -1, -1, 14), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_wmj, 1, -1, -1, 15), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_wmj, 1, -1, -1, 16), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_wmj, 2, -1, -1, 17), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_wmj, 2, -1, -1, 18), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_wmj, 3, -1, -1, 19), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_wmj, 3, -1, -1, 20), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_wmj, 4, -1, -1, 21), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_wmj, 4, -1, -1, 22)], [O.DeclarationMirror]), H.setRuntimeTypeInfo([Q.ParameterMirrorImpl$("name", 32774, 7, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("oldValue", 32774, 7, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("newValue", 32774, 7, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("value", 16390, 8, C.JsProxyReflectable_wmj, null, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("value", 32774, 9, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("type", 32774, 9, C.JsProxyReflectable_wmj, 9, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("value", 16390, 10, C.JsProxyReflectable_wmj, null, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("attribute", 32774, 10, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("node", 36870, 10, C.JsProxyReflectable_wmj, 10, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("e", 32774, 11, C.JsProxyReflectable_wmj, 12, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("_", 20518, 11, C.JsProxyReflectable_wmj, null, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("text", 32774, 12, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("_page", 32870, 14, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty, null, null), Q.ParameterMirrorImpl$("_subPage", 32870, 16, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty, null, null), Q.ParameterMirrorImpl$("_tabs", 2130022, 18, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_empty, null, null), Q.ParameterMirrorImpl$("_allPages", 2130022, 20, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_empty, null, null), Q.ParameterMirrorImpl$("_allSubPages", 2130022, 22, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_empty, null, null)], [O.ParameterMirror]), H.setRuntimeTypeInfo([C.Type_rjf, C.Type_ahs, C.FakeType_1CP, C.Type_gug, C.FakeType_GEQ, C.Type_QKd, C.Type_cSk, C.Type_wT1, C.Type_k8F, C.Type_o8I, C.Type_O1c, C.Type_naM, C.Type_i1z, C.Type_xQ6], [P.Type]), 14, P.LinkedHashMap__makeLiteral(["attached", new K.closure0(), "detached", new K.closure1(), "attributeChanged", new K.closure2(), "serialize", new K.closure3(), "deserialize", new K.closure4(), "serializeValueToAttribute", new K.closure5(), "coreSelectHandler", new K.closure6(), "reverseText", new K.closure7(), "page", new K.closure8(), "subPage", new K.closure9(), "tabs", new K.closure10(), "allPages", new K.closure11(), "allSubPages", new K.closure12()]), P.LinkedHashMap__makeLiteral(["page=", new K.closure13(), "subPage=", new K.closure14(), "tabs=", new K.closure15(), "allPages=", new K.closure16(), "allSubPages=", new K.closure17()]), [], null)]);
   }, "_doc", "$get$_doc", "_doc", function() {
     return P.JsObject_JsObject$fromBrowserObject(W.document());
   }]);
   Isolate = Isolate.$finishIsolateConstructor(Isolate);
   $ = new Isolate();
-  init.metadata = [null, "stackTrace", "error", "_", "dartInstance", "o", "arguments", "e", "item", "arg", "i", "newValue", "value", "x", "invocation", "each", "result", "sender", "text", "arg4", "numberOfArguments", "data", 0, "name", "oldValue", "arg3", "callback", "node", "self", "arg2", "arg1", "object", "instance", "path", "captureThis", "isolate", "behavior", "clazz", "jsValue", "closure", "attribute", "ignored"];
-  init.types = [{func: 1, args: [,]}, {func: 1}, {func: 1, args: [,,]}, {func: 1, void: true}, {func: 1, args: [P.String, O.DeclarationMirror]}, {func: 1, void: true, args: [{func: 1, void: true}]}, {func: 1, args: [,], opt: [,]}, {func: 1, ret: P.String, args: [P.$int]}, {func: 1, args: [P.String,,]}, {func: 1, args: [, P.StackTrace]}, {func: 1, args: [, P.String]}, {func: 1, args: [P.String]}, {func: 1, void: true, args: [W.Event], opt: [,]}, {func: 1, ret: P.String, args: [P.String]}, {func: 1, args: [{func: 1, void: true}]}, {func: 1, ret: P.bool}, {func: 1, void: true, args: [P.Object], opt: [P.StackTrace]}, {func: 1, args: [P.Symbol,,]}, {func: 1, void: true, args: [P.String, P.String, P.String]}, {func: 1, args: [,,,]}, {func: 1, args: [O.ClassMirror]}, {func: 1, void: true, args: [, P.String], opt: [W.Element]}, {func: 1, args: [P.$int]}, {func: 1, args: [T.ReflectCapability]}, {func: 1, void: true, args: [T.ReflectCapability]}, {func: 1, ret: P.Object, args: [,]}, {func: 1, ret: P.bool, args: [,]}, {func: 1, ret: P.bool, args: [O.ClassMirror]}];
+  init.metadata = ["dartInstance", null, "error", "stackTrace", "value", "_", "arguments", "arg", "e", "o", "item", "invocation", "x", "element", "attributeName", "context", "newValue", "i", "ignored", "closure", "arg1", "data", 0, "sender", "arg2", "result", "name", "oldValue", "each", "attr", "parameterIndex", "captureThis", "node", "isolate", "arg3", "arg4", "instance", "path", "object", "callback", "behavior", "clazz", "jsValue", "text", "attribute", "self", "numberOfArguments"];
+  init.types = [{func: 1, args: [,]}, {func: 1}, {func: 1, args: [,,]}, {func: 1, void: true}, {func: 1, args: [P.String]}, {func: 1, args: [P.String, O.DeclarationMirror]}, {func: 1, void: true, args: [{func: 1, void: true}]}, {func: 1, args: [,], opt: [,]}, {func: 1, ret: P.String, args: [P.$int]}, {func: 1, args: [P.String, O.MethodMirror]}, {func: 1, args: [P.$int]}, {func: 1, ret: P.bool, args: [W.Element, P.String, P.String, W._Html5NodeValidator]}, {func: 1, args: [P.String,,]}, {func: 1, args: [, P.StackTrace]}, {func: 1, args: [, P.String]}, {func: 1, void: true, args: [W.Event], opt: [,]}, {func: 1, ret: P.String, args: [P.String]}, {func: 1, args: [{func: 1, void: true}]}, {func: 1, ret: P.bool}, {func: 1, void: true, args: [P.Object], opt: [P.StackTrace]}, {func: 1, args: [P.Symbol,,]}, {func: 1, void: true, args: [P.String, P.String, P.String]}, {func: 1, void: true, args: [W.Node, W.Node]}, {func: 1, args: [,,,]}, {func: 1, args: [O.ClassMirror]}, {func: 1, void: true, args: [, P.String], opt: [W.Element]}, {func: 1, args: [T.ReflectCapability]}, {func: 1, void: true, args: [T.ReflectCapability]}, {func: 1, ret: P.Object, args: [,]}, {func: 1, ret: P.bool, args: [,]}, {func: 1, ret: P.bool, args: [O.ClassMirror]}];
   function convertToFastObject(properties) {
     function MyClass() {
     }
@@ -11543,11 +12812,11 @@
     init.currentScript = currentScript;
     if (typeof dartMainRunner === "function")
       dartMainRunner(function(a) {
-        H.startRootIsolate(M.index__main$closure(), a);
+        H.startRootIsolate(K.reflectable_generated_main_library__main$closure(), a);
       }, []);
     else
       (function(a) {
-        H.startRootIsolate(M.index__main$closure(), a);
+        H.startRootIsolate(K.reflectable_generated_main_library__main$closure(), a);
       })([]);
   });
   // END invoke [main].
