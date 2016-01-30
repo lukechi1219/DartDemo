@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.util.io;
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -124,23 +122,6 @@ void warn(String message, {bool color}) {
       ? "\u001b[33mWarning:\u001b[0m"
       : "Warning:";
   stderr.writeln(wordWrap("$header $message\n"));
-}
-
-/// Creates a URL string for [address]:[port].
-///
-/// Handles properly formatting IPv6 addresses.
-Uri baseUrlForAddress(InternetAddress address, int port) {
-  if (address.isLoopback) {
-    return new Uri(scheme: "http", host: "localhost", port: port);
-  }
-
-  // IPv6 addresses in URLs need to be enclosed in square brackets to avoid
-  // URL ambiguity with the ":" in the address.
-  if (address.type == InternetAddressType.IP_V6) {
-    return new Uri(scheme: "http", host: "[${address.address}]", port: port);
-  }
-
-  return new Uri(scheme: "http", host: address.address, port: port);
 }
 
 /// Returns the package root at [root].

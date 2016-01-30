@@ -9,6 +9,7 @@ import 'dart:js' show JsArray, JsObject;
 import 'package:web_components/web_components.dart';
 import 'package:polymer_interop/polymer_interop.dart';
 import 'iron_control_state.dart';
+import 'iron_a11y_keys_behavior.dart';
 
 /// Use `Polymer.PaperInputBehavior` to implement inputs with `<paper-input-container>`. This
 /// behavior is implemented by `<paper-input>`. It exposes a number of properties from
@@ -18,7 +19,11 @@ import 'iron_control_state.dart';
 /// The input element can be accessed by the `inputElement` property if you need to access
 /// properties or methods that are not exposed.
 @BehaviorProxy(const ['Polymer', 'PaperInputBehavior'])
-abstract class PaperInputBehavior implements CustomElementProxyMixin, IronControlState {
+abstract class PaperInputBehavior implements CustomElementProxyMixin, IronControlState, IronA11yKeysBehavior {
+
+  /// Bind this to the `<input is="iron-input">`'s `accept` property, used with type=file.
+  String get accept => jsElement[r'accept'];
+  set accept(String value) { jsElement[r'accept'] = value; }
 
   /// Set this to specify the pattern allowed by `preventInvalidInput`. Bind this to the
   /// `<input is="iron-input">`'s `allowedPattern` property.
@@ -45,6 +50,10 @@ abstract class PaperInputBehavior implements CustomElementProxyMixin, IronContro
   /// Bind this to the `<input is="iron-input">`'s `autofocus` property.
   bool get autofocus => jsElement[r'autofocus'];
   set autofocus(bool value) { jsElement[r'autofocus'] = value; }
+
+  /// Bind this to the `<input is="iron-input">`'s `autosave` property, used with type=search.
+  String get autosave => jsElement[r'autosave'];
+  set autosave(String value) { jsElement[r'autosave'] = value; }
 
   /// Set to true to auto-validate the input value. Bind this to the `<paper-input-container>`'s
   /// `autoValidate` property.
@@ -74,14 +83,21 @@ abstract class PaperInputBehavior implements CustomElementProxyMixin, IronContro
 
   /// Returns true if the value is invalid. Bind this to both the `<paper-input-container>`'s
   /// and the input's `invalid` property.
+  ///
+  /// If `autoValidate` is true, the `invalid` attribute is managed automatically,
+  /// which can clobber attempts to manage it manually.
   bool get invalid => jsElement[r'invalid'];
   set invalid(bool value) { jsElement[r'invalid'] = value; }
 
-  /// The label for this input. Bind this to `<paper-input-container>`'s `label` property.
+  get keyBindings => jsElement[r'keyBindings'];
+  set keyBindings(value) { jsElement[r'keyBindings'] = (value is Map || (value is Iterable && value is! JsArray)) ? new JsObject.jsify(value) : value;}
+
+  /// The label for this input. Bind this to `<label>`'s content and `hidden` property, e.g.
+  /// `<label hidden$="[[!label]]">[[label]]</label>` in your `template`
   String get label => jsElement[r'label'];
   set label(String value) { jsElement[r'label'] = value; }
 
-  /// The datalist of the input (if any). This should match the id of an existing <datalist>. Bind this
+  /// The datalist of the input (if any). This should match the id of an existing `<datalist>`. Bind this
   /// to the `<input is="iron-input">`'s `list` property.
   String get list => jsElement[r'list'];
   set list(String value) { jsElement[r'list'] = value; }
@@ -105,6 +121,10 @@ abstract class PaperInputBehavior implements CustomElementProxyMixin, IronContro
   /// Bind this to the `<input is="iron-input">`'s `minlength` property.
   num get minlength => jsElement[r'minlength'];
   set minlength(num value) { jsElement[r'minlength'] = value; }
+
+  /// Bind this to the `<input is="iron-input">`'s `multiple` property, used with type=file.
+  bool get multiple => jsElement[r'multiple'];
+  set multiple(bool value) { jsElement[r'multiple'] = value; }
 
   /// Bind this to the `<input is="iron-input">`'s `name` property.
   String get name => jsElement[r'name'];
@@ -138,6 +158,10 @@ abstract class PaperInputBehavior implements CustomElementProxyMixin, IronContro
   bool get required => jsElement[r'required'];
   set required(bool value) { jsElement[r'required'] = value; }
 
+  /// Bind this to the `<input is="iron-input">`'s `results` property, used with type=search.
+  num get results => jsElement[r'results'];
+  set results(num value) { jsElement[r'results'] = value; }
+
   /// Bind this to the `<input is="iron-input">`'s `size` property.
   num get size => jsElement[r'size'];
   set size(num value) { jsElement[r'size'] = value; }
@@ -159,8 +183,8 @@ abstract class PaperInputBehavior implements CustomElementProxyMixin, IronContro
 
   /// The value for this input. Bind this to the `<input is="iron-input">`'s `bindValue`
   /// property, or the value property of your input that is `notify:true`.
-  String get value => jsElement[r'value'];
-  set value(String value) { jsElement[r'value'] = value; }
+  get value => jsElement[r'value'];
+  set value(value) { jsElement[r'value'] = (value is Map || (value is Iterable && value is! JsArray)) ? new JsObject.jsify(value) : value;}
 
   /// Restores the cursor to its original position after updating the value.
   /// [newValue]: The value that should be saved.

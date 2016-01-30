@@ -19,7 +19,7 @@
         <paper-menu class="flex" selected="{{page}}" attr-for-selected="category">
           <paper-item category="service"  paper-drawer-toggle on-click="coreSelectHandler">Service</paper-item>
           <paper-item category="about"    paper-drawer-toggle on-click="coreSelectHandler">About</paper-item>
-          <paper-item category="settings" paper-drawer-toggle on-click="coreSelectHandler">Settings</paper-item>
+          <paper-item category="settingsPage" paper-drawer-toggle on-click="coreSelectHandler">Settings</paper-item>
           <paper-submenu>
             <paper-item class="menu-trigger">Topics</paper-item>
             <paper-menu class="menu-content" selected="{{subPage}}" attr-for-selected="category">
@@ -42,25 +42,25 @@
           <div>
             <paper-tabs selected="{{page}}" attr-for-selected="category">
               <template is="dom-repeat" items="{{tabs}}">
-                <paper-tab category="{{item}}" name="{{item}}">{{item}}</paper-tab>
+                <paper-tab category="{{item.category}}" name="{{item.category}}" on-click="coreSelectHandler">{{item.title}}</paper-tab>
               </template>
             </paper-tabs>
           </div>
         </paper-toolbar>
         <div fit layout vertical>
 
-          <iron-pages selected="{{page}}" attr-for-selected="category">
+          <iron-pages selected="{{page}}" attr-for-selected="id">
             <template is="dom-repeat" items="{{allPages}}">
-                <section category="{{item.category}}">
+                <section id="{{item.category}}">
                   <h1>{{item.category}}</h1>
                   <div>{{item.title}}</div>
                 </section>
             </template>
           </iron-pages>
 
-          <iron-pages id="subPages" selected="{{subPage}}" attr-for-selected="category">
+          <iron-pages id="subPages" selected="{{subPage}}" attr-for-selected="id">
             <template is="dom-repeat" items="{{allSubPages}}">
-                <section category="{{item.category}}">
+                <section id="{{item.category}}">
                   <h1>{{item.category}}</h1>
                   <div>{{item.title}}</div>
                 </section>

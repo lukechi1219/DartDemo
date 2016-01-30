@@ -2,19 +2,17 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.utils;
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 
+import 'package:async/async.dart' hide StreamQueue;
 import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:stack_trace/stack_trace.dart';
 
 import 'backend/operating_system.dart';
-import 'util/cancelable_future.dart';
 import 'util/path_handler.dart';
 import 'util/stream_queue.dart';
 
@@ -60,6 +58,17 @@ final OperatingSystem currentOSGuess = (() {
   return OperatingSystem.linux;
 })();
 
+/// A regular expression matching a hyphenated identifier.
+///
+/// This is like a standard Dart identifier, except that it can also contain
+/// hyphens.
+final hyphenatedIdentifier = new RegExp(r"[a-zA-Z_-][a-zA-Z0-9_-]*");
+
+/// Like [hyphenatedIdentifier], but anchored so that it must match the entire
+/// string.
+final anchoredHyphenatedIdentifier =
+    new RegExp("^${hyphenatedIdentifier.pattern}\$");
+
 /// A pair of values.
 class Pair<E, F> {
   E first;
@@ -97,6 +106,16 @@ String toSentence(Iterable iter) {
   var result = iter.take(iter.length - 1).join(", ");
   if (iter.length > 2) result += ",";
   return "$result and ${iter.last}";
+}
+
+/// Returns [name] if [number] is 1, or the plural of [name] otherwise.
+///
+/// By default, this just adds "s" to the end of [name] to get the plural. If
+/// [plural] is passed, that's used instead.
+String pluralize(String name, int number, {String plural}) {
+  if (number == 1) return name;
+  if (plural != null) return plural;
+  return '${name}s';
 }
 
 /// Wraps [text] so that it fits within [lineLength], which defaults to 100
@@ -323,40 +342,44 @@ Future maybeFirst(Stream stream) {
   return completer.future;
 }
 
-/// Returns a [CancelableFuture] that returns the next value of [queue] unless
-/// it's canceled.
+/// Returns a [CancelableOperation] that returns the next value of [queue]
+/// unless it's canceled.
 ///
-/// If the future is canceled, [queue] is not moved forward at all. Note that
-/// it's not safe to call further methods on [queue] until this future has
+/// If the operation is canceled, [queue] is not moved forward at all. Note that
+/// it's not safe to call further methods on [queue] until this operation has
 /// either completed or been canceled.
-CancelableFuture cancelableNext(StreamQueue queue) {
+CancelableOperation cancelableNext(StreamQueue queue) {
   var fork = queue.fork();
-  var completer = new CancelableCompleter(() => fork.cancel(immediate: true));
-  completer.complete(fork.next.then((_) {
-    fork.cancel();
-    return queue.next;
-  }));
-  return completer.future;
-}
-
-/// Returns a single-subscription stream that emits the results of [futures] in
-/// the order they complete.
-///
-/// If any futures in [futures] are [CancelableFuture]s, this will cancel them
-/// if the subscription is canceled.
-Stream inCompletionOrder(Iterable<Future> futures) {
-  var futureSet = futures.toSet();
-  var controller = new StreamController(sync: true, onCancel: () {
-    return Future.wait(futureSet.map((future) {
-      return future is CancelableFuture ? future.cancel() : null;
-    }).where((future) => future != null));
+  var canceled = false;
+  var completer = new CancelableCompleter(onCancel: () {
+    canceled = true;
+    return fork.cancel(immediate: true);
   });
 
-  for (var future in futureSet) {
-    future.then(controller.add).catchError(controller.addError)
+  completer.complete(fork.next.then((_) {
+    fork.cancel();
+    return canceled ? null : queue.next;
+  }));
+
+  return completer.operation;
+}
+
+/// Returns a single-subscription stream that emits the results of [operations]
+/// in the order they complete.
+///
+/// If the subscription is canceled, any pending operations are canceled as
+/// well.
+Stream inCompletionOrder(Iterable<CancelableOperation> operations) {
+  var operationSet = operations.toSet();
+  var controller = new StreamController(sync: true, onCancel: () {
+    return Future.wait(operationSet.map((operation) => operation.cancel()));
+  });
+
+  for (var operation in operationSet) {
+    operation.value.then(controller.add).catchError(controller.addError)
         .whenComplete(() {
-      futureSet.remove(future);
-      if (futureSet.isEmpty) controller.close();
+      operationSet.remove(operation);
+      if (operationSet.isEmpty) controller.close();
     });
   }
 

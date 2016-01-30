@@ -2,10 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.runner.vm.environment;
+import 'package:async/async.dart';
 
 import '../environment.dart';
-import '../../util/cancelable_future.dart';
 
 /// The environment for test suites loaded in an isolate in this Dart VM.
 class VMEnvironment implements Environment {
@@ -17,7 +16,7 @@ class VMEnvironment implements Environment {
   Uri get remoteDebuggerUrl => throw new UnsupportedError(
       "VMEnvironment.observatoryUrl is not supported.");
 
-  CancelableFuture displayPause() =>
+  CancelableOperation displayPause() =>
       throw new UnsupportedError(
           "The VM doesn't yet support Environment.displayPause.");
 }

@@ -11,6 +11,7 @@
 library reflectable.src.reflectable_implementation;
 
 import 'dart:mirrors' as dm;
+import 'incompleteness.dart';
 import 'reflectable_base.dart';
 import 'fixed_point.dart';
 import '../capability.dart';
@@ -119,7 +120,8 @@ rm.TypeMirror wrapTypeMirror(
     return new _TypeVariableMirrorImpl(typeMirror, reflectable);
   } else if (typeMirror is dm.TypedefMirror) {
     return new _TypedefMirrorImpl(typeMirror, reflectable);
-  } else if (typeMirror.reflectedType == dynamic) {
+  } else if (typeMirror.hasReflectedType &&
+      typeMirror.reflectedType == dynamic) {
     return new _SpecialTypeMirrorImpl(typeMirror, reflectable);
   } else {
     assert(typeMirror is dm.ClassMirror);
@@ -136,7 +138,7 @@ dm.ClassMirror unwrapClassMirror(rm.ClassMirror m) {
     // This also works for _FunctionTypeMirrorImpl
     return m._classMirror;
   } else {
-    throw new ArgumentError("Unexpected subtype of ClassMirror");
+    throw unreachableError("Unexpected subtype of ClassMirror");
   }
 }
 
@@ -144,7 +146,7 @@ dm.TypeMirror unwrapTypeMirror(rm.TypeMirror TypeMirror) {
   if (TypeMirror is _TypeMirrorImpl) {
     return TypeMirror._typeMirror;
   } else {
-    throw new ArgumentError("Unexpected subtype of TypeMirror");
+    throw unreachableError("Unexpected subtype of TypeMirror");
   }
 }
 
@@ -180,7 +182,7 @@ bool impliesTypeAnnotationClosure(List<ReflectCapability> capabilities) {
 
 bool impliesMixins(List<ReflectCapability> capabilities) {
   return capabilities.any(
-      (ReflectCapability capability) => capability == typeRelationsCapability);
+      (ReflectCapability capability) => capability is TypeRelationsCapability);
 }
 
 bool impliesReflectedType(List<ReflectCapability> capabilities) {
@@ -221,11 +223,13 @@ bool impliesTypes(List<ReflectCapability> capabilities) {
   });
 }
 
-/// Returns true if [predicate] returns true on the given [name]; otherwise, if
-/// [reflectable] allows for corresponding setter quantification then it
-/// returns the result of calling [predicate] on the corresponding getter name.
-/// In other words, it makes an attempt to get "yes" from [predicate] directly
-/// and then, if allowed, via the corresponding getter.
+/// Returns true iff [predicate] does so on [name] or its corresponding getter.
+///
+/// This is a general approach to `correspondingSetterQuantifyCapability`. If
+/// that capability is present in [reflectable] and [name] is a setter name then
+/// this function returns `predicate(name) || predicate(getterName)`, where
+/// `getterName` is the name of the corresponding getter. If the corresponding
+/// setter capability is absent it simply returns `predicate(name)`.
 bool _checkWithGetter(
     ReflectableImpl reflectable, String name, bool predicate(String name)) {
   return predicate(name) ||
@@ -234,8 +238,16 @@ bool _checkWithGetter(
           predicate(_setterNameToGetterName(name)));
 }
 
-/// Returns true if [classMirror] supports reflective invoke of the
-/// instance-member named [name] according to the capabilities of [reflectable].
+/// Returns true iff [name] can be invoked as an instance method.
+///
+/// Based on the capabilities of [reflectable], this function returns true
+/// iff instance invocation of a method named [name] is supported for an
+/// instance of [classMirror]. Note that there may be a corresponding setter
+/// capability which causes the check to take the corresponding getter
+/// declaration into account when [name] is a setter name, and note that the
+/// capabilities may choose to ignore the name and also that there may be a
+/// metadata based capability such that annotations determine the
+/// outcome.
 bool reflectableSupportsInstanceInvoke(
     ReflectableImpl reflectable, String name, dm.ClassMirror classMirror) {
   bool helper(String name) {
@@ -273,8 +285,23 @@ bool reflectableSupportsInstanceInvoke(
   return _checkWithGetter(reflectable, name, helper);
 }
 
-/// Returns true if [classMirror] supports looking up the declaration of the
-/// instance-member named [name] according to the capabilities of [reflectable].
+/// Returns true iff the declaration of [name] can be looked up.
+///
+/// Based on the capabilities of [reflectable], this function returns true
+/// iff the declaration of a member named [name] can be looked up in the given
+/// [classMirror]. The decision is based on instance invocation: The
+/// declaration can be looked up iff there is support for invocation of an
+/// instance method with the given [name], or if there is a declaration in
+/// [classMirror] with the given [name], and that declaration carries metadata
+/// which matches a metadata quantified capability in [reflectable]. Note that
+/// a name based capability (e.g., `InstanceInvokeCapability(..)`) does allow
+/// for lookups on names for which there is no instance member declaration in
+/// [classMirror] as long as it matches the given `namePattern`, and in
+/// particular a plain `instanceInvokeCapability` allows for lookups on all
+/// names (in which case the result returned from `declarations` may be null).
+/// In contrast, a metadata quantified capability only allows for lookups of
+/// declarations which do exist in [classMirror] and which do have the required
+/// metadata.
 bool reflectableSupportsDeclaration(
     ReflectableImpl reflectable, String name, dm.ClassMirror classMirror) {
   bool helper(String name) {
@@ -305,15 +332,33 @@ bool reflectableSupportsDeclaration(
   return _checkWithGetter(reflectable, name, helper);
 }
 
+/// Returns true iff [reflectable] supports types.
+bool reflectableSupportsType(ReflectableImpl reflectable) {
+  bool predicate(ApiReflectCapability capability) =>
+      capability is TypeCapability;
+  return reflectable.hasCapability(predicate);
+}
+
+/// Returns true iff [reflectable] supports delegation.
+bool reflectableSupportsDelegate(ReflectableImpl reflectable) {
+  bool predicate(ApiReflectCapability capability) =>
+      capability == delegateCapability;
+  return reflectable.hasCapability(predicate);
+}
+
 /// Used to delay the extraction of metadata that may be needed.
 typedef List<dm.InstanceMirror> MetadataEvaluator(String name);
 
-/// Returns true if [predicate] returns true on the given [name] and [metadata];
-/// otherwise, if [reflectable] allows for corresponding setter quantification
-/// then it returns the result of calling [predicate] on the corresponding
-/// getter name via `getMetadata(..)`. In other words, it makes an attempt to
-/// get "yes" from [predicate] directly and then, if allowed, via the
-/// corresponding getter.
+/// Returns true iff [predicate] does so on [name] or its corresponding getter.
+///
+/// This is a general approach to `correspondingSetterQuantifyCapability` that
+/// focuses on metadata based capabilities. If that capability is present in
+/// [reflectable] and [name] is a setter name then this function returns
+/// `predicate(name, metadata) || predicate(getterName, getterMetadata)`, where
+/// `getterName` is the name of the corresponding getter and [getMetadata] is
+/// used to obtain the metadata of that getter, `getterMetadata`. If the name
+/// is not a setter name, [getMetadata] is null, or corresponding setter
+/// capability is absent. it simply returns `predicate(name, metadata)`.
 bool _checkWithGetterUsingMetadata(
     ReflectableImpl reflectable,
     String name,
@@ -330,12 +375,19 @@ bool _checkWithGetterUsingMetadata(
   return predicate(getterName, getMetadata(getterName));
 }
 
-/// Returns true iff [reflectable] supports static invoke of [name].
-/// The metadata of the declaration of [name] is provided as [metadata], and
-/// the metadata of the declaration of the corresponding getter is provided
-/// via [getMetadata]; the latter must be [null] in the cases where [name]
-/// does not declare a setter or it does declare a setter but there is no
-/// corresponding getter declaration.
+/// Returns true iff [name] can be invoked as a static method.
+///
+/// Based on the capabilities of [reflectable], this function returns true
+/// iff static invocation of a method named [name] is supported for an
+/// instance of [classMirror], given that the declaration named [name] has
+/// metadata as specified by [metadata]. Note that the capabilities may choose
+/// to ignore the name, and also that there may be a metadata based capability
+/// such that metadata annotations determine the outcome. There may also be a
+/// `correspondingSetterQuantifyCapability`, in which case [getMetadata] may be
+/// used to obtain the metadata carried by the corresponding getter. in cases
+/// where [name] is a setter name, [getMetadata] may be null, in which case no
+/// corresponding getter will be taken into account (so it should be null when
+/// [name] is not a setter name or there is no corresponding getter).
 bool reflectableSupportsStaticInvoke(
     ReflectableImpl reflectable, String name, List<dm.InstanceMirror> metadata,
     [MetadataEvaluator getMetadata]) {
@@ -358,14 +410,48 @@ bool reflectableSupportsStaticInvoke(
       reflectable, name, helper, metadata, getMetadata);
 }
 
-/// Returns true iff [reflectable] supports top-level invoke of [name].
-/// The metadata of the declaration of [name] is provided as [metadata], and
-/// the metadata of the declaration of the corresponding getter is provided
-/// via [getMetadata]; the latter must be [null] in the cases where [name]
-/// does not declare a setter or it does declare a setter but there is no
-/// corresponding getter declaration.
-bool reflectableSupportsTopLevelInvoke(ReflectableImpl reflectable, String name,
-    List<dm.InstanceMirror> metadata, MetadataEvaluator getMetadata) {
+/// Returns true iff there is support for [libraryMirror].
+///
+/// Returns true iff the capabilities of [reflectable] include a
+/// `libraryCapability` and the library directive of the library modeled by
+/// [libraryMirror] carries that [reflectable] as metadata,or there exists an
+/// import of 'package:reflectable/reflectable.dart' in the program that
+/// carries a global quantifier that connects [reflectable] to that library.
+bool _supportsLibrary(
+    ReflectableImpl reflectable, dm.LibraryMirror libraryMirror) {
+  // TODO(eernst) implement: Apparently, we cannot check whether the library
+  // modeled by [libraryMirror] even has a `library` directive, much less
+  // whether that directive does or does not carry a particular object as
+  // metadata. If that is true then there is no way we can detect whether
+  // [reflector] covers [libraryMirror] due to metadata on the directive.
+  // To avoid creating too many spurious [NoSuchCapabilityError]s, we let it
+  // pass as "OK" for now.
+  return true;
+}
+
+/// Cache for the status of each library relative to each reflector: Does
+/// this reflector cover that library?
+final Map<Reflectable,
+        Map<dm.LibraryMirror, bool>> _reflectableLibraryCoverage =
+    <Reflectable, Map<dm.LibraryMirror, bool>>{};
+
+/// Returns true iff [name] can be invoked as a top level function.
+///
+/// Based on the capabilities of [reflectable], this function returns true
+/// iff top-level invocation is supported for a method named [name] whose
+/// declaration carries metadata as specified in [metadata]. Note that there
+/// may be a corresponding setter capability which causes the check to take the
+/// corresponding getter declaration into account when [name] is a setter name.
+/// In that case [getMetadata] may be used to obtain the metadata associated
+/// with the corresponding getter. If [getMetadata] is null then no
+/// corresponding getter will be taken into account (so it should be null when
+/// [name] is not a setter name and when there is no corresponding getter).
+bool reflectableSupportsTopLevelInvoke(
+    ReflectableImpl reflectable,
+    dm.LibraryMirror libraryMirror,
+    String name,
+    List<dm.InstanceMirror> metadata,
+    MetadataEvaluator getMetadata) {
   // We don't have to check for `libraryCapability` because this method is only
   // ever called from the methods of a `LibraryMirrorImpl` and the existence of
   // an instance of a `LibraryMirrorImpl` implies the `libraryMirrorCapability`.
@@ -382,11 +468,43 @@ bool reflectableSupportsTopLevelInvoke(ReflectableImpl reflectable, String name,
     return reflectable.hasCapability(predicate);
   }
 
+  if (_reflectableLibraryCoverage[reflectable] == null) {
+    // Initialize the coverage entry for [reflectable].
+    _reflectableLibraryCoverage[reflectable] = <dm.LibraryMirror, bool>{};
+  }
+  Map<dm.LibraryMirror, bool> _libraryCoverage =
+      _reflectableLibraryCoverage[reflectable];
+  if (_libraryCoverage[libraryMirror] == null) {
+    // Find the coverage value for [libraryMirror] in the coverage entry for
+    // [reflectable].
+    _libraryCoverage[libraryMirror] =
+        _supportsLibrary(reflectable, libraryMirror);
+  }
+  if (!_libraryCoverage[libraryMirror]) return false;
+
   return _checkWithGetterUsingMetadata(
       reflectable, name, helper, metadata, getMetadata);
 }
 
-/// Returns true iff [reflectable] supports invoke of [name].
+/// Returns true iff [reflectable] supports constructor invocation of [name].
+///
+/// Based on the capabilities of [reflectable], this function returns true iff
+/// constructor invocation is supported for a constructor named [name] on
+/// the given [classMirror]. Note that a plain `newInstanceCapability` will
+/// ignore the name and allow all names, and a `NewInstanceCapability` carrying
+/// a nontrivial `namePattern` will require a match [name] with that pattern,
+/// and in both cases it does not matter whether there actually is a constructor
+/// named [name]. If there is a metadata quantified capability then true is
+/// returned if there exists a declaration of a constructor in [classMirror]
+/// named [name] which carries the required type of metadata.
+///
+/// NB: [name] must be in the short format that is used for the argument to
+/// `newInstance` on a [ClassMirror] and with the `constructorName` of a
+/// [MethodMirror], i.e., it does not include the class name (for instance, ""
+/// is the default constructor and "fromList" a named one). This differs from
+/// the format used in maps like `declarations` where the class name is
+/// included (in this format, the given examples could be "Reflectable" and
+/// "Reflectable.fromList").
 bool reflectableSupportsConstructorInvoke(
     ReflectableImpl reflectable, dm.ClassMirror classMirror, String name) {
   bool predicate(ApiReflectCapability capability) {
@@ -401,10 +519,9 @@ bool reflectableSupportsConstructorInvoke(
         return declarationMirror is dm.MethodMirror &&
             declarationMirror.isConstructor &&
             declarationMirror.constructorName == nameSymbol;
-      });
-      if (constructorMirror == null ||
-          !constructorMirror.isConstructor) return false;
-      return metadataSupported(constructorMirror.metadata, metadataCapability);
+      }, orElse: () => null);
+      if (constructorMirror == null) return false;
+      return metadataSupported(constructorMirror.metadata, capability);
     }
     return false;
   }
@@ -414,7 +531,13 @@ bool reflectableSupportsConstructorInvoke(
 
 bool reflectableSupportsDeclarations(Reflectable reflectable) {
   bool predicate(ApiReflectCapability capability) =>
-      capability == declarationsCapability;
+      capability is DeclarationsCapability;
+  return reflectable.hasCapability(predicate);
+}
+
+bool reflectableSupportsTypeRelations(Reflectable reflectable) {
+  bool predicate(ApiReflectCapability capability) =>
+      capability is TypeRelationsCapability;
   return reflectable.hasCapability(predicate);
 }
 
@@ -437,6 +560,11 @@ String _getterToSetter(String getterName) {
 bool _supportsType(List<ReflectCapability> capabilities) {
   return capabilities
       .any((ReflectCapability capability) => capability is TypeCapability);
+}
+
+bool _supportsMetadata(List<ReflectCapability> capabilities) {
+  return capabilities
+      .any((ReflectCapability capability) => capability is MetadataCapability);
 }
 
 abstract class _ObjectMirrorImplMixin implements rm.ObjectMirror {
@@ -469,14 +597,19 @@ class _LibraryMirrorImpl extends _DeclarationMirrorImpl
       throw new NoSuchCapabilityError(
           "Attempt to get declarations without capability");
     }
-    Map<String, rm.DeclarationMirror> result =
-        new Map<String, rm.DeclarationMirror>();
+    return _rawDeclarations;
+  }
+
+  Map<String, rm.DeclarationMirror> get _rawDeclarations {
+    if (_declarationsCache != null) return _declarationsCache;
+    Map<String, rm.DeclarationMirror> result = <String, rm.DeclarationMirror>{};
     _libraryMirror.declarations
         .forEach((Symbol nameSymbol, dm.DeclarationMirror declarationMirror) {
       String name = dm.MirrorSystem.getName(nameSymbol);
       if (declarationMirror is dm.MethodMirror) {
         if (reflectableSupportsTopLevelInvoke(
             _reflectable,
+            _libraryMirror,
             name,
             declarationMirror.metadata,
             _getMetadataLibraryFactory(_libraryMirror))) {
@@ -485,9 +618,9 @@ class _LibraryMirrorImpl extends _DeclarationMirrorImpl
       } else if (declarationMirror is dm.VariableMirror) {
         // For variableMirrors we test both for support of the name and the
         // derived setter name.
-        if (reflectableSupportsTopLevelInvoke(
-                _reflectable, name, declarationMirror.metadata, null) ||
-            reflectableSupportsTopLevelInvoke(_reflectable,
+        if (reflectableSupportsTopLevelInvoke(_reflectable, _libraryMirror,
+                name, declarationMirror.metadata, null) ||
+            reflectableSupportsTopLevelInvoke(_reflectable, _libraryMirror,
                 _getterToSetter(name), declarationMirror.metadata, null)) {
           result[name] = wrapDeclarationMirror(declarationMirror, _reflectable);
         }
@@ -497,7 +630,7 @@ class _LibraryMirrorImpl extends _DeclarationMirrorImpl
         // [dm.ParameterMirror]: not declared in a library, [dm.TypeMirror],
         // and the 4 subtypes thereof; [dm.ClassMirror]: processed here,
         // [dm.TypedefMirror]: not yet supported, [dm.FunctionTypeMirror]: not
-        // yet supported, and [dm.TypeVariableMirror]: not yet supported.
+        // yet supported, and [dm.TypeVariableMirror]: not declared in library.
         if (declarationMirror is dm.ClassMirror) {
           if (_reflectable._supportedClasses.contains(declarationMirror)) {
             result[name] =
@@ -508,46 +641,130 @@ class _LibraryMirrorImpl extends _DeclarationMirrorImpl
         }
       }
     });
+    _declarationsCache = result;
     return result;
   }
+
+  Map<String, rm.DeclarationMirror> _declarationsCache;
 
   @override
   Object invoke(String memberName, List positionalArguments,
       [Map<Symbol, dynamic> namedArguments]) {
-    dm.DeclarationMirror declaration =
-        _libraryMirror.declarations[new Symbol(memberName)];
-    if (!reflectableSupportsTopLevelInvoke(_reflectable, memberName,
-        declaration.metadata, _getMetadataLibraryFactory(_libraryMirror))) {
-      throw new NoSuchInvokeCapabilityError(
+    fail() {
+      throw reflectableNoSuchMethodError(
           _receiver, memberName, positionalArguments, namedArguments);
     }
-    return _libraryMirror
-        .invoke(new Symbol(memberName), positionalArguments, namedArguments)
-        .reflectee;
+
+    Symbol memberNameSymbol = new Symbol(memberName);
+    dm.DeclarationMirror dmDeclaration =
+        _libraryMirror.declarations[memberNameSymbol];
+    if (!reflectableSupportsTopLevelInvoke(
+        _reflectable,
+        _libraryMirror,
+        memberName,
+        dmDeclaration?.metadata,
+        _getMetadataLibraryFactory(_libraryMirror))) {
+      throw fail();
+    } else {
+      // The invocation is supported according to the given capabilities,
+      // but there may not be a method with the requested name.
+      rm.DeclarationMirror declaration = _rawDeclarations[memberName];
+      if (declaration == null) throw fail();
+      if (declaration is rm.MethodMirror) {
+        assert(declaration is MethodMirrorImpl);
+        MethodMirrorImpl methodMirror = declaration;
+        if (!methodMirror._isArgumentListShapeAppropriate(
+            positionalArguments.length, namedArguments?.keys)) {
+          // Invocation would fail because of a mis-matched argument list.
+          throw fail();
+        }
+        return _libraryMirror
+            .invoke(memberNameSymbol, positionalArguments, namedArguments)
+            .reflectee;
+      } else if (declaration is rm.TypeMirror) {
+        throw fail();
+      } else if (declaration is rm.VariableMirror) {
+        // TODO(eernst) clarify: Could this happen? Is it a getter?
+        throw unimplementedError("Invocation of variable not yet supported");
+      } else {
+        // We cannot have a `rm.LibraryMirror` (no libraries are nested in
+        // libraries).
+        throw unreachableError("Unexpected kind of declaration mirror");
+      }
+    }
   }
 
   @override
   Object invokeGetter(String getterName) {
-    if (!reflectableSupportsTopLevelInvoke(_reflectable, getterName,
-        _libraryMirror.declarations[new Symbol(getterName)].metadata, null)) {
-      throw new NoSuchInvokeCapabilityError(_receiver, getterName, [], null);
+    fail() {
+      throw reflectableNoSuchGetterError(_receiver, getterName, [], null);
     }
+
     Symbol getterNameSymbol = new Symbol(getterName);
-    return _libraryMirror.getField(getterNameSymbol).reflectee;
+    dm.DeclarationMirror declaration =
+        _libraryMirror.declarations[getterNameSymbol];
+    if (!reflectableSupportsTopLevelInvoke(_reflectable, _libraryMirror,
+        getterName, declaration?.metadata, null)) {
+      throw fail();
+    } else {
+      if (declaration == null) throw fail();
+      // The invocation is supported according to the given capabilities.
+      // but there may not be a getter with the requested name.
+      if (declaration is dm.MethodMirror) {
+        if (declaration.isConstructor) throw fail();
+        // We need not check the argument list shape, it's fixed for getters.
+        return _libraryMirror.getField(getterNameSymbol).reflectee;
+      } else if (declaration is rm.TypeMirror) {
+        throw fail();
+      } else if (declaration is rm.VariableMirror) {
+        // TODO(eernst) clarify: Could this happen? Is it a getter?
+        throw unimplementedError("Invocation of variable not yet supported");
+      } else {
+        // We cannot have a `dm.LibraryMirror` (no libraries are nested in
+        // libraries).
+        throw unreachableError("Unexpected kind of declaration mirror");
+      }
+    }
   }
 
   @override
   Object invokeSetter(String setterName, Object value) {
-    dm.DeclarationMirror declaration =
-        _libraryMirror.declarations[new Symbol(setterName)];
+    fail() {
+      throw reflectableNoSuchSetterError(_receiver, setterName, [value], null);
+    }
+
     String getterName = _setterToGetter(setterName);
     Symbol getterNameSymbol = new Symbol(getterName);
-    if (!reflectableSupportsTopLevelInvoke(_reflectable, setterName,
-        declaration.metadata, _getMetadataLibraryFactory(_libraryMirror))) {
-      throw new NoSuchInvokeCapabilityError(
-          _receiver, setterName, [value], null);
+    // Need to recompute the setter name because the `=` might not be there.
+    Symbol setterNameSymbol = new Symbol(_getterToSetter(getterName));
+    // We may have an implicit setter associated with the getter name, or
+    // and explicitly declared one associated with the setter name.
+    dm.DeclarationMirror declaration =
+        _libraryMirror.declarations[setterNameSymbol];
+    declaration ??= _libraryMirror.declarations[getterNameSymbol];
+    List<dm.InstanceMirror> metadata = declaration?.metadata;
+    if (!reflectableSupportsTopLevelInvoke(_reflectable, _libraryMirror,
+        setterName, metadata, _getMetadataLibraryFactory(_libraryMirror))) {
+      throw fail();
+    } else {
+      if (declaration == null) throw fail();
+      // The invocation is supported according to the given capabilities.
+      // but there may not be a setter with the requested name.
+      if (declaration is dm.MethodMirror) {
+        if (!declaration.isSetter) throw fail();
+        // We need not check the argument list shape, it's fixed for setters.
+        return _libraryMirror.setField(getterNameSymbol, value).reflectee;
+      } else if (declaration is rm.TypeMirror) {
+        throw fail();
+      } else if (declaration is rm.VariableMirror) {
+        // TODO(eernst) clarify: Could this happen? Is it a getter?
+        throw unimplementedError("Invocation of variable not yet supported");
+      } else {
+        // We cannot have a `dm.LibraryMirror` (no libraries are nested in
+        // classes).
+        throw unreachableError("Unexpected kind of declaration mirror");
+      }
     }
-    return _libraryMirror.setField(getterNameSymbol, value).reflectee;
   }
 
   @override
@@ -604,8 +821,13 @@ class _LibraryDependencyMirrorImpl implements rm.LibraryDependencyMirror {
   String get prefix => dm.MirrorSystem.getName(_libraryDependencyMirror.prefix);
 
   @override
-  List<Object> get metadata =>
-      _libraryDependencyMirror.metadata.map((m) => m.reflectee).toList();
+  List<Object> get metadata {
+    if (!_supportsMetadata(_reflectable.capabilities)) {
+      throw new NoSuchCapabilityError(
+          "Attempt to get metadata without `MetadataCapability`.");
+    }
+    return _libraryDependencyMirror.metadata.map((m) => m.reflectee).toList();
+  }
 
   @override
   rm.SourceLocation get location {
@@ -636,7 +858,18 @@ class _InstanceMirrorImpl extends _ObjectMirrorImplMixin
   _InstanceMirrorImpl(this._instanceMirror, this._reflectable);
 
   @override
-  rm.TypeMirror get type => wrapTypeMirror(_instanceMirror.type, _reflectable);
+  rm.TypeMirror get type {
+    if (!reflectableSupportsType(_reflectable)) {
+      throw new NoSuchCapabilityError(
+          "Attempt to get `type` without capability");
+    }
+    return _rawType;
+  }
+
+  /// Returns the type mirror describing the type of the reflectee.
+  /// Used to bypass the check for `TypeCapability` for internal use.
+  rm.TypeMirror get _rawType =>
+      wrapTypeMirror(_instanceMirror.type, _reflectable);
 
   @override
   bool get hasReflectee => _instanceMirror.hasReflectee;
@@ -647,36 +880,79 @@ class _InstanceMirrorImpl extends _ObjectMirrorImplMixin
   @override
   Object invoke(String memberName, List positionalArguments,
       [Map<Symbol, dynamic> namedArguments]) {
-    if (reflectableSupportsInstanceInvoke(
+    fail() {
+      throw reflectableNoSuchMethodError(
+          _receiver, memberName, positionalArguments, namedArguments);
+    }
+
+    if (!reflectableSupportsInstanceInvoke(
         _reflectable, memberName, _instanceMirror.type)) {
+      throw fail();
+    } else {
+      // The invocation is supported according to the given capabilities,
+      // but there may not be a method with the requested name.
       Symbol memberNameSymbol = new Symbol(memberName);
+      rm.TypeMirror typeMirror = _rawType;
+      if (typeMirror is! ClassMirrorImpl) throw fail();
+      ClassMirrorImpl classMirror = typeMirror;
+      rm.MethodMirror declaration = classMirror._rawInstanceMembers[memberName];
+      if (declaration == null) throw fail();
+      MethodMirrorImpl methodMirror = declaration;
+      if (declaration.isConstructor) throw fail();
+      if (!methodMirror._isArgumentListShapeAppropriate(
+          positionalArguments.length, namedArguments?.keys)) {
+        // Invocation would fail because of a mis-matched argument list.
+        throw fail();
+      }
       return _instanceMirror
           .invoke(memberNameSymbol, positionalArguments, namedArguments)
           .reflectee;
     }
-    throw new NoSuchInvokeCapabilityError(
-        _receiver, memberName, positionalArguments, namedArguments);
   }
 
   @override
   Object invokeGetter(String fieldName) {
-    if (reflectableSupportsInstanceInvoke(
+    fail() {
+      throw reflectableNoSuchGetterError(_receiver, fieldName, [], null);
+    }
+
+    if (!reflectableSupportsInstanceInvoke(
         _reflectable, fieldName, _instanceMirror.type)) {
+      throw fail();
+    } else {
       Symbol fieldNameSymbol = new Symbol(fieldName);
+      // We need to check that there is such a getter.
+      dm.MethodMirror methodMirror =
+          _instanceMirror.type.instanceMembers[fieldNameSymbol];
+      if (methodMirror == null) throw fail();
+      if (methodMirror.isConstructor) throw fail();
+      // We need not check the argument list shape, it's fixed for getters.
       return _instanceMirror.getField(fieldNameSymbol).reflectee;
     }
-    throw new NoSuchInvokeCapabilityError(_receiver, fieldName, [], null);
   }
 
   @override
   Object invokeSetter(String setterName, Object value) {
-    if (reflectableSupportsInstanceInvoke(
+    fail() {
+      throw reflectableNoSuchSetterError(_receiver, setterName, [value], null);
+    }
+
+    if (!reflectableSupportsInstanceInvoke(
         _reflectable, setterName, _instanceMirror.type)) {
+      throw fail();
+    } else {
       String getterName = _setterToGetter(setterName);
       Symbol getterNameSymbol = new Symbol(getterName);
+      // Need to recompute the setter name because the `=` might not be there.
+      Symbol setterNameSymbol = new Symbol(_getterToSetter(getterName));
+      // We need to check that there is such a setter.
+      dm.MethodMirror methodMirror =
+          _instanceMirror.type.instanceMembers[setterNameSymbol];
+      if (methodMirror == null) throw fail();
+      if (!methodMirror.isSetter) throw fail();
+      // We need not check the argument list shape, it's fixed for setters.
       return _instanceMirror.setField(getterNameSymbol, value).reflectee;
     }
-    throw new NoSuchInvokeCapabilityError(_receiver, setterName, [value], null);
   }
 
   @override
@@ -688,7 +964,31 @@ class _InstanceMirrorImpl extends _ObjectMirrorImplMixin
   int get hashCode => _instanceMirror.hashCode;
 
   @override
-  delegate(Invocation invocation) => _instanceMirror.delegate(invocation);
+  delegate(Invocation invocation) {
+    if (!reflectableSupportsDelegate(_reflectable)) {
+      throw new NoSuchCapabilityError(
+          "Attempt to `delegate` without `delegateCapability`.");
+    }
+    if (!reflectableSupportsInstanceInvoke(_reflectable,
+        dm.MirrorSystem.getName(invocation.memberName), _instanceMirror.type)) {
+      StringInvocationKind kind;
+      if (invocation.isMethod) {
+        kind = StringInvocationKind.method;
+      } else if (invocation.isGetter) {
+        kind = StringInvocationKind.getter;
+      } else {
+        assert(invocation.isSetter);
+        kind = StringInvocationKind.setter;
+      }
+      throw reflectableNoSuchInvokableError(
+          _instanceMirror.reflectee,
+          dm.MirrorSystem.getName(invocation.memberName),
+          invocation.positionalArguments,
+          invocation.namedArguments,
+          kind);
+    }
+    return _instanceMirror.delegate(invocation);
+  }
 
   get _receiver => _instanceMirror.reflectee;
 
@@ -714,19 +1014,61 @@ class ClassMirrorImpl extends _TypeMirrorImpl
       : super(classMirror, reflectable) {}
 
   @override
+  bool get hasDynamicReflectedType => _classMirror.typeVariables.isEmpty;
+
+  @override
+  Type get dynamicReflectedType {
+    if (!hasDynamicReflectedType) {
+      /// We cannot hope to implement this based on 'dart:mirrors' for generic
+      /// classes, because there is no support for obtaining one instantiation
+      /// of a generic class based on a different one (we cannot obtain
+      /// `List<dynamic>` from `List<int>` or any such thing); and when
+      /// `isOriginalDeclaration` is true we do not have a `reflectedType` at
+      /// all.
+      throw new UnsupportedError(
+          "Attempt to get dynamicReflectedType on $_classMirror");
+    }
+    return reflectedType;
+  }
+
+  @deprecated
+  @override
+  bool get hasBestEffortReflectedType =>
+      hasReflectedType || hasDynamicReflectedType;
+
+  @deprecated
+  @override
+  Type get bestEffortReflectedType =>
+      hasReflectedType ? reflectedType : dynamicReflectedType;
+
+  @override
   List<rm.TypeVariableMirror> get typeVariables {
+    if (!reflectableSupportsDeclarations(_reflectable)) {
+      throw new NoSuchCapabilityError(
+          "Attempt to get typeVariables without `declarationsCapability`");
+    }
     return _classMirror.typeVariables.map((v) {
       return new _TypeVariableMirrorImpl(v, _reflectable);
     }).toList();
   }
 
   @override
-  List<rm.TypeMirror> get typeArguments => _classMirror.typeArguments.map((a) {
-        return wrapTypeMirror(a, _reflectable);
-      }).toList();
+  List<rm.TypeMirror> get typeArguments {
+    if (!reflectableSupportsDeclarations(_reflectable)) {
+      throw new NoSuchCapabilityError(
+          "Attempt to get typeArguments without `declarationsCapability`");
+    }
+    return _classMirror.typeArguments.map((a) {
+      return wrapTypeMirror(a, _reflectable);
+    }).toList();
+  }
 
   @override
   rm.ClassMirror get superclass {
+    if (!reflectableSupportsTypeRelations(_reflectable)) {
+      throw new NoSuchCapabilityError(
+          "Attempt to get superinterfaces without `typeRelationsCapability`");
+    }
     dm.ClassMirror sup = _classMirror.superclass;
     if (sup == null) return null; // For `Object`, do as `dm`.
     return wrapClassMirrorIfSupported(sup, _reflectable);
@@ -734,6 +1076,10 @@ class ClassMirrorImpl extends _TypeMirrorImpl
 
   @override
   List<rm.ClassMirror> get superinterfaces {
+    if (!reflectableSupportsTypeRelations(_reflectable)) {
+      throw new NoSuchCapabilityError(
+          "Attempt to get superinterfaces without `typeRelationsCapability`");
+    }
     List<dm.ClassMirror> superinterfaces = _classMirror.superinterfaces;
     return superinterfaces
         .where((dm.ClassMirror superinterface) => (_reflectable
@@ -747,14 +1093,22 @@ class ClassMirrorImpl extends _TypeMirrorImpl
   bool get isAbstract => _classMirror.isAbstract;
 
   @override
+  bool get isEnum => _classMirror.isEnum;
+
+  @override
   Map<String, rm.DeclarationMirror> get declarations {
     if (!reflectableSupportsDeclarations(_reflectable)) {
       throw new NoSuchCapabilityError(
-          "Attempt to get declarations without capability");
+          "Attempt to get declarations without `declarationsCapability`.");
     }
-    // TODO(sigurdm) future: Possibly cache this.
-    Map<String, rm.DeclarationMirror> result =
-        new Map<String, rm.DeclarationMirror>();
+    return _rawDeclarations;
+  }
+
+  /// Returns the declarations in this class; used to bypass the check for
+  /// `DeclarationsCapability` when used internally.
+  Map<String, rm.DeclarationMirror> get _rawDeclarations {
+    if (_declarationsCache != null) return _declarationsCache;
+    Map<String, rm.DeclarationMirror> result = <String, rm.DeclarationMirror>{};
     _classMirror.declarations
         .forEach((Symbol nameSymbol, dm.DeclarationMirror declarationMirror) {
       String name = dm.MirrorSystem.getName(nameSymbol);
@@ -765,8 +1119,8 @@ class ClassMirrorImpl extends _TypeMirrorImpl
           // Factory constructors are static, others not, so this decision
           // is made independently of `isStatic`.
           included = included ||
-              reflectableSupportsConstructorInvoke(
-                  _reflectable, _classMirror, name);
+              reflectableSupportsConstructorInvoke(_reflectable, _classMirror,
+                  dm.MirrorSystem.getName(declarationMirror.constructorName));
         } else {
           // `declarationMirror` is a non-constructor.
           if (declarationMirror.isStatic) {
@@ -818,11 +1172,22 @@ class ClassMirrorImpl extends _TypeMirrorImpl
         result[name] = wrapDeclarationMirror(declarationMirror, _reflectable);
       }
     });
+    _declarationsCache = result;
     return result;
   }
 
+  Map<String, rm.DeclarationMirror> _declarationsCache;
+
   @override
   Map<String, rm.MethodMirror> get instanceMembers {
+    if (!reflectableSupportsDeclarations(_reflectable)) {
+      throw new NoSuchCapabilityError(
+          "Attempt to get instanceMembers without `declarationsCapability`.");
+    }
+    return _rawInstanceMembers;
+  }
+
+  Map<String, rm.DeclarationMirror> get _rawInstanceMembers {
     // TODO(sigurdm) implement: Only expose members that are allowed
     // by the capabilities of the reflectable.
     Map<Symbol, dm.MethodMirror> members = _classMirror.instanceMembers;
@@ -833,6 +1198,14 @@ class ClassMirrorImpl extends _TypeMirrorImpl
 
   @override
   Map<String, rm.MethodMirror> get staticMembers {
+    if (!reflectableSupportsDeclarations(_reflectable)) {
+      throw new NoSuchCapabilityError(
+          "Attempt to get staticMembers without `declarationsCapability`.");
+    }
+    return _rawStaticMembers;
+  }
+
+  Map<String, rm.MethodMirror> get _rawStaticMembers {
     // TODO(sigurdm) implement: Only expose members that are allowed by the
     // capabilities of the reflectable.
     Map<Symbol, dm.MethodMirror> members = _classMirror.staticMembers;
@@ -849,55 +1222,153 @@ class ClassMirrorImpl extends _TypeMirrorImpl
   @override
   Object newInstance(String constructorName, List positionalArguments,
       [Map<Symbol, dynamic> namedArguments]) {
-    if (!reflectableSupportsConstructorInvoke(
-        _reflectable, _classMirror, constructorName)) {
-      throw new NoSuchInvokeCapabilityError(
+    fail() {
+      throw reflectableNoSuchMethodError(
           _classMirror, constructorName, positionalArguments, namedArguments);
     }
+
+    if (!reflectableSupportsConstructorInvoke(
+        _reflectable, _classMirror, constructorName)) {
+      throw fail();
+    }
     Symbol constructorNameSymbol = new Symbol(constructorName);
-    return _classMirror
-        .newInstance(constructorNameSymbol, positionalArguments, namedArguments)
-        .reflectee;
+    String nameOfConstructor =
+        "$simpleName${(constructorName.isEmpty ? "" : ".$constructorName")}";
+    rm.DeclarationMirror declaration = _rawDeclarations[nameOfConstructor];
+    if (declaration == null) {
+      throw fail();
+    }
+    if (declaration is rm.MethodMirror) {
+      assert(declaration is MethodMirrorImpl);
+      MethodMirrorImpl methodMirror = declaration;
+      if (!methodMirror.isConstructor) throw fail();
+      if (!methodMirror._isArgumentListShapeAppropriate(
+          positionalArguments.length, namedArguments?.keys)) {
+        // Invocation would fail because of a mis-matched argument list.
+        throw fail();
+      }
+      return _classMirror
+          .newInstance(
+              constructorNameSymbol, positionalArguments, namedArguments)
+          .reflectee;
+    } else if (declaration is rm.VariableMirror) {
+      throw fail();
+    } else {
+      // We cannot have a `rm.LibraryMirror` (no libraries are nested in
+      // classes), `rm.TypeMirror` (ditto).
+      throw unreachableError("Unexpected kind of declaration mirror");
+    }
   }
 
   @override
   Object invoke(String memberName, List positionalArguments,
       [Map<Symbol, dynamic> namedArguments]) {
-    dm.DeclarationMirror declaration =
-        _classMirror.declarations[new Symbol(memberName)];
-    List<Object> metadata = declaration == null ? null : declaration.metadata;
-    if (reflectableSupportsStaticInvoke(_reflectable, memberName, metadata,
-        _getMetadataClassFactory(_classMirror))) {
-      Symbol memberNameSymbol = new Symbol(memberName);
-      return _classMirror
-          .invoke(memberNameSymbol, positionalArguments, namedArguments)
-          .reflectee;
+    fail() {
+      throw reflectableNoSuchMethodError(
+          _receiver, memberName, positionalArguments, namedArguments);
     }
-    throw new NoSuchInvokeCapabilityError(
-        _receiver, memberName, positionalArguments, namedArguments);
+
+    Symbol memberNameSymbol = new Symbol(memberName);
+    dm.DeclarationMirror dmDeclaration =
+        _classMirror.declarations[memberNameSymbol];
+    List<Object> metadata = dmDeclaration?.metadata;
+    if (!reflectableSupportsStaticInvoke(_reflectable, memberName, metadata,
+        _getMetadataClassFactory(_classMirror))) {
+      throw fail();
+    } else {
+      rm.DeclarationMirror declaration = _rawDeclarations[memberName];
+      if (declaration == null) throw fail();
+      // The invocation is supported according to the given capabilities,
+      // but there may not be a method with the requested name.
+      if (declaration is rm.MethodMirror) {
+        assert(declaration is MethodMirrorImpl);
+        MethodMirrorImpl methodMirror = declaration;
+        if (declaration.isConstructor) throw fail();
+        if (!methodMirror._isArgumentListShapeAppropriate(
+            positionalArguments.length, namedArguments?.keys)) {
+          // Invocation would fail because of a mis-matched argument list.
+          throw reflectableNoSuchMethodError(
+              _receiver, memberName, positionalArguments, namedArguments);
+        }
+        return _classMirror
+            .invoke(memberNameSymbol, positionalArguments, namedArguments)
+            .reflectee;
+      } else if (declaration is rm.VariableMirror) {
+        // TODO(eernst) clarify: Could this happen? Is it a getter?
+        throw unimplementedError("Invocation of variable not yet supported");
+      } else {
+        // We cannot have a `rm.LibraryMirror` (no libraries are nested in
+        // classes), `rm.TypeMirror` (ditto).
+        throw unreachableError("Unexpected kind of declaration mirror");
+      }
+    }
   }
 
   @override
   Object invokeGetter(String name) {
-    if (reflectableSupportsStaticInvoke(_reflectable, name,
-        _classMirror.declarations[new Symbol(name)]?.metadata)) {
-      Symbol getterNameSymbol = new Symbol(name);
-      return _classMirror.getField(getterNameSymbol).reflectee;
+    fail() {
+      throw reflectableNoSuchGetterError(_receiver, name, [], null);
     }
-    throw new NoSuchInvokeCapabilityError(_receiver, name, [], null);
+
+    Symbol getterNameSymbol = new Symbol(name);
+    dm.DeclarationMirror declaration =
+        _classMirror.declarations[getterNameSymbol];
+    if (!reflectableSupportsStaticInvoke(
+        _reflectable, name, declaration?.metadata)) {
+      throw fail();
+    } else {
+      if (declaration == null) throw fail();
+      // The invocation is supported according to the given capabilities.
+      // but there may not be a getter with the requested name.
+      if (declaration is dm.MethodMirror || declaration is dm.VariableMirror) {
+        if (declaration is dm.MethodMirror && declaration.isConstructor) {
+          throw fail();
+        }
+        // We need not check the argument list shape, it's fixed for getters.
+        return _classMirror.getField(getterNameSymbol).reflectee;
+      } else {
+        // We cannot have a `dm.LibraryMirror` (no libraries are nested in
+        // classes) nor `dm.TypeMirror` (ditto).
+        throw unreachableError("Unexpected kind of declaration mirror");
+      }
+    }
   }
 
   @override
   Object invokeSetter(String name, Object value) {
-    List<dm.InstanceMirror> metadata =
-        _classMirror.declarations[new Symbol(name)]?.metadata;
-    if (reflectableSupportsStaticInvoke(
-        _reflectable, name, metadata, _getMetadataClassFactory(_classMirror))) {
-      String getterName = _setterToGetter(name);
-      Symbol getterNameSymbol = new Symbol(getterName);
-      return _classMirror.setField(getterNameSymbol, value).reflectee;
+    fail() {
+      throw reflectableNoSuchSetterError(_receiver, name, [value], null);
     }
-    throw new NoSuchInvokeCapabilityError(_receiver, name, [value], null);
+
+    String getterName = _setterToGetter(name);
+    Symbol getterNameSymbol = new Symbol(getterName);
+    // Need to recompute the setter name because the `=` might not be there.
+    Symbol setterNameSymbol = new Symbol(_getterToSetter(getterName));
+    // We may have an implicit setter associated with the getter name, or
+    // and explicitly declared one associated with the setter name.
+    dm.DeclarationMirror declaration =
+        _classMirror.declarations[setterNameSymbol];
+    declaration ??= _classMirror.declarations[getterNameSymbol];
+    List<dm.InstanceMirror> metadata = declaration?.metadata;
+    if (!reflectableSupportsStaticInvoke(
+        _reflectable, name, metadata, _getMetadataClassFactory(_classMirror))) {
+      throw fail();
+    } else {
+      if (declaration == null) throw fail();
+      // The invocation is supported according to the given capabilities.
+      // but there may not be a setter with the requested name.
+      if (declaration is dm.MethodMirror || declaration is dm.VariableMirror) {
+        if (declaration is dm.MethodMirror && !declaration.isSetter) {
+          throw fail();
+        }
+        // We need not check the argument list shape, it's fixed for setters.
+        return _classMirror.setField(getterNameSymbol, value).reflectee;
+      } else {
+        // We cannot have a `dm.LibraryMirror` (no libraries are nested in
+        // classes) nor `dm.TypeMirror` (ditto).
+        throw unreachableError("Unexpected kind of declaration mirror");
+      }
+    }
   }
 
   @override
@@ -915,19 +1386,35 @@ class ClassMirrorImpl extends _TypeMirrorImpl
     return _classMirror.isSubclassOf(unwrapClassMirror(other));
   }
 
-  get _receiver => _classMirror.reflectedType;
+  get _receiver {
+    _classMirror.hasReflectedType ? _classMirror.reflectedType : null;
+  }
 
   @override
   String toString() => "ClassMirrorImpl('${_classMirror}')";
 
   @override
   Function invoker(String memberName) {
+    fail() {
+      throw reflectableNoSuchGetterError(_receiver, memberName, [], null);
+    }
+
     Symbol memberNameSymbol = new Symbol(memberName);
     Function helper(Object o) {
       dm.InstanceMirror receiverMirror = dm.reflect(o);
-      dm.InstanceMirror memberMirror =
-          receiverMirror.getField(memberNameSymbol);
-      return memberMirror.reflectee;
+
+      if (!reflectableSupportsInstanceInvoke(
+          _reflectable, memberName, receiverMirror.type)) {
+        throw fail();
+      } else {
+        // We need to check that there is such a getter.
+        dm.MethodMirror methodMirror =
+            receiverMirror.type.instanceMembers[memberNameSymbol];
+        if (methodMirror == null) throw fail();
+        if (methodMirror.isConstructor) throw fail();
+        // We need not check the argument list shape, it's fixed for getters.
+        return receiverMirror.getField(memberNameSymbol).reflectee;
+      }
     }
     return helper;
   }
@@ -950,6 +1437,13 @@ class _FunctionTypeMirrorImpl extends ClassMirrorImpl
   _FunctionTypeMirrorImpl(
       dm.FunctionTypeMirror functionTypeMirror, ReflectableImpl reflectable)
       : super(functionTypeMirror, reflectable);
+
+  @override
+  bool get hasDynamicReflectedType => false;
+
+  @override
+  Type get dynamicReflectedType => throw unimplementedError(
+      "Attempt to get dynamicReflectedType on a function type mirror");
 
   @override
   rm.MethodMirror get callMethod {
@@ -1002,12 +1496,17 @@ abstract class _DeclarationMirrorImpl implements rm.DeclarationMirror {
 
   @override
   List<Object> get metadata {
-    if (_reflectable.capabilities.contains(metadataCapability)) {
-      return _declarationMirror.metadata.map((m) => m.reflectee).toList();
+    if (!_supportsMetadata(_reflectable.capabilities)) {
+      throw new NoSuchCapabilityError(
+          "Attempt to get metadata without `MetadataCapability`.");
     }
-    throw new NoSuchCapabilityError(
-        "Attempt to get metadata witout 'metadataCapability'");
+    return _rawMetadata;
   }
+
+  /// Returns the metadata associated with this declaration. Used to bypass
+  /// the check for `MetadataCapability` in internal usage.
+  List<Object> get _rawMetadata =>
+      _declarationMirror.metadata.map((m) => m.reflectee).toList();
 
   @override
   rm.SourceLocation get location {
@@ -1053,6 +1552,34 @@ class MethodMirrorImpl extends _DeclarationMirrorImpl
     }
     throw new NoSuchCapabilityError(
         "Attempt to get reflectedReturnType without capability");
+  }
+
+  @override
+  bool get hasDynamicReflectedReturnType {
+    if (impliesReflectedType(_reflectable.capabilities)) {
+      return _methodMirror.returnType.typeVariables.isEmpty &&
+          _methodMirror.returnType.hasReflectedType;
+    }
+    throw new NoSuchCapabilityError("Attempt to get "
+        "hasDynamicReflectedReturnType without `reflectedTypeCapability`");
+  }
+
+  @override
+  Type get dynamicReflectedReturnType {
+    if (impliesReflectedType(_reflectable.capabilities)) {
+      if (_methodMirror.returnType.typeVariables.isEmpty) {
+        return _methodMirror.returnType.reflectedType;
+      } else {
+        // The value returned by `hasDynamicReflectedReturnType` is false, so
+        // even though this is unimplemented and may be implemented if we get
+        // the required runtime support, it is currently an `UnsupportedError`.
+        throw new UnsupportedError("Attempt to obtain the "
+            "dynamicReflectedReturnType of a generic type "
+            "${_methodMirror.returnType}");
+      }
+    }
+    throw new NoSuchCapabilityError("Attempt to get dynamicReflectedReturnType "
+        "without `reflectedTypeCapability`");
   }
 
   @override
@@ -1105,6 +1632,78 @@ class MethodMirrorImpl extends _DeclarationMirrorImpl
   @override
   bool get isFactoryConstructor => _methodMirror.isFactoryConstructor;
 
+  /// Computes the values describing the shape of the parameter list for the
+  /// mirrored method and stores those values in the corresponding caches.
+  void _setupParameterListInfo() {
+    _numberOfPositionalParameters = 0;
+    _numberOfOptionalPositionalParameters = 0;
+    _namesOfNamedParameters = new Set<Symbol>();
+    for (ParameterMirror parameterMirror in parameters) {
+      if (parameterMirror is _ParameterMirrorImpl && parameterMirror.isNamed) {
+        _namesOfNamedParameters
+            .add(parameterMirror._parameterMirror.simpleName);
+      } else {
+        _numberOfPositionalParameters++;
+        if (parameterMirror.isOptional) {
+          _numberOfOptionalPositionalParameters++;
+        }
+      }
+    }
+  }
+
+  /// Returns the number of positional parameters of this method; computed
+  /// from the given parameter mirrors, then cached.
+  int get numberOfPositionalParameters {
+    if (_numberOfPositionalParameters != null) {
+      return _numberOfPositionalParameters;
+    }
+    _setupParameterListInfo();
+    return _numberOfPositionalParameters;
+  }
+
+  /// Cache for the number of positional parameters of this method; `null`
+  /// means not yet cached.
+  int _numberOfPositionalParameters;
+
+  /// Returns the number of optional positional parameters of this method;
+  /// computed from the given parameter mirrors, then cached.
+  int get numberOfOptionalPositionalParameters {
+    if (_numberOfOptionalPositionalParameters != null) {
+      return _numberOfOptionalPositionalParameters;
+    }
+    _setupParameterListInfo();
+    return _numberOfOptionalPositionalParameters;
+  }
+
+  /// Cache for the number of optional positional parameters of this method;
+  /// `null` means not yet cached.
+  int _numberOfOptionalPositionalParameters;
+
+  /// Returns the [Set] of [Symbol]s used for named parameters of this method;
+  /// computed based on the given parameter mirrors, then cached.
+  Set<Symbol> get namesOfNamedParameters {
+    if (_namesOfNamedParameters != null) return _namesOfNamedParameters;
+    _setupParameterListInfo();
+    return _namesOfNamedParameters;
+  }
+
+  /// Cache for the set of symbols used for named parameters for this method;
+  /// `null` means not yet cached.
+  Set<Symbol> _namesOfNamedParameters;
+
+  bool _isArgumentListShapeAppropriate(
+      int numberOfPositionalArguments, Iterable<Symbol> namedArgumentNames) {
+    if (numberOfPositionalArguments <
+            numberOfPositionalParameters -
+                numberOfOptionalPositionalParameters ||
+        numberOfPositionalArguments > numberOfPositionalParameters) {
+      return false;
+    }
+    if (namedArgumentNames == null) return true;
+    return namedArgumentNames
+        .every((Symbol name) => namesOfNamedParameters.contains(name));
+  }
+
   @override
   bool operator ==(other) {
     return other is MethodMirrorImpl
@@ -1116,7 +1715,7 @@ class MethodMirrorImpl extends _DeclarationMirrorImpl
   int get hashCode => _methodMirror.hashCode;
 
   @override
-  String toString() => "_MethodMirrorImpl('${_methodMirror}')";
+  String toString() => "MethodMirrorImpl('${_methodMirror}')";
 }
 
 class _ClosureMirrorImpl extends _InstanceMirrorImpl
@@ -1154,25 +1753,45 @@ class VariableMirrorImpl extends _DeclarationMirrorImpl
     if (_supportsType(_reflectable.capabilities)) {
       return wrapTypeMirror(_variableMirror.type, _reflectable);
     }
-    throw new NoSuchCapabilityError("Attempt to get type without capability");
+    throw new NoSuchCapabilityError(
+        "Attempt to get type without `TypeCapability`");
   }
 
   @override
-  bool get hasReflectedType {
-    if (impliesReflectedType(_reflectable.capabilities)) {
-      return _variableMirror.type.hasReflectedType;
-    }
-    throw new NoSuchCapabilityError(
-        "Attempt to evaluate hasReflectedType without capability");
-  }
+  bool get hasReflectedType =>
+      impliesReflectedType(_reflectable.capabilities) &&
+          _variableMirror.type.hasReflectedType;
 
   @override
   Type get reflectedType {
     if (impliesReflectedType(_reflectable.capabilities)) {
       return _variableMirror.type.reflectedType;
     }
-    throw new NoSuchCapabilityError(
-        "Attempt to get reflectedType without capability");
+    throw new UnsupportedError(
+        "Attempt to get reflectedType without `reflectedTypeCapability`");
+  }
+
+  @override
+  bool get hasDynamicReflectedType =>
+      impliesReflectedType(_reflectable.capabilities) &&
+          _variableMirror.type.typeVariables.isEmpty &&
+          _variableMirror.type.hasReflectedType;
+
+  @override
+  Type get dynamicReflectedType {
+    if (impliesReflectedType(_reflectable.capabilities)) {
+      if (_variableMirror.type.typeVariables.isEmpty) {
+        return _variableMirror.type.reflectedType;
+      } else {
+        // The value returned by `hasDynamicReflectedReturnType` is false, so
+        // even though this is unimplemented and may be implemented if we get
+        // the required runtime support, it is currently an `UnsupportedError`.
+        throw new UnsupportedError("Attempt to obtain the dynamicReflectedType "
+            "of a generic type ${_variableMirror.type}");
+      }
+    }
+    throw new NoSuchCapabilityError("Attempt to get dynamicReflectedType "
+        "without `reflectedTypeCapability`");
   }
 
   @override
@@ -1244,6 +1863,10 @@ abstract class _TypeMirrorImpl extends _DeclarationMirrorImpl
 
   @override
   bool isAssignableTo(rm.TypeMirror other) {
+    if (!reflectableSupportsTypeRelations(_reflectable)) {
+      throw new NoSuchCapabilityError(
+          "Attempt to get `isAssignableTo` without `typeRelationsCapability`.");
+    }
     return _typeMirror.isAssignableTo(unwrapTypeMirror(other));
   }
 
@@ -1252,6 +1875,10 @@ abstract class _TypeMirrorImpl extends _DeclarationMirrorImpl
 
   @override
   bool isSubtypeOf(rm.TypeMirror other) {
+    if (!reflectableSupportsTypeRelations(_reflectable)) {
+      throw new NoSuchCapabilityError(
+          "Attempt to get `isSubtypeOf` without `typeRelationsCapability`.");
+    }
     return _typeMirror.isSubtypeOf(unwrapTypeMirror(other));
   }
 
@@ -1272,6 +1899,10 @@ abstract class _TypeMirrorImpl extends _DeclarationMirrorImpl
 
   @override
   List<rm.TypeVariableMirror> get typeVariables {
+    if (!reflectableSupportsDeclarations(_reflectable)) {
+      throw new NoSuchCapabilityError(
+          "Attempt to get typeVariables without `declarationsCapability`");
+    }
     return _typeMirror.typeVariables
         .map((dm.TypeVariableMirror typeVariableMirror) {
       return new _TypeVariableMirrorImpl(typeVariableMirror, _reflectable);
@@ -1403,10 +2034,20 @@ class _VoidMirrorImpl implements rm.TypeMirror {
   @override
   TypeMirror get originalDeclaration => this;
 
+  // TODO(eernst) implement: We ought to check for the capability, which
+  // means that we should have a `_reflector`, and then we should throw a
+  // [NoSuchCapabilityError] if there is no `typeRelationsCapability`.
+  // However, it seems near-benign to omit the check and give the correct
+  // reply in all cases.
   @override
   bool isSubtypeOf(TypeMirror other) =>
       other.hasReflectedType && other.reflectedType == dynamic;
 
+  // TODO(eernst) implement: We ought to check for the capability, which
+  // means that we should have a `_reflector`, and then we should throw a
+  // [NoSuchCapabilityError] if there is no `typeRelationsCapability`.
+  // However, it seems near-benign to omit the check and give the correct
+  // reply in all cases.
   @override
   bool isAssignableTo(TypeMirror other) => isSubtypeOf(other);
 
@@ -1418,6 +2059,7 @@ class _VoidMirrorImpl implements rm.TypeMirror {
   get owner => null;
 
   // TODO(eernst) implement: do as 'dart:mirrors' does.
+  // TODO(eernst) implement: we should fail if there is no capability.
   @override
   List<Object> get metadata => <Object>[];
 
@@ -1507,8 +2149,15 @@ class ReflectableImpl extends ReflectableBase implements ReflectableInterface {
   }
 
   bool _canReflectType(dm.ClassMirror mirror) {
+    // We refuse support for class mirrors with type arguments, because they
+    // are instantiated generic classes (that is, `!isOriginalDeclaration`)
+    // and until we get support for detecting whether a given instantiated
+    // generic class "C<T>" is an instance of a given generic class "C", we
+    // cannot find the right class mirror in post-transform code. So for
+    // consistency we must also reject doing it here.
     return _supportsType &&
-        _supportedClasses.contains(mirror.originalDeclaration);
+        _supportedClasses.contains(mirror.originalDeclaration) &&
+        mirror.typeArguments.isEmpty;
   }
 
   @override
@@ -1517,7 +2166,7 @@ class ReflectableImpl extends ReflectableBase implements ReflectableInterface {
     if (typeMirror is dm.ClassMirror) {
       return _canReflectType(typeMirror);
     } else {
-      throw new UnimplementedError("Checking reflection support on a "
+      throw unimplementedError("Checking reflection support on a "
           "currently unsupported kind of type: $typeMirror");
     }
   }
@@ -1532,14 +2181,14 @@ class ReflectableImpl extends ReflectableBase implements ReflectableInterface {
     if (typeMirror is dm.ClassMirror) {
       return wrapClassMirrorIfSupported(typeMirror, this);
     } else {
-      throw new UnimplementedError("Checking reflection support on a "
+      throw unimplementedError("Checking reflection support on a "
           "currently unsupported kind of type: $typeMirror");
     }
   }
 
   bool get _supportsLibraries {
     return capabilities
-        .any((ReflectCapability capability) => capability == libraryCapability);
+        .any((ReflectCapability capability) => capability is LibraryCapability);
   }
 
   @override
@@ -1559,7 +2208,7 @@ class ReflectableImpl extends ReflectableBase implements ReflectableInterface {
     if (!_supportsLibraries) {
       throw new NoSuchCapabilityError(
           "Trying to obtain a library mirror without capability. Try adding "
-          "'libraryCapability'");
+          "`libraryCapability`");
     }
     Map<Uri, dm.LibraryMirror> libs = dm.currentMirrorSystem().libraries;
     return new Map<Uri, rm.LibraryMirror>.fromIterable(libs.keys,
@@ -1579,7 +2228,7 @@ class ReflectableImpl extends ReflectableBase implements ReflectableInterface {
   /// as well as classes that match a global quantifier.
   Set<dm.ClassMirror> _directlySupportedClasses() {
     Set<dm.ClassMirror> result = new Set<dm.ClassMirror>();
-    List<RegExp> globalPatterns = new List<RegExp>();
+    List<RegExp> globalPatterns = <RegExp>[];
     Set<Type> globalMetadataClasses = new Set<Type>();
 
     for (dm.LibraryMirror library
@@ -1698,7 +2347,7 @@ class ReflectableImpl extends ReflectableBase implements ReflectableInterface {
   }
 
   static Map<ReflectableImpl, Set<dm.ClassMirror>> _supportedClassesCache =
-      new Map<ReflectableImpl, Set<dm.ClassMirror>>();
+      <ReflectableImpl, Set<dm.ClassMirror>>{};
 
   /// Returns `true` iff this [ReflectableImpl] contains an
   /// [ApiReflectCapability] which satisfies the given [predicate], i.e.,
@@ -1850,6 +2499,13 @@ class _TypeAnnotationsFixedPoint extends FixedPoint<dm.ClassMirror> {
         }
         dm.TypeMirror typeMirror = declaration.returnType;
         if (typeMirror is dm.ClassMirror) yield typeMirror;
+      }
+    }
+    for (dm.TypeVariableMirror typeVariableMirror
+        in classMirror.typeVariables) {
+      dm.TypeMirror typeMirror = typeVariableMirror.upperBound;
+      if (typeMirror is dm.ClassMirror) {
+        yield typeMirror;
       }
     }
   }

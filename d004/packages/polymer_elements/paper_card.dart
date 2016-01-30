@@ -10,8 +10,9 @@ import 'package:web_components/web_components.dart';
 import 'package:polymer_interop/polymer_interop.dart';
 import 'paper_material.dart';
 import 'iron_flex_layout.dart';
+import 'iron_image.dart';
 
-/// Material Design: <a href="http://www.google.com/design/spec/components/cards.html">Cards</a>
+/// Material design: [Cards](https://www.google.com/design/spec/components/cards.html)
 ///
 /// `paper-card` is a container with a drop shadow.
 ///
@@ -22,6 +23,12 @@ import 'iron_flex_layout.dart';
 ///       <div class="card-actions">
 ///         <paper-button>Some action</paper-button>
 ///       </div>
+///     </paper-card>
+///
+/// Example - top card image:
+///
+///     <paper-card heading="Card Title" image="/path/to/image.png">
+///       ...
 ///     </paper-card>
 ///
 /// ### Accessibility
@@ -47,6 +54,11 @@ class PaperCard extends HtmlElement with CustomElementProxyMixin, PolymerBase {
   PaperCard.created() : super.created();
   factory PaperCard() => new Element.tag('paper-card');
 
+  /// Read-only property used to pass down the `animatedShadow` value to
+  /// the underlying paper-material style (since they have different names).
+  bool get animated => jsElement[r'animated'];
+  set animated(bool value) { jsElement[r'animated'] = value; }
+
   /// Set this to true to animate the card shadow when setting a new
   /// `z` value.
   bool get animatedShadow => jsElement[r'animatedShadow'];
@@ -56,6 +68,11 @@ class PaperCard extends HtmlElement with CustomElementProxyMixin, PolymerBase {
   num get elevation => jsElement[r'elevation'];
   set elevation(num value) { jsElement[r'elevation'] = value; }
 
+  /// When `preloadImage` is true, setting `fadeImage` to true will cause the
+  /// image to fade into place.
+  bool get fadeImage => jsElement[r'fadeImage'];
+  set fadeImage(bool value) { jsElement[r'fadeImage'] = value; }
+
   /// The title of the card.
   String get heading => jsElement[r'heading'];
   set heading(String value) { jsElement[r'heading'] = value; }
@@ -63,4 +80,9 @@ class PaperCard extends HtmlElement with CustomElementProxyMixin, PolymerBase {
   /// The url of the title image of the card.
   String get image => jsElement[r'image'];
   set image(String value) { jsElement[r'image'] = value; }
+
+  /// When `true`, any change to the image url property will cause the
+  /// `placeholder` image to be shown until the image is fully rendered.
+  bool get preloadImage => jsElement[r'preloadImage'];
+  set preloadImage(bool value) { jsElement[r'preloadImage'] = value; }
 }

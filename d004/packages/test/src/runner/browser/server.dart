@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.runner.browser.server;
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -41,13 +39,12 @@ class BrowserServer {
   /// the working directory.
   static Future<BrowserServer> start(Configuration config, {String root})
       async {
-    var server = new BrowserServer._(root, config);
-    await server._load();
-    return server;
+    var server = new shelf_io.IOServer(await HttpMultiServer.loopback(0));
+    return new BrowserServer(server, config, root: root);
   }
 
-  /// The underlying HTTP server.
-  HttpServer _server;
+  /// The underlying server.
+  final shelf.Server _server;
 
   /// A randomly-generated secret.
   ///
@@ -56,8 +53,7 @@ class BrowserServer {
   final _secret = randomBase64(24, urlSafe: true);
 
   /// The URL for this server.
-  Uri get url => baseUrlForAddress(_server.address, _server.port)
-      .resolve(_secret + "/");
+  Uri get url => _server.url.resolve(_secret + "/");
 
   /// The test runner configuration.
   Configuration _config;
@@ -115,15 +111,12 @@ class BrowserServer {
 
   final _mappers = new Map<String, StackTraceMapper>();
 
-  BrowserServer._(String root, Configuration config)
+  BrowserServer(this._server, Configuration config, {String root})
       : _root = root == null ? p.current : root,
         _config = config,
         _compiledDir = config.pubServeUrl == null ? createTempDir() : null,
         _http = config.pubServeUrl == null ? null : new HttpClient(),
-        _compilers = new CompilerPool(color: config.color);
-
-  /// Starts the underlying server.
-  Future _load() async {
+        _compilers = new CompilerPool(color: config.color) {
     var cascade = new shelf.Cascade()
         .add(_webSocketHandler.handler);
 
@@ -139,8 +132,7 @@ class BrowserServer {
       .addMiddleware(nestingMiddleware(_secret))
       .addHandler(cascade.handler);
 
-    _server = await HttpMultiServer.loopback(0);
-    shelf_io.serveRequests(_server, pipeline);
+    _server.mount(pipeline);
   }
 
   /// Returns a handler that serves the contents of the "packages/" directory
@@ -227,8 +219,8 @@ void main() {
 
     var suiteUrl;
     if (_config.pubServeUrl != null) {
-      var suitePrefix = p.withoutExtension(
-          p.relative(path, from: p.join(_root, 'test')));
+      var suitePrefix = p.toUri(p.withoutExtension(
+          p.relative(path, from: p.join(_root, 'test')))).path;
 
       var dartUrl;
       // Polymer generates a bootstrap entrypoint that wraps the entrypoint we

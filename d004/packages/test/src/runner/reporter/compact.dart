@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.runner.reporter.compact;
-
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
@@ -149,6 +147,11 @@ class CompactReporter implements Reporter {
     if (!_printedNewline) print('');
     _printedNewline = true;
     _stopwatch.stop();
+
+    // Force the next message to be printed, even if it's identical to the
+    // previous one. If the reporter was paused, text was probably printed
+    // during the pause.
+    _lastProgressMessage = null;
 
     for (var subscription in _subscriptions) {
       subscription.pause();

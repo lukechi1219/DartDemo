@@ -88,7 +88,8 @@ class DartWorkManager implements WorkManager {
     analysisCache.onResultInvalidated.listen((InvalidatedResult event) {
       if (event.descriptor == LIBRARY_ERRORS_READY) {
         CacheEntry entry = event.entry;
-        if (entry.getValue(SOURCE_KIND) == SourceKind.LIBRARY) {
+        if (entry.explicitlyAdded &&
+            entry.getValue(SOURCE_KIND) == SourceKind.LIBRARY) {
           librarySourceQueue.add(entry.target);
         }
       }
@@ -392,7 +393,10 @@ class DartWorkManager implements WorkManager {
         unitTargets.add(target);
         Source library = target.library;
         if (context.exists(library)) {
-          librarySourceQueue.add(library);
+          CacheEntry entry = iterator.value;
+          if (entry.explicitlyAdded) {
+            librarySourceQueue.add(library);
+          }
         }
       }
     }
@@ -400,7 +404,7 @@ class DartWorkManager implements WorkManager {
     unitTargets.forEach(partition.remove);
     for (Source dartSource in dartSources) {
       CacheEntry entry = partition.get(dartSource);
-      if (dartSource != null) {
+      if (entry != null) {
         // TODO(scheglov) we invalidate too much.
         // Would be nice to invalidate just URLs resolution.
         entry.setState(PARSED_UNIT, CacheState.INVALID);
@@ -408,6 +412,8 @@ class DartWorkManager implements WorkManager {
         entry.setState(EXPLICITLY_IMPORTED_LIBRARIES, CacheState.INVALID);
         entry.setState(EXPORTED_LIBRARIES, CacheState.INVALID);
         entry.setState(INCLUDED_PARTS, CacheState.INVALID);
+        entry.setState(LIBRARY_SPECIFIC_UNITS, CacheState.INVALID);
+        entry.setState(UNITS, CacheState.INVALID);
       }
     }
   }
@@ -468,7 +474,7 @@ class DartWorkManager implements WorkManager {
   }
 
   bool _shouldErrorsBeComputed(Source source) =>
-      context.shouldErrorsBeAnalyzed(source, null);
+      context.shouldErrorsBeAnalyzed(source);
 
   static bool _isDartSource(AnalysisTarget target) {
     return target is Source && AnalysisEngine.isDartFileName(target.fullName);

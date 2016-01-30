@@ -154,7 +154,7 @@ class NewInstanceCapability extends NamePatternCapability
   const NewInstanceCapability(String namePattern) : super(namePattern);
 }
 
-/// Short hand for `NewInstanceCapability("")`, meaning the capability to
+/// Short hand for `const NewInstanceCapability("")`, meaning the capability to
 /// reflect over all constructors.
 const newInstanceCapability = const NewInstanceCapability("");
 
@@ -169,17 +169,39 @@ class NewInstanceMetaCapability extends MetadataQuantifiedCapability
 /// Gives support for retrieving the names of named declarations, corresponding
 /// to the methods `simpleName`, `qualifiedName` and `constructorName` on
 /// `DeclarationMirror` and `MethodMirror`.
-const nameCapability = const _NameCapability();
+///
+/// TODO(eernst) clarify: This should be enforced or deleted,
+/// where 'enforced' means that `..name..` related methods must fail with a
+/// [NoSuchCapabilityError] if this capability is not present. This sounds
+/// like a really strict approach for a very cheap feature, but there might
+/// be reasons (maybe related to code obfuscation) for keeping the names out
+/// of reach.
+class NameCapability implements TypeCapability {
+  const NameCapability();
+}
+
+/// Shorthand for `const NameCapability()`.
+const nameCapability = const NameCapability();
 
 /// Gives support for classification predicates such as `isPrivate`, `isStatic`
 /// .., offered by `DeclarationMirror`, `LibraryDependencyMirror`,
 /// `CombinatorMirror' `TypeMirror`, `ClassMirror`, `TypeVariableMirror`,
 /// `MethodMirror`, `VariableMirror`, and `ParameterMirror`.
-const classifyCapability = const _ClassifyCapability();
+class ClassifyCapability implements TypeCapability {
+  const ClassifyCapability();
+}
+
+/// Shorthand for `const ClassifyCapability()`.
+const classifyCapability = const ClassifyCapability();
 
 /// Gives support for reflective access to metadata associated with a
 /// declaration reflected by a given declaration mirror.
-const metadataCapability = const _MetadataCapability();
+class MetadataCapability implements TypeCapability {
+  const MetadataCapability();
+}
+
+/// Shorthand for `const MetadataCapability()`.
+const metadataCapability = const MetadataCapability();
 
 /// Gives support for invocation of the method `reflectType` on reflectors, and
 /// for invocation of the method `type` on instances of `InstanceMirror` and
@@ -198,17 +220,22 @@ class TypeCapability implements ApiReflectCapability {
   const TypeCapability();
 }
 
-/// Shorthand for `const TypeCapability`.
+/// Shorthand for `const TypeCapability()`.
 const typeCapability = const TypeCapability();
 
 /// Gives support for: `typeVariables`, `typeArguments`,
 /// `originalDeclaration`, `isSubtypeOf`, `isAssignableTo`, `superclass`,
 /// `superinterfaces`, `mixin`, `isSubclassOf`, `upperBound`, and `referent`.
-const typeRelationsCapability = const _TypeRelationsCapability();
+class TypeRelationsCapability implements TypeCapability {
+  const TypeRelationsCapability();
+}
 
-/// Gives support support for the method `reflectedType`
-/// on `VariableMirror` and  `ParameterMirror`, and `reflectedReturnType`
-/// on `MethodMirror`.
+/// Shorthand for `const TypeRelationsCapability()`.
+const typeRelationsCapability = const TypeRelationsCapability();
+
+/// Gives support for the method `reflectedType` on `VariableMirror` and
+/// `ParameterMirror`, and for the method `reflectedReturnType` on
+/// `MethodMirror`.
 const reflectedTypeCapability = const _ReflectedTypeCapability();
 
 /// Gives support for library-mirrors.
@@ -216,7 +243,15 @@ const reflectedTypeCapability = const _ReflectedTypeCapability();
 /// This will cause support for reflecting for all libraries containing
 /// annotated classes (enabling support for [ClassMirror.owner]), and all
 /// annotated libraries.
-const libraryCapability = const _LibraryCapability();
+///
+/// TODO(sigurdm) feature: Split this into EnclosingLibraryCapability(),
+/// LibraryCapabiliy(String regex) and LibraryMetaCapability(Type type).
+class LibraryCapability implements ApiReflectCapability {
+  const LibraryCapability();
+}
+
+/// Shorthand for `const LibraryCapability()`.
+const libraryCapability = const LibraryCapability();
 
 /// Gives support for: `declarations`, `instanceMembers`, `staticMembers`,
 /// `callMethod`, `parameters`, and `defaultValue`.
@@ -225,17 +260,32 @@ const libraryCapability = const _LibraryCapability();
 /// request this capability if no other capabilities have given rise to the
 /// generation of source code related mirror classes, because these methods are
 /// only defined by those mirror classes.
-const declarationsCapability = const _DeclarationsCapability();
+class DeclarationsCapability implements TypeCapability {
+  const DeclarationsCapability();
+}
+
+/// Shorthand for `const DeclarationsCapability()`.
+const declarationsCapability = const DeclarationsCapability();
 
 /// Gives support for the mirror method `uri` on LibraryMirrors.
 ///
 /// The corresponding class is private for the same reason as mentioned
 /// with [classifyCapability].
-const uriCapability = const _UriCapability();
+class UriCapability implements LibraryCapability {
+  const UriCapability();
+}
+
+/// Shorthand for `const UriCapability()`.
+const uriCapability = const UriCapability();
 
 /// Gives support for: `sourceLibrary`, `targetLibrary`, `prefix`, and
 /// `combinators`.
-const libraryDependenciesCapability = const _LibraryDependenciesCapability();
+class LibraryDependenciesCapability implements LibraryCapability {
+  const LibraryDependenciesCapability();
+}
+
+/// Shorthand for `const LibraryDependenciesCapability()`.
+const libraryDependenciesCapability = const LibraryDependenciesCapability();
 
 /// Gives all the capabilities of [InstanceInvokeCapability]([namePattern]),
 /// [StaticInvokeCapability]([namePattern]), and
@@ -266,20 +316,29 @@ class InvokingMetaCapability extends MetadataQuantifiedCapability
 
 /// Gives the capabilities of [TypeCapability], [nameCapability],
 /// [classifyCapability], [metadataCapability], [typeRelationsCapability],
-/// [ownerCapability], [declarationsCapability], [uriCapability], and
+/// [declarationsCapability], [uriCapability], and
 /// [libraryDependenciesCapability].
 class TypingCapability
     implements
         TypeCapability, // Redundant, just included for readability.
-        _NameCapability,
-        _ClassifyCapability,
-        _MetadataCapability,
-        _TypeRelationsCapability,
-        _DeclarationsCapability,
-        _UriCapability,
-        _LibraryDependenciesCapability {
+        NameCapability,
+        ClassifyCapability,
+        MetadataCapability,
+        TypeRelationsCapability,
+        DeclarationsCapability,
+        UriCapability,
+        LibraryDependenciesCapability {
   const TypingCapability();
 }
+
+/// Shorthand for `const TypingCapability()`.
+const typingCapability = const TypingCapability();
+
+/// Capability instance giving support for the `delegate` method on instance
+/// mirrors when it leads to invocation of a method where instance invocation
+/// is supported. Also implies support for translation of [Symbol]s of covered
+/// members to their corresponding [String]s.
+const delegateCapability = const _DelegateCapability();
 
 // ---------- Reflectee quantification oriented capability classes.
 
@@ -425,50 +484,12 @@ class GlobalQuantifyMetaCapability extends ImportAttachedCapability {
 
 // ---------- Private classes used to enable capability instances above.
 
-// TODO(eernst) clarify: This should be enforced or deleted,
-// where 'enforced' means that `..name..` related methods must fail with a
-// [NoSuchCapabilityError] if this capability is not present. This sounds
-// like a really strict approach for a very cheap feature, but there might
-// be reasons (maybe related to code obfuscation) for keeping the names out
-// of reach.
-class _NameCapability implements TypeCapability {
-  const _NameCapability();
-}
-
-class _ClassifyCapability implements TypeCapability {
-  const _ClassifyCapability();
-}
-
-class _MetadataCapability implements TypeCapability {
-  const _MetadataCapability();
-}
-
-class _TypeRelationsCapability implements TypeCapability {
-  const _TypeRelationsCapability();
-}
-
-class _ReflectedTypeCapability implements _DeclarationsCapability {
+class _ReflectedTypeCapability implements DeclarationsCapability {
   const _ReflectedTypeCapability();
 }
 
-// TODO(sigurdm) feature: Split this into EnclosingLibraryCapability(),
-// LibraryCapabiliy(String regex) and LibraryMetaCapability(Type type).
-class _LibraryCapability implements ApiReflectCapability {
-  const _LibraryCapability();
-}
-
-class _DeclarationsCapability implements TypeCapability {
-  const _DeclarationsCapability();
-}
-
-// TODO(eernst) clarify: Should this "imply" LibraryCapability?
-class _UriCapability implements ApiReflectCapability {
-  const _UriCapability();
-}
-
-// TODO(eernst) clarify: Should this "imply" LibraryCapability?
-class _LibraryDependenciesCapability implements ApiReflectCapability {
-  const _LibraryDependenciesCapability();
+class _DelegateCapability extends ApiReflectCapability {
+  const _DelegateCapability();
 }
 
 class _SubtypeQuantifyCapability implements ReflecteeQuantifyCapability {
@@ -500,27 +521,64 @@ class _NoSuchCapabilityErrorImpl extends Error
   toString() => _message;
 }
 
+enum StringInvocationKind { method, getter, setter }
+
+class _StringInvocation extends StringInvocation {
+  final String memberName;
+  final List positionalArguments;
+  final Map<Symbol, dynamic> namedArguments;
+  final StringInvocationKind kind;
+  bool isMethod;
+  bool isGetter;
+  bool isSetter;
+
+  _StringInvocation(this.memberName, this.positionalArguments,
+      this.namedArguments, this.kind);
+}
+
 /// Thrown when a method is invoked via a reflectable, but the reflectable
 /// doesn't have the capabilities to invoke it.
-///
-/// TODO: The intended semantics is to throw this only when the required
-/// capabilities are not present, but there currently are cases where it might
-/// be thrown if the method doesn't exist.
-class NoSuchInvokeCapabilityError extends Error
+class ReflectableNoSuchMethodError extends Error
     implements NoSuchCapabilityError {
-  Object receiver;
-  String memberName;
-  List positionalArguments;
-  Map<Symbol, dynamic> namedArguments;
-  List existingArgumentNames;
+  final Object receiver;
+  final String memberName;
+  final List positionalArguments;
+  final Map<Symbol, dynamic> namedArguments;
+  final List existingArgumentNames;
+  final StringInvocationKind kind;
 
-  NoSuchInvokeCapabilityError(this.receiver, this.memberName,
-      this.positionalArguments, this.namedArguments,
-      [this.existingArgumentNames = null]);
+  ReflectableNoSuchMethodError(
+      this.receiver,
+      this.memberName,
+      this.positionalArguments,
+      this.namedArguments,
+      this.kind,
+      this.existingArgumentNames);
+
+  get invocation => new _StringInvocation(
+      memberName, positionalArguments, namedArguments, kind);
 
   toString() {
-    String description =
-        "NoSuchCapabilityError: no capability to invoke '$memberName'\n"
+    String kindName;
+    switch (kind) {
+      case StringInvocationKind.getter:
+        kindName = "getter";
+        break;
+      case StringInvocationKind.setter:
+        kindName = "setter";
+        break;
+      case StringInvocationKind.method:
+        kindName = "method";
+        break;
+      default:
+        // Reaching this point is a bug, so we ought to do this:
+        // `throw unreachableError("Unexpected StringInvocationKind value");`
+        // but it is a bit harsh to raise an exception because of a slightly
+        // imprecise diagnostic message, so we use a default instead.
+        kindName = "";
+    }
+    String description = "NoSuchCapabilityError: no capability to invoke the "
+        "$kindName '$memberName'\n"
         "Receiver: $receiver\n"
         "Arguments: $positionalArguments\n";
     if (namedArguments != null) {
@@ -531,4 +589,51 @@ class NoSuchInvokeCapabilityError extends Error
     }
     return description;
   }
+}
+
+dynamic reflectableNoSuchInvokableError(
+    Object receiver,
+    String memberName,
+    List positionalArguments,
+    Map<Symbol, dynamic> namedArguments,
+    StringInvocationKind kind,
+    [List existingArgumentNames = null]) {
+  throw new ReflectableNoSuchMethodError(receiver, memberName,
+      positionalArguments, namedArguments, kind, existingArgumentNames);
+}
+
+dynamic reflectableNoSuchMethodError(Object receiver, String memberName,
+    List positionalArguments, Map<Symbol, dynamic> namedArguments,
+    [List existingArgumentNames = null]) {
+  throw new ReflectableNoSuchMethodError(
+      receiver,
+      memberName,
+      positionalArguments,
+      namedArguments,
+      StringInvocationKind.method,
+      existingArgumentNames);
+}
+
+dynamic reflectableNoSuchGetterError(Object receiver, String memberName,
+    List positionalArguments, Map<Symbol, dynamic> namedArguments,
+    [List existingArgumentNames = null]) {
+  throw new ReflectableNoSuchMethodError(
+      receiver,
+      memberName,
+      positionalArguments,
+      namedArguments,
+      StringInvocationKind.getter,
+      existingArgumentNames);
+}
+
+dynamic reflectableNoSuchSetterError(Object receiver, String memberName,
+    List positionalArguments, Map<Symbol, dynamic> namedArguments,
+    [List existingArgumentNames = null]) {
+  throw new ReflectableNoSuchMethodError(
+      receiver,
+      memberName,
+      positionalArguments,
+      namedArguments,
+      StringInvocationKind.setter,
+      existingArgumentNames);
 }

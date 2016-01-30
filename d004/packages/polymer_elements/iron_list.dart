@@ -22,7 +22,7 @@ import 'iron_resizable_behavior.dart';
 /// as the result of a user interaction with the list item must be bound to the model
 /// to avoid view state inconsistency.
 ///
-/// __Important:__ `iron-list` must ether be explicitly sized, or delegate scrolling to an
+/// __Important:__ `iron-list` must either be explicitly sized, or delegate scrolling to an
 /// explicitly sized parent. By "explicitly sized", we mean it either has an explicit
 /// CSS `height` property set via a class or inline style, or else is sized by other
 /// layout means (e.g. the `flex` or `fit` classes).
@@ -46,29 +46,45 @@ import 'iron_resizable_behavior.dart';
 ///
 /// ##### data.json
 ///
-///     [
-///       {"name": "Bob"},
-///       {"name": "Tim"},
-///       {"name": "Mike"}
-///     ]
+/// ```js
+/// [
+///   {"name": "Bob"},
+///   {"name": "Tim"},
+///   {"name": "Mike"}
+/// ]
+/// ```
 ///
 /// The following code would render the list (note the name and checked properties are
 /// bound from the model object provided to the template scope):
 ///
-///     <template is="dom-bind">
-///       <iron-ajax url="data.json" last-response="{{data}}" auto></iron-ajax>
-///       <iron-list items="[[data]]" as="item">
-///         <template>
-///           <div>
-///             Name: <span>[[item.name]]</span>
-///           </div>
-///         </template>
-///       </iron-list>
+/// ```html
+/// <template is="dom-bind">
+///   <iron-ajax url="data.json" last-response="{{data}}" auto></iron-ajax>
+///   <iron-list items="[[data]]" as="item">
+///     <template>
+///       <div>
+///         Name: <span>[[item.name]]</span>
+///       </div>
 ///     </template>
+///   </iron-list>
+/// </template>
+/// ```
+///
+/// ### Styling
+///
+/// Use the `--iron-list-items-container` mixin to style the container of items, e.g.
+///
+/// ```css
+/// iron-list {
+///  --iron-list-items-container: {
+///     margin: auto;
+///   };
+/// }
+/// ```
 ///
 /// ### Resizing
 ///
-/// `iron-list` lays out the items when it recives a notification via the `resize` event.
+/// `iron-list` lays out the items when it receives a notification via the `iron-resize` event.
 /// This event is fired by any element that implements `IronResizableBehavior`.
 ///
 /// By default, elements such as `iron-pages`, `paper-tabs` or `paper-dialog` will trigger
@@ -76,7 +92,21 @@ import 'iron_resizable_behavior.dart';
 /// you might want to implement `IronResizableBehavior` or fire this event manually right
 /// after the list became visible again. e.g.
 ///
-///     document.querySelector('iron-list').fire('resize');
+/// ```js
+/// document.querySelector('iron-list').fire('iron-resize');
+/// ```
+///
+/// ### When should `<iron-list>` be used?
+///
+/// `iron-list` should be used when a page has significantly more DOM nodes than the ones
+/// visible on the screen. e.g. the page has 500 nodes, but only 20 are visible at the time.
+/// This is why we refer to it as a `virtual` list. In this case, a `dom-repeat` will still
+/// create 500 nodes which could slow down the web app, but `iron-list` will only create 20.
+///
+/// However, having an `iron-list` does not mean that you can load all the data at once.
+/// Say, you have a million records in the database, you want to split the data into pages
+/// so you can bring a page at the time. The page could contain 500 items, and iron-list
+/// will only render 20.
 @CustomElementProxy('iron-list')
 class IronList extends HtmlElement with CustomElementProxyMixin, PolymerBase, Templatizer, IronResizableBehavior {
   IronList.created() : super.created();
@@ -87,12 +117,12 @@ class IronList extends HtmlElement with CustomElementProxyMixin, PolymerBase, Te
   String get as => jsElement[r'as'];
   set as(String value) { jsElement[r'as'] = value; }
 
-  /// Gets the first visible item in the viewport.
-  get firstVisibleIndex => jsElement[r'firstVisibleIndex'];
+  /// Gets the index of the first visible item in the viewport.
+  num get firstVisibleIndex => jsElement[r'firstVisibleIndex'];
+  set firstVisibleIndex(num value) { jsElement[r'firstVisibleIndex'] = value; }
 
   /// The name of the variable to add to the binding scope with the index
-  /// for the row.  If `sort` is provided, the index will reflect the
-  /// sorted order (rather than the original array order).
+  /// for the row.
   String get indexAs => jsElement[r'indexAs'];
   set indexAs(String value) { jsElement[r'indexAs'] = value; }
 
@@ -134,7 +164,7 @@ class IronList extends HtmlElement with CustomElementProxyMixin, PolymerBase, Te
       jsElement.callMethod('clearSelection', []);
 
   /// Deselects the given item list if it is already selected.
-  /// [item]: the item object or its index
+  /// [item]: The item object or its index
   deselectItem(item) =>
       jsElement.callMethod('deselectItem', [item]);
 
@@ -145,15 +175,20 @@ class IronList extends HtmlElement with CustomElementProxyMixin, PolymerBase, Te
       jsElement.callMethod('scrollToIndex', [idx]);
 
   /// Select the list item at the given index.
-  /// [item]: the item object or its index
+  /// [item]: The item object or its index
   selectItem(item) =>
       jsElement.callMethod('selectItem', [item]);
 
   /// Select or deselect a given item depending on whether the item
   /// has already been selected.
-  /// [item]: the item object or its index
+  /// [item]: The item object or its index
   toggleSelectionForItem(item) =>
       jsElement.callMethod('toggleSelectionForItem', [item]);
+
+  /// Updates the size of an item.
+  /// [item]: The item object or its index
+  updateSizeForItem(item) =>
+      jsElement.callMethod('updateSizeForItem', [item]);
 
   /// Invoke this method if you dynamically update the viewport's
   /// size or CSS padding.

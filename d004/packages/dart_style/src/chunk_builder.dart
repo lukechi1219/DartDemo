@@ -14,6 +14,9 @@ import 'rule/rule.dart';
 import 'source_code.dart';
 import 'whitespace.dart';
 
+/// Matches if the last character of a string is an identifier character.
+final _trailingIdentifierChar = new RegExp(r"[a-zA-Z0-9_]$");
+
 /// Takes the incremental serialized output of [SourceVisitor]--the source text
 /// along with any comments and preserved whitespace--and produces a coherent
 /// tree of [Chunk]s which can then be split into physical lines.
@@ -61,9 +64,6 @@ class ChunkBuilder {
   /// written before they start.
   final _lazyRules = <Rule>[];
 
-  /// The indexes of the chunks owned by each rule (except for hard splits).
-  final _ruleChunks = <Rule, List<int>>{};
-
   /// The nested stack of spans that are currently being written.
   final _openSpans = <OpenSpan>[];
 
@@ -101,8 +101,7 @@ class ChunkBuilder {
   /// token pair.
   bool get needsToPreserveNewlines =>
       _pendingWhitespace == Whitespace.oneOrTwoNewlines ||
-          _pendingWhitespace == Whitespace.spaceOrNewline ||
-          _pendingWhitespace == Whitespace.splitOrNewline;
+      _pendingWhitespace == Whitespace.splitOrNewline;
 
   /// The number of characters of code that can fit in a single line.
   int get pageWidth => _formatter.pageWidth;
@@ -151,25 +150,18 @@ class ChunkBuilder {
 
   /// Write a split owned by the current innermost rule.
   ///
-  /// If [nesting] is given, uses that. Otherwise, uses the current nesting
-  /// level. If unsplit, it expands to a space if [space] is `true`.
-  ///
   /// If [flushLeft] is `true`, then forces the next line to start at column
   /// one regardless of any indentation or nesting.
   ///
   /// If [isDouble] is passed, forces the split to either be a single or double
   /// newline. Otherwise, leaves it indeterminate.
-  Chunk split({bool space, bool isDouble, bool flushLeft}) =>
-      _writeSplit(_rules.last, null,
-          flushLeft: flushLeft, isDouble: isDouble, spaceWhenUnsplit: space);
-
-  /// Write a split owned by the current innermost rule.
   ///
-  /// Unlike [split()], this ignores any current expression nesting. It always
-  /// indents the next line at the statement level.
-  Chunk blockSplit({bool space, bool isDouble}) =>
-      _writeSplit(_rules.last, _nesting.blockNesting,
-          isDouble: isDouble, spaceWhenUnsplit: space);
+  /// If [nest] is `false`, ignores any current expression nesting. Otherwise,
+  /// uses the current nesting level. If unsplit, it expands to a space if
+  /// [space] is `true`.
+  Chunk split({bool flushLeft, bool isDouble, bool nest, bool space}) =>
+      _writeSplit(_rules.last,
+          flushLeft: flushLeft, isDouble: isDouble, nest: nest, space: space);
 
   /// Outputs the series of [comments] and associated whitespace that appear
   /// before [token] (which is not written by this).
@@ -251,15 +243,13 @@ class ChunkBuilder {
 
         // The comment follows other text, so we need to decide if it gets a
         // space before it or not.
-        if (_needsSpaceBeforeComment(isLineComment: comment.isLineComment)) {
-          _writeText(" ");
-        }
+        if (_needsSpaceBeforeComment(comment)) _writeText(" ");
       } else {
         // The comment starts a line, so make sure it stays on its own line.
         _writeHardSplit(
-            nest: true,
             flushLeft: comment.flushLeft,
-            double: comment.linesBefore > 1);
+            isDouble: comment.linesBefore > 1,
+            nest: true);
       }
 
       _writeText(comment.text);
@@ -291,7 +281,7 @@ class ChunkBuilder {
         }
       }
 
-      if (linesAfter > 0) _writeHardSplit(nest: true, double: linesAfter > 1);
+      if (linesAfter > 0) _writeHardSplit(isDouble: linesAfter > 1, nest: true);
     }
 
     // If the comment has text following it (aside from a grouping character),
@@ -310,14 +300,6 @@ class ChunkBuilder {
     // If we didn't know how many newlines the user authored between the last
     // token and this one, now we do.
     switch (_pendingWhitespace) {
-      case Whitespace.spaceOrNewline:
-        if (numLines > 0) {
-          _pendingWhitespace = Whitespace.nestedNewline;
-        } else {
-          _pendingWhitespace = Whitespace.space;
-        }
-        break;
-
       case Whitespace.splitOrNewline:
         if (numLines > 0) {
           _pendingWhitespace = Whitespace.nestedNewline;
@@ -368,18 +350,21 @@ class ChunkBuilder {
     var span = new Span(openSpan.cost);
     for (var i = openSpan.start; i < end; i++) {
       var chunk = _chunks[i];
-      if (!chunk.isHardSplit) chunk.spans.add(span);
+      if (!chunk.rule.isHardened) chunk.spans.add(span);
     }
   }
 
   /// Starts a new [Rule].
   ///
-  /// If omitted, defaults to a new [SimpleRule].
+  /// If omitted, defaults to a new [Rule].
   void startRule([Rule rule]) {
-    if (rule == null) rule = new SimpleRule();
+    if (rule == null) rule = new Rule();
 
     // See if any of the rules that contain this one care if it splits.
-    _rules.forEach((outer) => outer.contain(rule));
+    _rules.forEach((outer) {
+      if (!outer.splitsOnInnerRules) return;
+      rule.imply(outer);
+    });
     _rules.add(rule);
   }
 
@@ -390,16 +375,20 @@ class ChunkBuilder {
   /// first operand but not get forced to split if a comment appears before the
   /// entire expression.
   ///
-  /// If [rule] is omitted, defaults to a new [SimpleRule].
+  /// If [rule] is omitted, defaults to a new [Rule].
   void startLazyRule([Rule rule]) {
-    if (rule == null) rule = new SimpleRule();
+    if (rule == null) rule = new Rule();
 
     _lazyRules.add(rule);
   }
 
   /// Ends the innermost rule.
   void endRule() {
-    _rules.removeLast();
+    if (_lazyRules.isNotEmpty) {
+      _lazyRules.removeLast();
+    } else {
+      _rules.removeLast();
+    }
   }
 
   /// Pre-emptively forces all of the current rules to become hard splits.
@@ -431,8 +420,14 @@ class ChunkBuilder {
   ///
   /// Expressions that are more nested will get increased indentation when split
   /// if the previous line has a lower level of nesting.
-  void unnest() {
+  ///
+  /// If [now] is `false`, does not commit the nesting change until after the
+  /// next chunk of text is written.
+  void unnest({bool now}) {
+    if (now == null) now = true;
+
     _nesting.unnest();
+    if (now) _nesting.commitNesting();
   }
 
   /// Marks the selection starting point as occurring [fromEnd] characters to
@@ -469,9 +464,12 @@ class ChunkBuilder {
   /// Starts a new block as a child of the current chunk.
   ///
   /// Nested blocks are handled using their own independent [LineWriter].
-  ChunkBuilder startBlock() {
+  ChunkBuilder startBlock(Chunk argumentChunk) {
+    var chunk = _chunks.last;
+    chunk.makeBlock(argumentChunk);
+
     var builder =
-        new ChunkBuilder._(this, _formatter, _source, _chunks.last.blockChunks);
+        new ChunkBuilder._(this, _formatter, _source, chunk.block.chunks);
 
     // A block always starts off indented one level.
     builder.indent();
@@ -488,7 +486,7 @@ class ChunkBuilder {
   /// `true`, the block is considered to always split.
   ///
   /// Returns the previous writer for the surrounding block.
-  ChunkBuilder endBlock(HardSplitRule ignoredSplit, {bool forceSplit}) {
+  ChunkBuilder endBlock(Rule ignoredSplit, {bool forceSplit}) {
     _divideChunks();
 
     // If we don't already know if the block is going to split, see if it
@@ -502,21 +500,33 @@ class ChunkBuilder {
           break;
         }
 
-        if (chunk.isHardSplit && chunk.rule != ignoredSplit) {
+        if (chunk.rule != null &&
+            chunk.rule.isHardened &&
+            chunk.rule != ignoredSplit) {
           forceSplit = true;
           break;
         }
       }
     }
 
+    _parent._endChildBlock(
+        firstFlushLeft: _firstFlushLeft, forceSplit: forceSplit);
+
+    return _parent;
+  }
+
+  /// Finishes off the last chunk in a child block of this parent.
+  void _endChildBlock({bool firstFlushLeft, bool forceSplit}) {
     // If there is a hard newline within the block, force the surrounding rule
     // for it so that we apply that constraint.
-    if (forceSplit) _parent.forceRules();
+    if (forceSplit) forceRules();
 
     // Write the split for the block contents themselves.
-    _parent._writeSplit(_parent._rules.last, _parent._blockArgumentNesting.last,
-        flushLeft: _firstFlushLeft);
-    return _parent;
+    var chunk = _chunks.last;
+    chunk.applySplit(rule, _nesting.indentation, _blockArgumentNesting.last,
+        flushLeft: firstFlushLeft);
+
+    if (chunk.rule.isHardened) _handleHardSplit();
   }
 
   /// Finishes writing and returns a [SourceCode] containing the final output
@@ -577,14 +587,13 @@ class ChunkBuilder {
         break;
 
       case Whitespace.newlineFlushLeft:
-        _writeHardSplit(nest: true, flushLeft: true);
+        _writeHardSplit(flushLeft: true, nest: true);
         break;
 
       case Whitespace.twoNewlines:
-        _writeHardSplit(double: true);
+        _writeHardSplit(isDouble: true);
         break;
 
-      case Whitespace.spaceOrNewline:
       case Whitespace.splitOrNewline:
       case Whitespace.oneOrTwoNewlines:
         // We should have pinned these down before getting here.
@@ -610,6 +619,15 @@ class ChunkBuilder {
     return !text.endsWith("(") && !text.endsWith("[") && !text.endsWith("{");
   }
 
+  /// Returns `true` if [comment] appears to be a magic generic method comment.
+  ///
+  /// Those get spaced a little differently to look more like real syntax:
+  ///
+  ///     int f/*<S, T>*/(int x) => 3;
+  bool _isGenericMethodComment(SourceComment comment) {
+    return comment.text.startsWith("/*<") || comment.text.startsWith("/*=");
+  }
+
   /// Returns `true` if a space should be output between the end of the current
   /// output and the subsequent comment which is about to be written.
   ///
@@ -622,7 +640,7 @@ class ChunkBuilder {
   /// *   The comment is a block comment immediately following a grouping
   ///     character (`(`, `[`, or `{`). This is to allow `foo(/* comment */)`,
   ///     et. al.
-  bool _needsSpaceBeforeComment({bool isLineComment}) {
+  bool _needsSpaceBeforeComment(SourceComment comment) {
     // Not at the start of the file.
     if (_chunks.isEmpty) return false;
 
@@ -633,7 +651,13 @@ class ChunkBuilder {
     if (text.endsWith("\n")) return false;
 
     // Always put a space before line comments.
-    if (isLineComment) return true;
+    if (comment.isLineComment) return true;
+
+    // Magic generic method comments like "Foo/*<T>*/" don't get spaces.
+    if (_isGenericMethodComment(comment) &&
+        _trailingIdentifierChar.hasMatch(text)) {
+      return false;
+    }
 
     // Block comments do not get a space if following a grouping character.
     return !text.endsWith("(") && !text.endsWith("[") && !text.endsWith("{");
@@ -648,6 +672,11 @@ class ChunkBuilder {
     // Not at the beginning of a line.
     if (!_chunks.last.canAddText) return false;
 
+    // Magic generic method comments like "Foo/*<T>*/" don't get spaces.
+    if (_isGenericMethodComment(comments.last) && token == "(") {
+      return false;
+    }
+
     // Otherwise, it gets a space if the following token is not a delimiter or
     // the empty string, for EOF.
     return token != ")" &&
@@ -661,46 +690,38 @@ class ChunkBuilder {
   /// Appends a hard split with the current indentation and nesting (the latter
   /// only if [nest] is `true`).
   ///
-  /// If [double] is `true` or `false`, forces a since or double line to be
+  /// If [double] is `true` or `false`, forces a single or double line to be
   /// output. Otherwise, it is left indeterminate.
   ///
   /// If [flushLeft] is `true`, then the split will always cause the next line
   /// to be at column zero. Otherwise, it uses the normal indentation and
   /// nesting behavior.
-  void _writeHardSplit({bool nest: false, bool double, bool flushLeft}) {
+  void _writeHardSplit({bool isDouble, bool flushLeft, bool nest: false}) {
     // A hard split overrides any other whitespace.
     _pendingWhitespace = null;
-    _writeSplit(new HardSplitRule(), nest ? null : _nesting.blockNesting,
-        flushLeft: flushLeft, isDouble: double);
+    _writeSplit(new Rule.hard(),
+        flushLeft: flushLeft, isDouble: isDouble, nest: nest);
   }
 
   /// Ends the current chunk (if any) with the given split information.
   ///
   /// Returns the chunk.
-  Chunk _writeSplit(Rule rule, NestingLevel nesting,
-      {bool flushLeft, bool isDouble, bool spaceWhenUnsplit}) {
+  Chunk _writeSplit(Rule rule,
+      {bool flushLeft, bool isDouble, bool nest, bool space}) {
+    if (nest == null) nest = true;
+
     if (_chunks.isEmpty) {
       if (flushLeft != null) _firstFlushLeft = flushLeft;
 
       return null;
     }
 
-    if (nesting == null) nesting = _nesting.nesting;
+    _chunks.last.applySplit(rule, _nesting.indentation,
+        nest ? _nesting.nesting : new NestingLevel(),
+        flushLeft: flushLeft, isDouble: isDouble, space: space);
 
-    var chunk = _chunks.last;
-    chunk.applySplit(rule, _nesting.indentation, nesting,
-        flushLeft: flushLeft,
-        isDouble: isDouble,
-        spaceWhenUnsplit: spaceWhenUnsplit);
-
-    // Keep track of which chunks are owned by the rule.
-    if (rule is! HardSplitRule) {
-      _ruleChunks.putIfAbsent(rule, () => []).add(_chunks.length - 1);
-    }
-
-    if (chunk.isHardSplit) _handleHardSplit();
-
-    return chunk;
+    if (_chunks.last.rule.isHardened) _handleHardSplit();
+    return _chunks.last;
   }
 
   /// Writes [text] to either the current chunk or a new one if the current
@@ -716,14 +737,13 @@ class ChunkBuilder {
   /// Returns true if we can divide the chunks at [index] and line split the
   /// ones before and after that separately.
   bool _canDivideAt(int i) {
-    var chunk = _chunks[i];
-    if (!chunk.isHardSplit) return false;
-    if (chunk.nesting.isNested) return false;
-    if (chunk.blockChunks.isNotEmpty) return false;
+    // Don't divide after the last chunk.
+    if (i == _chunks.length - 1) return false;
 
-    // Make sure we don't split the line in the middle of a rule.
-    var chunks = _ruleChunks[chunk.rule];
-    if (chunks != null && chunks.any((other) => other > i)) return false;
+    var chunk = _chunks[i];
+    if (!chunk.rule.isHardened) return false;
+    if (chunk.nesting.isNested) return false;
+    if (chunk.isBlock) return false;
 
     return true;
   }
@@ -765,18 +785,16 @@ class ChunkBuilder {
   void _hardenRules() {
     if (_hardSplitRules.isEmpty) return;
 
-    // Harden all of the rules that are constrained by [rules] as well.
-    var hardenedRules = new Set();
     walkConstraints(rule) {
-      if (hardenedRules.contains(rule)) return;
-      hardenedRules.add(rule);
+      rule.harden();
 
       // Follow this rule's constraints, recursively.
-      for (var other in _ruleChunks.keys) {
+      for (var other in rule.constrainedRules) {
         if (other == rule) continue;
 
-        if (rule.constrain(rule.fullySplitValue, other) ==
-            other.fullySplitValue) {
+        if (!other.isHardened &&
+            rule.constrain(rule.fullySplitValue, other) ==
+                other.fullySplitValue) {
           walkConstraints(other);
         }
       }
@@ -786,10 +804,11 @@ class ChunkBuilder {
       walkConstraints(rule);
     }
 
-    // Harden every chunk that uses one of these rules.
+    // Discard spans in hardened chunks since we know for certain they will
+    // split anyway.
     for (var chunk in _chunks) {
-      if (hardenedRules.contains(chunk.rule)) {
-        chunk.harden();
+      if (chunk.rule != null && chunk.rule.isHardened) {
+        chunk.spans.clear();
       }
     }
   }

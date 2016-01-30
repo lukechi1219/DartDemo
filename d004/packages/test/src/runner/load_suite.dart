@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.runner.load_suite;
-
 import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
@@ -12,6 +10,7 @@ import '../../test.dart';
 import '../backend/group.dart';
 import '../backend/invoker.dart';
 import '../backend/metadata.dart';
+import '../backend/suite.dart';
 import '../backend/test.dart';
 import '../backend/test_platform.dart';
 import '../utils.dart';
@@ -33,13 +32,23 @@ import 'vm/environment.dart';
 /// a normal test body, this logic isn't run until [LiveTest.run] is called. The
 /// suite itself is returned by [suite] once it's avaialble, but any errors or
 /// prints will be emitted through the running [LiveTest].
-class LoadSuite extends RunnerSuite {
+class LoadSuite extends Suite implements RunnerSuite {
+  final environment = const VMEnvironment();
+  final isDebugging = false;
+  final onDebugging = new StreamController<bool>().stream;
+
   /// A future that completes to the loaded suite once the suite's test has been
   /// run and completed successfully.
   ///
   /// This will return `null` if the suite is unavailable for some reason (for
   /// example if an error occurred while loading it).
-  final Future<RunnerSuite> suite;
+  Future<RunnerSuite> get suite async => (await _suiteAndZone)?.first;
+
+  /// A future that completes to a pair of [suite] and the load test's [Zone].
+  ///
+  /// This will return `null` if the suite is unavailable for some reason (for
+  /// example if an error occurred while loading it).
+  final Future<Pair<RunnerSuite, Zone>> _suiteAndZone;
 
   /// Returns the test that loads the suite.
   ///
@@ -71,7 +80,8 @@ class LoadSuite extends RunnerSuite {
             return;
           }
 
-          completer.complete(suite);
+          completer.complete(
+              suite == null ? null : new Pair(suite, Zone.current));
           invoker.removeOutstandingCallback();
         } catch (error, stackTrace) {
           registerException(error, stackTrace);
@@ -107,25 +117,31 @@ class LoadSuite extends RunnerSuite {
         platform: suite.platform);
   }
 
-  LoadSuite._(String name, void body(), this.suite, {TestPlatform platform})
-      : super(const VMEnvironment(), new Group.root([
+  LoadSuite._(String name, void body(), this._suiteAndZone,
+          {TestPlatform platform})
+      : super(new Group.root([
         new LocalTest(name,
             new Metadata(timeout: new Timeout(new Duration(minutes: 5))),
             body)
       ]), platform: platform);
 
   /// A constructor used by [changeSuite].
-  LoadSuite._changeSuite(LoadSuite old, Future<RunnerSuite> this.suite)
-      : super(const VMEnvironment(), old.group, platform: old.platform);
+  LoadSuite._changeSuite(LoadSuite old, this._suiteAndZone)
+      : super(old.group, platform: old.platform);
 
   /// Creates a new [LoadSuite] that's identical to this one, but that
   /// transforms [suite] once it's loaded.
   ///
-  /// If [suite] completes to `null`, [change] won't be run.
+  /// If [suite] completes to `null`, [change] won't be run. [change] is run
+  /// within the load test's zone, so any errors or prints it emits will be
+  /// associated with that test.
   LoadSuite changeSuite(RunnerSuite change(RunnerSuite suite)) {
-    return new LoadSuite._changeSuite(this, suite.then((loadedSuite) {
-      if (loadedSuite == null) return null;
-      return change(loadedSuite);
+    return new LoadSuite._changeSuite(this, _suiteAndZone.then((pair) {
+      if (pair == null) return null;
+
+      var zone = pair.last;
+      var newSuite = zone.runUnaryGuarded(change, pair.first);
+      return newSuite == null ? null : new Pair(newSuite, zone);
     }));
   }
 
@@ -144,4 +160,6 @@ class LoadSuite extends RunnerSuite {
     await new Future.error(error.error, error.stackTrace);
     throw 'unreachable';
   }
+
+  Future close() async {}
 }

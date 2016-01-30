@@ -3,51 +3,28 @@
 // BSD-style license that can be found in the LICENSE file.
 library polymer.src.common.behavior;
 
-import 'dart:html';
 import 'dart:js';
+
 import 'package:polymer_interop/polymer_interop.dart' show BehaviorAnnotation;
 export 'package:polymer_interop/polymer_interop.dart'
     show BehaviorAnnotation, BehaviorProxy;
 @GlobalQuantifyMetaCapability(Behavior, jsProxyReflectable)
 import 'package:reflectable/reflectable.dart';
-import 'util.dart';
+
 import 'js_proxy.dart';
+import 'polymer_descriptor.dart';
 
 Map<Type, JsObject> _behaviorsByType = {};
 
-final RegExp _lifecycleMethodsRegex =
-    new RegExp('created|attached|detached|attributeChanged|ready');
-const String _hostAttributes = 'hostAttributes';
-const String _attributeChanged = 'attributeChanged';
+/// Custom js object containing some helper methods for dart.
+final JsObject _polymerDart = context['Polymer']['Dart'];
 
 // Annotation class for behaviors written in dart.
 class Behavior implements BehaviorAnnotation {
   JsObject getBehavior(Type type) {
     return _behaviorsByType.putIfAbsent(type, () {
-      var obj = new JsObject(context['Object']);
-      var typeMirror = jsProxyReflectable.reflectType(type);
-
-      var hostAttributes = readHostAttributes(typeMirror);
-      if (hostAttributes != null) {
-        obj[_hostAttributes] = hostAttributes;
-      }
-
-      // Add an entry for each static lifecycle method. These methods must take
-      // a `this` arg as the first argument.
-      typeMirror.staticMembers.forEach((String name, MethodMirror method) {
-        if (!_lifecycleMethodsRegex.hasMatch(name)) return;
-        if (name == _attributeChanged) {
-          obj[name] = new JsFunction.withThis(
-              (thisArg, String attributeName, String oldVal, String newVal) {
-            typeMirror.invoke(
-                name, [convertToDart(thisArg), attributeName, oldVal, newVal]);
-          });
-        } else {
-          obj[name] = new JsFunction.withThis((thisArg) {
-            typeMirror.invoke(name, [thisArg]);
-          });
-        }
-      });
+      var obj = createBehaviorDescriptor(type);
+      ClassMirror typeMirror = jsProxyReflectable.reflectType(type);
 
       // Check superinterfaces for additional behaviors.
       var behaviors = [];
@@ -55,7 +32,11 @@ class Behavior implements BehaviorAnnotation {
         var meta =
             interface.metadata.firstWhere(_isBehavior, orElse: () => null);
         if (meta == null) continue;
-        behaviors.add(meta.getBehavior(interface.reflectedType));
+        if (!interface.hasBestEffortReflectedType) {
+          throw 'Unable to get `bestEffortReflectedType` for class '
+              '${interface.simpleName}.';
+        }
+        behaviors.add(meta.getBehavior(interface.bestEffortReflectedType));
       }
 
       // If we have no additional behaviors, then just return `obj`.

@@ -2,10 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.backend.live_test;
-
 import 'dart:async';
 
+import 'group.dart';
 import 'state.dart';
 import 'suite.dart';
 import 'test.dart';
@@ -25,6 +24,12 @@ import 'test.dart';
 abstract class LiveTest {
   /// The suite within which this test is being run.
   Suite get suite;
+
+  /// The groups within which this test is being run, from the outermost to the
+  /// innermost.
+  ///
+  /// This will always contain at least the implicit top-level group.
+  List<Group> get groups;
 
   /// The running test.
   Test get test;
@@ -94,6 +99,22 @@ abstract class LiveTest {
   /// returned [Future] has completed, but it's possible for further processing
   /// to happen, which may cause further errors.
   Future get onComplete;
+
+  /// The name of this live test without any group prefixes.
+  String get individualName {
+    var group = groups.last;
+    if (group.name == null) return test.name;
+    if (!test.name.startsWith(group.name)) return test.name;
+
+    // The test will have the same name as the group for virtual tests created
+    // to represent skipping the entire group.
+    if (test.name.length == group.name.length) return "";
+
+    return test.name.substring(group.name.length + 1);
+  }
+
+  /// Loads a copy of this [LiveTest] that's able to be run again.
+  LiveTest copy() => test.load(suite, groups: groups);
 
   /// Signals that this test should start running as soon as possible.
   ///

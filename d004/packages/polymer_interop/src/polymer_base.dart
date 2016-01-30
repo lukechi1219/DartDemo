@@ -17,7 +17,6 @@ import 'dart:js' as js;
 import 'package:web_components/web_components.dart'
     show CustomElementProxyMixin;
 import 'convert.dart';
-import 'custom_event_wrapper.dart';
 
 /// A mixin to make it easier to interoperate with Polymer JS elements.
 ///
@@ -143,7 +142,8 @@ abstract class PolymerBase implements CustomElementProxyMixin {
     return convertToDart(jsElement.callMethod('fire', [
       type,
       convertToJs(detail),
-      new js.JsObject.jsify({'bubbles': canBubble, 'cancelable': cancelable,})
+      new js.JsObject.jsify(
+          {'bubbles': canBubble, 'cancelable': cancelable, 'node': node})
     ]));
   }
 
@@ -212,20 +212,25 @@ abstract class PolymerBase implements CustomElementProxyMixin {
   /// Convenience method to add an event listener on a given element, late bound
   /// to a named method on this element.
   ///
-  /// **Dart note**: You must annotate the method with @eventHandler to ensure
+  /// **Dart note**: You must annotate the method with @reflectable to ensure
   /// it is available to be invoked.
   void listen(Element node, String eventName, String methodName) {
     jsElement.callMethod('listen', [node, eventName, methodName]);
   }
 
-  /// Returns true if notification actually took place, based on a dirty check
-  /// of whether the new value was already known
+  /// Convenience method to remove an event listener from a given element,
+  /// late bound to a named method on this element.
   ///
-  /// **Dart Note**: Today this just delegates to `set`, which is a bit more
-  /// expensive but does the right thing in all cases. We actually need to
-  /// update values on the JS Side of things anyways for many types of objects.
-  void notifyPath(String path, value) {
-    _PolymerDartNotifyPath.apply([path, convertToJs(value)], thisArg: this);
+  /// **Dart note**: You must annotate the method with @reflectable to ensure
+  /// it is available to be invoked.
+  void  unlisten(Element node, String eventName, String methodName) {
+    jsElement.callMethod('unlisten', [node, eventName, methodName]);
+  }
+
+  /// Notify that a value at a path has been changed.
+  void notifyPath(String path, value, {fromAbove: false}) {
+    _PolymerDartNotifyPath.apply([path, convertToJs(value), fromAbove],
+        thisArg: jsElement);
   }
 
   /// Serializes a property to its associated attribute.
@@ -332,7 +337,7 @@ abstract class PolymerBase implements CustomElementProxyMixin {
 
   /// Remove all items from a list at `path`.
   void clear(String path) {
-    jsElement.callMethod('splice', [path, 0, jsElement[path].length]);
+    jsElement.callMethod('splice', [path, 0]);
   }
 
   /// Sets the objects in the range `start` inclusive to `end` exclusive to the
@@ -445,6 +450,39 @@ abstract class PolymerBase implements CustomElementProxyMixin {
               .take(numToReplace)
               .map((element) => convertToJs(element))));
   }
+
+  /// Returns a list of nodes that are the effective childNodes. The effective
+  /// childNodes list is the same as the element's childNodes except that
+  /// any `<content>` elements are replaced with the list of nodes distributed
+  /// to the `<content>`, the result of its `getDistributedNodes` method.
+  List<Node> getEffectiveChildNodes() =>
+      jsElement.callMethod('getEffectiveChildNodes');
+
+  /// Returns a list of elements that are the effective children. The effective
+  /// children list is the same as the element's children except that
+  /// any `<content>` elements are replaced with the list of elements
+  /// distributed to the `<content>`.
+  List<Element> getEffectiveChildren() =>
+      jsElement.callMethod('getEffectiveChildren');
+
+  /// Returns a string of text content that is the concatenation of the
+  /// text content's of the element's effective childNodes (the elements
+  /// returned by [getEffectiveChildNodes].
+  String getEffectiveText() => jsElement.callMethod('getEffectiveTextContent');
+
+  Element queryEffectiveChildren(String selector) =>
+      jsElement.callMethod('queryEffectiveChildren', [selector]);
+
+  List<Element> queryAllEffectiveChildren(String selector) =>
+      jsElement.callMethod('queryAllEffectiveChildren', [selector]);
+
+  /// Checks whether an element is in this element's light DOM tree.
+  bool isLightDescendant(Element node) =>
+      jsElement.callMethod('isLightDescendant', [node]);
+
+  /// Checks whether an element is in this element's local DOM tree.
+  bool isLocalDescendant(Element node) =>
+      jsElement.callMethod('isLocalDescendant', [node]);
 }
 
 final js.JsObject _PolymerInterop = js.context['Polymer']['PolymerInterop'];

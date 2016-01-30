@@ -79,6 +79,11 @@ abstract class AnalysisTarget {
  */
 abstract class AnalysisTask {
   /**
+   * A queue storing the last 10 task descriptions for diagnostic purposes.
+   */
+  static final LimitedQueue<String> LAST_TASKS = new LimitedQueue<String>(10);
+
+  /**
    * A table mapping the types of analysis tasks to the number of times each
    * kind of task has been performed.
    */
@@ -206,12 +211,56 @@ abstract class AnalysisTask {
     } on AnalysisException catch (exception, stackTrace) {
       caughtException = new CaughtException(exception, stackTrace);
       AnalysisEngine.instance.logger
-          .logInformation("Task failed: ${description}", caughtException);
+          .logError("Task failed: $description", caughtException);
     }
   }
 
   @override
   String toString() => description;
+
+  /**
+   * Given a strongly connected component, find and return a list of
+   * [TargetedResult]s that describes a cyclic path within the cycle.  Returns
+   * null if no cyclic path is found.
+   */
+  List<TargetedResult> _findCyclicPath(List<WorkItem> cycle) {
+    WorkItem findInCycle(AnalysisTarget target, ResultDescriptor descriptor) {
+      for (WorkItem item in cycle) {
+        if (target == item.target && descriptor == item.spawningResult) {
+          return item;
+        }
+      }
+      return null;
+    }
+
+    HashSet<WorkItem> active = new HashSet<WorkItem>();
+    List<TargetedResult> path = null;
+    bool traverse(WorkItem item) {
+      if (!active.add(item)) {
+        // We've found a cycle
+        path = <TargetedResult>[];
+        return true;
+      }
+      for (TargetedResult result in item.inputTargetedResults) {
+        WorkItem item = findInCycle(result.target, result.result);
+        // Ignore edges that leave the cycle.
+        if (item != null) {
+          if (traverse(item)) {
+            // This edge is in a cycle (or leads to a cycle) so add it to the
+            // path
+            path.add(result);
+            return true;
+          }
+        }
+      }
+      // There was no cycle.
+      return false;
+    }
+    if (cycle.length > 0) {
+      traverse(cycle[0]);
+    }
+    return path;
+  }
 
   /**
    * Perform this analysis task, ensuring that all exceptions are wrapped in an
@@ -221,6 +270,11 @@ abstract class AnalysisTask {
    */
   void _safelyPerform() {
     try {
+      //
+      // Store task description for diagnostics.
+      //
+      LAST_TASKS.add(description);
+
       //
       // Report that this task is being performed.
       //
@@ -250,7 +304,8 @@ abstract class AnalysisTask {
       //
       try {
         if (dependencyCycle != null && !handlesDependencyCycles) {
-          throw new InfiniteTaskLoopException(this, dependencyCycle);
+          throw new InfiniteTaskLoopException(
+              this, dependencyCycle, _findCyclicPath(dependencyCycle));
         }
         internalPerform();
       } finally {
@@ -282,8 +337,8 @@ abstract class ListResultDescriptor<E> implements ResultDescriptor<List<E>> {
    * values associated with this result will remain in the cache.
    */
   factory ListResultDescriptor(String name, List<E> defaultValue,
-      {ResultCachingPolicy<List<E>> cachingPolicy}) = ListResultDescriptorImpl<
-      E>;
+          {ResultCachingPolicy<List<E>> cachingPolicy}) =
+      ListResultDescriptorImpl<E>;
 
   @override
   ListTaskInput<E> of(AnalysisTarget target, {bool flushOnAccess: false});
@@ -295,33 +350,41 @@ abstract class ListResultDescriptor<E> implements ResultDescriptor<List<E>> {
  *
  * Clients may not extend, implement or mix-in this class.
  */
-abstract class ListTaskInput<E> extends TaskInput<List<E>> {
+abstract class ListTaskInput<E> implements TaskInput<List<E>> {
+  /**
+   * Return a task input that can be used to compute a flatten list whose
+   * elements are combined [subListResult]'s associated with those elements.
+   */
+  ListTaskInput /*<V>*/ toFlattenListOf /*<V>*/ (
+      ListResultDescriptor /*<V>*/ subListResult);
+
   /**
    * Return a task input that can be used to compute a list whose elements are
    * the result of passing the elements of this input to the [mapper] function.
    */
-  ListTaskInput /*<V>*/ toList(UnaryFunction<E, dynamic /*<V>*/ > mapper);
+  ListTaskInput /*<V>*/ toList /*<V>*/ (
+      UnaryFunction<E, dynamic /*<=V>*/ > mapper);
 
   /**
    * Return a task input that can be used to compute a list whose elements are
    * [valueResult]'s associated with those elements.
    */
-  ListTaskInput /*<V>*/ toListOf(ResultDescriptor /*<V>*/ valueResult);
+  ListTaskInput /*<V>*/ toListOf /*<V>*/ (ResultDescriptor /*<V>*/ valueResult);
 
   /**
    * Return a task input that can be used to compute a map whose keys are the
    * elements of this input and whose values are the result of passing the
    * corresponding key to the [mapper] function.
    */
-  MapTaskInput<E, dynamic /*V*/ > toMap(
-      UnaryFunction<E, dynamic /*<V>*/ > mapper);
+  MapTaskInput<E, dynamic /*=V*/ > toMap /*<V>*/ (
+      UnaryFunction<E, dynamic /*=V*/ > mapper);
 
   /**
    * Return a task input that can be used to compute a map whose keys are the
    * elements of this input and whose values are the [valueResult]'s associated
    * with those elements.
    */
-  MapTaskInput<AnalysisTarget, dynamic /*V*/ > toMapOf(
+  MapTaskInput<AnalysisTarget, dynamic /*=V*/ > toMapOf /*<V>*/ (
       ResultDescriptor /*<V>*/ valueResult);
 }
 
@@ -330,15 +393,15 @@ abstract class ListTaskInput<E> extends TaskInput<List<E>> {
  *
  * Clients may not extend, implement or mix-in this class.
  */
-abstract class MapTaskInput<K, V> extends TaskInput<Map<K, V>> {
+abstract class MapTaskInput<K, V> implements TaskInput<Map<K, V>> {
   /**
    * [V] must be a [List].
    * Return a task input that can be used to compute a list whose elements are
    * the result of passing keys [K] and the corresponding elements of [V] to
    * the [mapper] function.
    */
-  TaskInput<List /*<E>*/ > toFlattenList(
-      BinaryFunction<K, dynamic /*element of V*/, dynamic /*<E>*/ > mapper);
+  TaskInput<List /*<E>*/ > toFlattenList /*<E>*/ (
+      BinaryFunction<K, dynamic /*element of V*/, dynamic /*=E*/ > mapper);
 }
 
 /**
@@ -508,7 +571,7 @@ abstract class TaskInput<V> {
    * Return a task input that can be used to compute a list whose elements are
    * the result of passing the result of this input to the [mapper] function.
    */
-  ListTaskInput /*<E>*/ mappedToList(List /*<E>*/ mapper(V value));
+  ListTaskInput /*<E>*/ mappedToList /*<E>*/ (List /*<E>*/ mapper(V value));
 }
 
 /**

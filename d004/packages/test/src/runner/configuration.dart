@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.runner.configuration;
-
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -13,6 +11,7 @@ import 'package:path/path.dart' as p;
 import '../frontend/timeout.dart';
 import '../backend/metadata.dart';
 import '../backend/test_platform.dart';
+import '../utils.dart';
 import '../util/io.dart';
 
 /// The default number of test suites to run at once.
@@ -36,6 +35,8 @@ class Configuration {
     parser.addFlag("version", negatable: false,
         help: "Shows the package's version.");
     parser.addOption("package-root", hide: true);
+
+    parser.addSeparator("======== Selecting Tests");
     parser.addOption("name",
         abbr: 'n',
         help: 'A substring of the name of the test to run.\n'
@@ -43,6 +44,20 @@ class Configuration {
     parser.addOption("plain-name",
         abbr: 'N',
         help: 'A plain-text substring of the name of the test to run.');
+    // TODO(nweiz): Support the full platform-selector syntax for choosing which
+    // tags to run. In the shorter term, disallow non-"identifier" tags.
+    parser.addOption("tags",
+        abbr: 't',
+        help: 'Run only tests with all of the specified tags.',
+        allowMultiple: true);
+    parser.addOption("tag", hide: true, allowMultiple: true);
+    parser.addOption("exclude-tags",
+        abbr: 'x',
+        help: "Don't run tests with any of the specified tags.",
+        allowMultiple: true);
+    parser.addOption("exclude-tag", hide: true, allowMultiple: true);
+
+    parser.addSeparator("======== Running Tests");
     parser.addOption("platform",
         abbr: 'p',
         help: 'The platform(s) on which to run the tests.',
@@ -57,19 +72,29 @@ class Configuration {
     parser.addOption("pub-serve",
         help: 'The port of a pub serve instance serving "test/".',
         valueHelp: 'port');
+
+    // Note: although we list the 30s default timeout as though it were a
+    // default value for this argument, it's actually encoded in the [Invoker]'s
+    // call to [Timeout.apply].
+    parser.addOption("timeout",
+        help: 'The default test timeout. For example: 15s, 2x, none\n'
+            '(defaults to 30s)');
     parser.addFlag("pause-after-load",
         help: 'Pauses for debugging before any tests execute.\n'
-            'Implies --concurrency=1.\n'
+            'Implies --concurrency=1 and --timeout=none.\n'
             'Currently only supported for browser tests.',
         negatable: false);
+
+    parser.addSeparator("======== Output");
     parser.addOption("reporter",
         abbr: 'r',
         help: 'The runner used to print test results.',
-        allowed: ['compact', 'expanded'],
+        allowed: ['compact', 'expanded', 'json'],
         defaultsTo: Platform.isWindows ? 'expanded' : 'compact',
         allowedHelp: {
       'compact': 'A single line, updated continuously.',
-      'expanded': 'A separate line for each update.'
+      'expanded': 'A separate line for each update.',
+      'json': 'A machine-readable format (see https://goo.gl/0HRhdZ).'
     });
     parser.addFlag("verbose-trace", negatable: false,
         help: 'Whether to emit stack traces with core library frames.');
@@ -111,6 +136,9 @@ class Configuration {
   /// if tests should be loaded from the filesystem.
   final Uri pubServeUrl;
 
+  /// The default test timeout.
+  final Timeout timeout;
+
   /// Whether to use command-line color escapes.
   final bool color;
 
@@ -130,11 +158,15 @@ class Configuration {
   /// The set of platforms on which to run tests.
   final List<TestPlatform> platforms;
 
+  /// Restricts the set of tests to a set of tags
+  final Set<String> tags;
+
+  /// Does not run tests with tags from this set
+  final Set<String> excludeTags;
+
   /// The global test metadata derived from this configuration.
   Metadata get metadata =>
-      new Metadata(
-          timeout: pauseAfterLoad ? Timeout.none : null,
-          verboseTrace: verboseTrace);
+      new Metadata(timeout: timeout, verboseTrace: verboseTrace);
 
   /// Parses the configuration from [args].
   ///
@@ -155,6 +187,23 @@ class Configuration {
       pattern = options['plain-name'];
     }
 
+    var tags = new Set();
+    tags.addAll(options['tags'] ?? []);
+    tags.addAll(options['tag'] ?? []);
+
+    var excludeTags = new Set();
+    excludeTags.addAll(options['exclude-tags'] ?? []);
+    excludeTags.addAll(options['exclude-tag'] ?? []);
+
+    var tagIntersection = tags.intersection(excludeTags);
+    if (tagIntersection.isNotEmpty) {
+      throw new FormatException(
+          'The ${pluralize('tag', tagIntersection.length)} '
+          '${toSentence(tagIntersection)} '
+          '${pluralize('was', tagIntersection.length, plural: 'were')} '
+          'both included and excluded.');
+    }
+
     return new Configuration(
         help: options['help'],
         version: options['version'],
@@ -167,9 +216,14 @@ class Configuration {
         pubServePort: _wrapFormatException(options, 'pub-serve', int.parse),
         concurrency: _wrapFormatException(options, 'concurrency', int.parse,
             orElse: () => _defaultConcurrency),
+        timeout: _wrapFormatException(options, 'timeout',
+            (value) => new Timeout.parse(value),
+            orElse: () => new Timeout.factor(1)),
         pattern: pattern,
         platforms: options['platform'].map(TestPlatform.find),
-        paths: options.rest.isEmpty ? null : options.rest);
+        paths: options.rest.isEmpty ? null : options.rest,
+        tags: tags,
+        excludeTags: excludeTags);
   }
 
   /// Runs [parse] on the value of the option [name], and wraps any
@@ -190,8 +244,9 @@ class Configuration {
   Configuration({this.help: false, this.version: false,
           this.verboseTrace: false, this.jsTrace: false,
           bool pauseAfterLoad: false, bool color, String packageRoot,
-          String reporter, int pubServePort, int concurrency, this.pattern,
-          Iterable<TestPlatform> platforms, Iterable<String> paths})
+          String reporter, int pubServePort, int concurrency, Timeout timeout,
+          this.pattern, Iterable<TestPlatform> platforms,
+          Iterable<String> paths, Set<String> tags, Set<String> excludeTags})
       : pauseAfterLoad = pauseAfterLoad,
         color = color == null ? canUseSpecialChars : color,
         packageRoot = packageRoot == null
@@ -204,7 +259,12 @@ class Configuration {
         concurrency = pauseAfterLoad
             ? 1
             : (concurrency == null ? _defaultConcurrency : concurrency),
+        timeout = pauseAfterLoad
+            ? Timeout.none
+            : (timeout == null ? new Timeout.factor(1) : timeout),
         platforms = platforms == null ? [TestPlatform.vm] : platforms.toList(),
         paths = paths == null ? ["test"] : paths.toList(),
-        explicitPaths = paths != null;
+        explicitPaths = paths != null,
+        this.tags = tags,
+        this.excludeTags = excludeTags;
 }

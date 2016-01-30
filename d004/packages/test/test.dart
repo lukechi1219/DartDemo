@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test;
-
 import 'dart:async';
 
 import 'package:path/path.dart' as p;
@@ -25,6 +23,7 @@ export 'src/frontend/future_matchers.dart';
 export 'src/frontend/on_platform.dart';
 export 'src/frontend/prints_matcher.dart';
 export 'src/frontend/skip.dart';
+export 'src/frontend/tags.dart';
 export 'src/frontend/test_on.dart';
 export 'src/frontend/throws_matcher.dart';
 export 'src/frontend/throws_matchers.dart';
@@ -77,7 +76,8 @@ Declarer get _declarer {
 
 // TODO(nweiz): This and other top-level functions should throw exceptions if
 // they're called after the declarer has finished declaring.
-/// Creates a new test case with the given description and body.
+/// Creates a new test case with the given description (converted to a string)
+/// and body.
 ///
 /// The description will be added to the descriptions of any surrounding
 /// [group]s. If [testOn] is passed, it's parsed as a [platform selector][]; the
@@ -92,6 +92,11 @@ Declarer get _declarer {
 /// If [skip] is a String or `true`, the test is skipped. If it's a String, it
 /// should explain why the test is skipped; this reason will be printed instead
 /// of running the test.
+///
+/// If [tags] is passed, it declares user-defined tags that are applied to the
+/// test. These tags can be used to select or skip the test on the command line.
+/// It can be an [Iterable] of tag names, or a [String] representing a single
+/// tag.
 ///
 /// [onPlatform] allows tests to be configured on a platform-by-platform
 /// basis. It's a map from strings that are parsed as [PlatformSelector]s to
@@ -112,16 +117,24 @@ Declarer get _declarer {
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
-void test(String description, body(), {String testOn, Timeout timeout,
-        skip, Map<String, dynamic> onPlatform}) =>
-    _declarer.test(description, body,
-        testOn: testOn, timeout: timeout, skip: skip, onPlatform: onPlatform);
+void test(description, body(),
+        {String testOn,
+        Timeout timeout,
+        skip,
+        tags,
+        Map<String, dynamic> onPlatform}) =>
+    _declarer.test(description.toString(), body,
+        testOn: testOn,
+        timeout: timeout,
+        skip: skip,
+        onPlatform: onPlatform,
+        tags: tags);
 
 /// Creates a group of tests.
 ///
-/// A group's description is included in the descriptions of any tests or
-/// sub-groups it contains. [setUp] and [tearDown] are also scoped to the
-/// containing group.
+/// A group's description (converted to a string) is included in the descriptions
+/// of any tests or sub-groups it contains. [setUp] and [tearDown] are also scoped
+/// to the containing group.
 ///
 /// If [testOn] is passed, it's parsed as a [platform selector][]; the test will
 /// only be run on matching platforms.
@@ -136,6 +149,11 @@ void test(String description, body(), {String testOn, Timeout timeout,
 /// If [skip] is a String or `true`, the group is skipped. If it's a String, it
 /// should explain why the group is skipped; this reason will be printed instead
 /// of running the group's tests.
+///
+/// If [tags] is passed, it declares user-defined tags that are applied to the
+/// group. These tags can be used to select or skip the group's tests on the
+/// command line. It can be an [Iterable] of tag names, or a [String]
+/// representing a single tag.
 ///
 /// [onPlatform] allows groups to be configured on a platform-by-platform
 /// basis. It's a map from strings that are parsed as [PlatformSelector]s to
@@ -156,10 +174,14 @@ void test(String description, body(), {String testOn, Timeout timeout,
 ///
 /// If multiple platforms match, the annotations apply in order as through
 /// they were in nested groups.
-void group(String description, void body(), {String testOn, Timeout timeout,
-        skip, Map<String, dynamic> onPlatform}) =>
-    _declarer.group(description, body,
-        testOn: testOn, timeout: timeout, skip: skip);
+void group(description, body(),
+        {String testOn,
+        Timeout timeout,
+        skip,
+        tags,
+        Map<String, dynamic> onPlatform}) =>
+    _declarer.group(description.toString(), body,
+        testOn: testOn, timeout: timeout, skip: skip, tags: tags);
 
 /// Registers a function to be run before tests.
 ///

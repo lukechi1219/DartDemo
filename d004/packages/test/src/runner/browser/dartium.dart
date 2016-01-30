@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.runner.browser.dartium;
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -11,7 +9,6 @@ import 'dart:io';
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 
-import '../../util/cancelable_future.dart';
 import '../../util/io.dart';
 import '../../utils.dart';
 import 'browser.dart';
@@ -121,7 +118,7 @@ class Dartium extends Browser {
       return match == null ? null : Uri.parse(match[1]);
     }).where((line) => line != null));
 
-    var futures = [
+    var operations = [
       urlQueue.next,
       urlQueue.next,
       urlQueue.next
@@ -133,19 +130,19 @@ class Dartium extends Browser {
     /// check whether it's actually connected to an isolate, indicating that
     /// it's the observatory for the main page. Once we find the one that is, we
     /// cancel the other requests and return it.
-    return inCompletionOrder(futures)
+    return inCompletionOrder(operations)
         .firstWhere((url) => url != null, defaultValue: () => null);
   }
 
   /// If the URL returned by [future] corresponds to the correct Observatory
   /// instance, returns it. Otherwise, returns `null`.
   ///
-  /// If the returned future is canceled before it fires, the WebSocket
+  /// If the returned operation is canceled before it fires, the WebSocket
   /// connection with the given Observatory will be closed immediately.
-  static CancelableFuture<Uri> _checkObservatoryUrl(Future<Uri> future) {
+  static CancelableOperation<Uri> _checkObservatoryUrl(Future<Uri> future) {
     var webSocket;
     var canceled = false;
-    var completer = new CancelableCompleter(() {
+    var completer = new CancelableCompleter(onCancel: () {
       canceled = true;
       if (webSocket != null) webSocket.close();
     });
@@ -248,6 +245,6 @@ class Dartium extends Browser {
       if (!completer.isCompleted) completer.completeError(error, stackTrace);
     });
 
-    return completer.future;
+    return completer.operation;
   }
 }

@@ -4,7 +4,10 @@
 
 library dart_style.src.argument_list_visitor;
 
+import 'dart:math' as math;
+
 import 'package:analyzer/analyzer.dart';
+import 'package:analyzer/src/generated/scanner.dart';
 
 import 'chunk.dart';
 import 'rule/argument.dart';
@@ -17,7 +20,15 @@ import 'source_visitor.dart';
 class ArgumentListVisitor {
   final SourceVisitor _visitor;
 
-  final ArgumentList _node;
+  /// The "(" before the argument list.
+  final Token _leftParenthesis;
+
+  /// The ")" after the argument list.
+  final Token _rightParenthesis;
+
+  /// All of the arguments, positional, named, and functions, in the argument
+  /// list.
+  final List<Expression> _allArguments;
 
   /// The normal arguments preceding any block function arguments.
   final ArgumentSublist _arguments;
@@ -34,35 +45,32 @@ class ArgumentListVisitor {
 
   /// Returns `true` if there is only a single positional argument.
   bool get _isSingle =>
-      _node.arguments.length == 1 && _node.arguments.single is! NamedExpression;
+      _allArguments.length == 1 && _allArguments.single is! NamedExpression;
 
   /// Whether this argument list has any collection or block function arguments.
+  // TODO(rnystrom): Returning true based on collections is non-optimal. It
+  // forces a method chain to break into two but the result collection may not
+  // actually split which can lead to a method chain that's allowed to break
+  // where it shouldn't.
   bool get hasBlockArguments =>
       _arguments._collections.isNotEmpty || _functions != null;
 
-  /// Whether this argument list should force the containing method chain to
-  /// add a level of block nesting.
-  bool get nestMethodArguments {
-    // If there are block arguments, we don't want the method to force them to
-    // the right.
-    if (hasBlockArguments) return false;
-
-    // Corner case: If there is just a single argument, don't bump the nesting.
-    // This lets us avoid spurious indentation in cases like:
-    //
-    //     object.method(function(() {
-    //       body;
-    //     }));
-    return _node.arguments.length > 1;
+  factory ArgumentListVisitor(SourceVisitor visitor, ArgumentList node) {
+    return new ArgumentListVisitor.forArguments(
+        visitor, node.leftParenthesis, node.rightParenthesis, node.arguments);
   }
 
-  factory ArgumentListVisitor(SourceVisitor visitor, ArgumentList node) {
+  factory ArgumentListVisitor.forArguments(
+      SourceVisitor visitor,
+      Token leftParenthesis,
+      Token rightParenthesis,
+      List<Expression> arguments) {
     // Look for a single contiguous range of block function arguments.
     var functionsStart;
     var functionsEnd;
 
-    for (var i = 0; i < node.arguments.length; i++) {
-      var argument = node.arguments[i];
+    for (var i = 0; i < arguments.length; i++) {
+      var argument = arguments[i];
       if (_isBlockFunction(argument)) {
         if (functionsStart == null) functionsStart = i;
 
@@ -77,30 +85,69 @@ class ArgumentListVisitor {
       }
     }
 
+    // Edge case: If all of the arguments are named, but they aren't all
+    // functions, then don't handle the functions specially. A function with a
+    // bunch of named arguments tends to look best when they are all lined up,
+    // even the function ones (unless they are all functions).
+    //
+    // Prefers:
+    //
+    //     function(
+    //         named: () {
+    //           something();
+    //         },
+    //         another: argument);
+    //
+    // Over:
+    //
+    //     function(named: () {
+    //       something();
+    //     }
+    //         another: argument);
+    if (functionsStart != null &&
+        arguments[0] is NamedExpression &&
+        (functionsStart > 0 || functionsEnd < arguments.length)) {
+      functionsStart = null;
+    }
+
     if (functionsStart == null) {
       // No functions, so there is just a single argument list.
-      return new ArgumentListVisitor._(visitor, node,
-          new ArgumentSublist(node.arguments, node.arguments), null, null);
+      return new ArgumentListVisitor._(
+          visitor,
+          leftParenthesis,
+          rightParenthesis,
+          arguments,
+          new ArgumentSublist(arguments, arguments),
+          null,
+          null);
     }
 
     // Split the arguments into two independent argument lists with the
     // functions in the middle.
-    var argumentsBefore = node.arguments.take(functionsStart).toList();
-    var functions = node.arguments.sublist(functionsStart, functionsEnd);
-    var argumentsAfter = node.arguments.skip(functionsEnd).toList();
+    var argumentsBefore = arguments.take(functionsStart).toList();
+    var functions = arguments.sublist(functionsStart, functionsEnd);
+    var argumentsAfter = arguments.skip(functionsEnd).toList();
 
     return new ArgumentListVisitor._(
         visitor,
-        node,
-        new ArgumentSublist(node.arguments, argumentsBefore),
+        leftParenthesis,
+        rightParenthesis,
+        arguments,
+        new ArgumentSublist(arguments, argumentsBefore),
         functions,
-        new ArgumentSublist(node.arguments, argumentsAfter));
+        new ArgumentSublist(arguments, argumentsAfter));
   }
 
-  ArgumentListVisitor._(this._visitor, this._node, this._arguments,
-      this._functions, this._argumentsAfterFunctions);
+  ArgumentListVisitor._(
+      this._visitor,
+      this._leftParenthesis,
+      this._rightParenthesis,
+      this._allArguments,
+      this._arguments,
+      this._functions,
+      this._argumentsAfterFunctions);
 
-  /// Builds chunks for the call chain.
+  /// Builds chunks for the argument list.
   void visit() {
     // If there is just one positional argument, it tends to look weird to
     // split before it, so try not to.
@@ -110,7 +157,7 @@ class ArgumentListVisitor {
     // them.
     _visitor.builder.nestExpression();
     _visitor.builder.startSpan();
-    _visitor.token(_node.leftParenthesis);
+    _visitor.token(_leftParenthesis);
 
     _arguments.visit(_visitor);
 
@@ -122,7 +169,7 @@ class ArgumentListVisitor {
       // instead of just having this little solo split here. That would try to
       // keep the parameter list with other arguments when possible, and, I
       // think, generally look nicer.
-      if (_functions.first == _node.arguments.first) {
+      if (_functions.first == _allArguments.first) {
         _visitor.soloZeroSplit();
       } else {
         _visitor.soloSplit();
@@ -134,7 +181,7 @@ class ArgumentListVisitor {
         _visitor.visit(argument);
 
         // Write the trailing comma.
-        if (argument != _node.arguments.last) {
+        if (argument != _allArguments.last) {
           _visitor.token(argument.endToken.next);
         }
       }
@@ -144,15 +191,15 @@ class ArgumentListVisitor {
       _visitor.builder.endSpan();
     }
 
-    _visitor.token(_node.rightParenthesis);
+    _visitor.token(_rightParenthesis);
 
     _visitor.builder.unnest();
 
     if (_isSingle) _visitor.builder.endSpan();
   }
 
-  /// Returns `true` if [expression] is a [FunctionExpression] with a block
-  /// body.
+  /// Returns `true` if [expression] is a [FunctionExpression] with a non-empty
+  /// block body.
   static bool _isBlockFunction(Expression expression) {
     if (expression is NamedExpression) {
       expression = (expression as NamedExpression).expression;
@@ -166,10 +213,23 @@ class ArgumentListVisitor {
       return _isBlockFunction(expression.argumentList.arguments.single);
     }
 
-    // Curly body functions are.
+    if (expression is InstanceCreationExpression) {
+      if (expression.argumentList.arguments.length != 1) return false;
+
+      return _isBlockFunction(expression.argumentList.arguments.single);
+    }
+
+    // Must be a function.
     if (expression is! FunctionExpression) return false;
+
+    // With a curly body.
     var function = expression as FunctionExpression;
-    return function.body is BlockFunctionBody;
+    if (function.body is! BlockFunctionBody) return false;
+
+    // That isn't empty.
+    var body = function.body as BlockFunctionBody;
+    return body.block.statements.isNotEmpty ||
+        body.block.rightBracket.precedingComments != null;
   }
 
   /// Returns `true` if [expression] is a valid method invocation target for
@@ -206,8 +266,9 @@ class ArgumentSublist {
   /// The named arguments, in order.
   final List<Expression> _named;
 
-  /// The arguments that are collection literals that get special formatting.
-  final Set<Expression> _collections;
+  /// Maps each argument that is a collection literal that get special
+  /// formatting to the token for the collection's open bracket.
+  final Map<Expression, Token> _collections;
 
   /// The number of leading collections.
   ///
@@ -220,18 +281,12 @@ class ArgumentSublist {
   final int _trailingCollections;
 
   /// The rule used to split the bodies of all of the collection arguments.
-  Rule get _collectionRule {
-    // Lazy initialize.
-    if (_collectionRuleField == null && _collections.isNotEmpty) {
-      _collectionRuleField = new SimpleRule(cost: Cost.splitCollections);
-    }
+  Rule get collectionRule => _collectionRule;
+  Rule _collectionRule;
 
-    return _collectionRuleField;
-  }
-
-  Rule _collectionRuleField;
-
-  bool get _hasMultipleArguments => _positional.length + _named.length > 1;
+  /// The most recent chunk that split before an argument.
+  Chunk get previousSplit => _previousSplit;
+  Chunk _previousSplit;
 
   factory ArgumentSublist(
       List<Expression> allArguments, List<Expression> arguments) {
@@ -240,12 +295,16 @@ class ArgumentSublist {
         arguments.takeWhile((arg) => arg is! NamedExpression).toList();
     var named = arguments.skip(positional.length).toList();
 
-    var collections = arguments.where(_isCollectionArgument).toSet();
+    var collections = {};
+    for (var argument in arguments) {
+      var bracket = _getCollectionBracket(argument);
+      if (bracket != null) collections[argument] = bracket;
+    }
 
     // Count the leading arguments that are collection literals.
     var leadingCollections = 0;
     for (var argument in arguments) {
-      if (!collections.contains(argument)) break;
+      if (!collections.containsKey(argument)) break;
       leadingCollections++;
     }
 
@@ -253,20 +312,10 @@ class ArgumentSublist {
     var trailingCollections = 0;
     if (leadingCollections != arguments.length) {
       for (var argument in arguments.reversed) {
-        if (!collections.contains(argument)) break;
+        if (!collections.containsKey(argument)) break;
         trailingCollections++;
       }
     }
-
-    // If only some of the named arguments are collections, treat none of them
-    // specially. Avoids cases like:
-    //
-    //     function(
-    //         a: arg,
-    //         b: [
-    //       ...
-    //     ]);
-    if (trailingCollections < named.length) trailingCollections = 0;
 
     // Collections must all be a prefix or suffix of the argument list (and not
     // both).
@@ -286,6 +335,10 @@ class ArgumentSublist {
       this._collections, this._leadingCollections, this._trailingCollections);
 
   void visit(SourceVisitor visitor) {
+    if (_collections.isNotEmpty) {
+      _collectionRule = new Rule(Cost.splitCollections);
+    }
+
     var rule = _visitPositional(visitor);
     _visitNamed(visitor, rule);
   }
@@ -295,74 +348,60 @@ class ArgumentSublist {
     if (_positional.isEmpty) return null;
 
     // Allow splitting after "(".
-    var rule;
-    if (_positional.length == 1) {
-      rule = new SinglePositionalRule(_collectionRule,
-          splitsOnInnerRules: _allArguments.length > 1 &&
-              !_isCollectionArgument(_positional.first));
-    } else {
-      // Only count the positional bodies in the positional rule.
-      var leadingPositional = _leadingCollections;
-      if (_leadingCollections == _positional.length + _named.length) {
-        leadingPositional -= _named.length;
-      }
-
-      var trailingPositional = _trailingCollections - _named.length;
-      rule = new MultiplePositionalRule(
-          _collectionRule, leadingPositional, trailingPositional);
-    }
-
-    visitor.builder.startRule(rule);
-
-    var chunk;
-    if (_isFirstArgument(_positional.first)) {
-      chunk = visitor.zeroSplit();
-    } else {
-      chunk = visitor.split();
-    }
-    rule.beforeArgument(chunk);
-
-    // Try to not split the arguments.
-    visitor.builder.startSpan(Cost.positionalArguments);
-
-    for (var argument in _positional) {
-      _visitArgument(visitor, rule, argument);
-
-      // Positional arguments split independently.
-      if (argument != _positional.last) {
-        rule.beforeArgument(visitor.split());
-      }
-    }
-
-    visitor.builder.endSpan();
-    visitor.builder.endRule();
+    // Only count the collections in the positional rule.
+    var leadingCollections = math.min(_leadingCollections, _positional.length);
+    var trailingCollections = math.max(_trailingCollections - _named.length, 0);
+    var rule = new PositionalRule(
+        _collectionRule, leadingCollections, trailingCollections);
+    _visitArguments(visitor, _positional, rule);
 
     return rule;
   }
 
   /// Writes the named arguments, if any.
-  void _visitNamed(SourceVisitor visitor, PositionalRule rule) {
+  void _visitNamed(SourceVisitor visitor, PositionalRule positionalRule) {
     if (_named.isEmpty) return;
 
-    var positionalRule = rule;
-    var namedRule = new NamedRule(_collectionRule);
-    visitor.builder.startRule(namedRule);
+    // Only count the collections in the named rule.
+    var leadingCollections =
+        math.max(_leadingCollections - _positional.length, 0);
+    var trailingCollections = math.min(_trailingCollections, _named.length);
+    var namedRule =
+        new NamedRule(_collectionRule, leadingCollections, trailingCollections);
 
     // Let the positional args force the named ones to split.
     if (positionalRule != null) {
       positionalRule.setNamedArgsRule(namedRule);
     }
 
-    // Split before the first named argument.
-    namedRule.beforeArguments(
-        visitor.builder.split(space: !_isFirstArgument(_named.first)));
+    _visitArguments(visitor, _named, namedRule);
+  }
 
-    for (var argument in _named) {
-      _visitArgument(visitor, namedRule, argument);
+  void _visitArguments(
+      SourceVisitor visitor, List<Expression> arguments, ArgumentRule rule) {
+    visitor.builder.startRule(rule);
+
+    // Split before the first argument.
+    _previousSplit =
+        visitor.builder.split(space: !_isFirstArgument(arguments.first));
+    rule.beforeArgument(_previousSplit);
+
+    // Try to not split the positional arguments.
+    if (arguments == _positional) {
+      visitor.builder.startSpan(Cost.positionalArguments);
+    }
+
+    for (var argument in arguments) {
+      _visitArgument(visitor, rule, argument);
 
       // Write the split.
-      if (argument != _named.last) visitor.split();
+      if (argument != arguments.last) {
+        _previousSplit = visitor.split();
+        rule.beforeArgument(_previousSplit);
+      }
     }
+
+    if (arguments == _positional) visitor.builder.endSpan();
 
     visitor.builder.endRule();
   }
@@ -370,27 +409,40 @@ class ArgumentSublist {
   void _visitArgument(
       SourceVisitor visitor, ArgumentRule rule, Expression argument) {
     // If we're about to write a collection argument, handle it specially.
-    if (_collections.contains(argument)) {
-      if (rule != null) rule.beforeCollection();
+    if (_collections.containsKey(argument)) {
+      rule.disableSplitOnInnerRules();
 
       // Tell it to use the rule we've already created.
-      visitor.setNextLiteralBodyRule(_collectionRule);
-    } else if (_hasMultipleArguments) {
-      // Corner case: If there is just a single argument, don't bump the
-      // nesting. This lets us avoid spurious indentation in cases like:
+      visitor.beforeCollection(_collections[argument], this);
+    } else if (_allArguments.length > 1) {
+      // Edge case: Only bump the nesting if there are multiple arguments. This
+      // lets us avoid spurious indentation in cases like:
       //
       //     function(function(() {
       //       body;
       //     }));
       visitor.builder.startBlockArgumentNesting();
+    } else {
+      // Edge case: Likewise, don't force the argument to split if there is
+      // only a single one, like:
+      //
+      //     outer(inner(
+      //         longArgument));
+      rule.disableSplitOnInnerRules();
     }
 
-    visitor.visit(argument);
+    if (argument is NamedExpression) {
+      visitor.visitNamedArgument(argument, rule as NamedRule);
+    } else {
+      visitor.visit(argument);
+    }
 
-    if (_collections.contains(argument)) {
-      if (rule != null) rule.afterCollection();
-    } else if (_hasMultipleArguments) {
+    if (_collections.containsKey(argument)) {
+      rule.enableSplitOnInnerRules();
+    } else if (_allArguments.length > 1) {
       visitor.builder.endBlockArgumentNesting();
+    } else {
+      rule.enableSplitOnInnerRules();
     }
 
     // Write the trailing comma.
@@ -403,17 +455,22 @@ class ArgumentSublist {
 
   bool _isLastArgument(Expression argument) => argument == _allArguments.last;
 
-  /// Returns true if [expression] denotes a collection literal argument.
+  /// Returns the token for the left bracket if [expression] denotes a
+  /// collection literal argument.
   ///
   /// Similar to block functions, collection arguments can get special
   /// indentation to make them look more statement-like.
-  static bool _isCollectionArgument(Expression expression) {
+  static Token _getCollectionBracket(Expression expression) {
     if (expression is NamedExpression) {
       expression = (expression as NamedExpression).expression;
     }
 
     // TODO(rnystrom): Should we step into parenthesized expressions?
 
-    return expression is ListLiteral || expression is MapLiteral;
+    if (expression is ListLiteral) return expression.leftBracket;
+    if (expression is MapLiteral) return expression.leftBracket;
+
+    // Not a collection literal.
+    return null;
   }
 }

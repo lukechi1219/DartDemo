@@ -8,7 +8,10 @@ import 'dart:html';
 import 'dart:js' show JsArray, JsObject;
 import 'package:web_components/web_components.dart';
 import 'package:polymer_interop/polymer_interop.dart';
-import 'paper_styles.dart';
+import 'iron_flex_layout.dart';
+import 'color.dart';
+import 'default_theme.dart';
+import 'typography.dart';
 
 /// `<paper-input-container>` is a container for a `<label>`, an `<input is="iron-input">` or
 /// `<iron-autogrow-textarea>` and optional add-on elements such as an error message or character
@@ -73,15 +76,16 @@ import 'paper_styles.dart';
 /// `--paper-input-container-invalid-color` | Label and underline color when the input is is invalid | `--google-red-500`
 /// `--paper-input-container-input-color` | Input foreground color | `--primary-text-color`
 /// `--paper-input-container` | Mixin applied to the container | `{}`
+/// `--paper-input-container-disabled` | Mixin applied to the container when it's disabled | `{}`
 /// `--paper-input-container-label` | Mixin applied to the label | `{}`
 /// `--paper-input-container-label-focus` | Mixin applied to the label when the input is focused | `{}`
+/// `--paper-input-container-label-floating` | Mixin applied to the label when floating | `{}`
 /// `--paper-input-container-input` | Mixin applied to the input | `{}`
-/// `--paper-input-container-input-disabled` | Mixin applied to the input when it's disabled | `{}`
-/// `--paper-input-container-prefix` | Mixin applied to the input prefix | `{}`
-/// `--paper-input-container-suffix` | Mixin applied to the input suffix | `{}`
 /// `--paper-input-container-underline` | Mixin applied to the underline | `{}`
-/// `--paper-input-container-underline-focus` | Mixin applied to the underline when the input is focued | `{}`
+/// `--paper-input-container-underline-focus` | Mixin applied to the underline when the input is focused | `{}`
 /// `--paper-input-container-underline-disabled` | Mixin applied to the underline when the input is disabled | `{}`
+/// `--paper-input-prefix` | Mixin applied to the input prefix | `{}`
+/// `--paper-input-suffix` | Mixin applied to the input suffix | `{}`
 ///
 /// This element is `display:block` by default, but you can set the `inline` attribute to make it
 /// `display:inline-block`.
@@ -107,7 +111,7 @@ class PaperInputContainer extends HtmlElement with CustomElementProxyMixin, Poly
   set focused(bool value) { jsElement[r'focused'] = value; }
 
   /// True if the input is invalid. This property is set automatically when the input value
-  /// changes if auto-validating, or when the `iron-input-valid` event is heard from a child.
+  /// changes if auto-validating, or when the `iron-input-validate` event is heard from a child.
   bool get invalid => jsElement[r'invalid'];
   set invalid(bool value) { jsElement[r'invalid'] = value; }
 

@@ -127,7 +127,7 @@ class GoogleChart extends HtmlElement with CustomElementProxyMixin, PolymerBase 
   ///
   /// Should be one of:
   /// - `area`, `bar`, `bubble`, `candlestick`, `column`, `combo`, `geo`,
-  ///   `histogram`, `line`, `pie`, `scatter`, `stepped-area`
+  ///   `histogram`, `line`, `pie`, `scatter`, `stepped-area`, `treemap`
   ///
   /// See <a href="https://google-developers.appspot.com/chart/interactive/docs/gallery">Google Visualization API reference (Chart Gallery)</a> for details.
   String get type => jsElement[r'type'];
@@ -139,4 +139,10 @@ class GoogleChart extends HtmlElement with CustomElementProxyMixin, PolymerBase 
   /// changes. Can be called manually to handle e.g. page resizes.
   drawChart() =>
       jsElement.callMethod('drawChart', []);
+
+  /// Returns the chart serialized as an image URI.
+  ///
+  /// Call this after the chart is drawn (google-chart-render event).
+  String getImageURI() =>
+      jsElement.callMethod('getImageURI', []);
 }

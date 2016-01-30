@@ -20,7 +20,7 @@ import 'iron_jsonp_library.dart';
 ///       mapsAPI.addEventListener('api-load', function(e) {
 ///         // this.api === google.maps
 ///       });
-///     <script>
+///     </script>
 ///
 /// Any number of components can use `<google-maps-api>` elements, and the library will only be loaded once.
 @CustomElementProxy('google-maps-api')
@@ -47,11 +47,6 @@ class GoogleMapsApi extends HtmlElement with CustomElementProxyMixin, PolymerBas
   /// Use this parameter to override that behavior.
   String get language => jsElement[r'language'];
   set language(String value) { jsElement[r'language'] = value; }
-
-  /// The libraries to load with this map. For more information
-  /// see https://developers.google.com/maps/documentation/javascript/libraries.
-  String get libraries => jsElement[r'libraries'];
-  set libraries(String value) { jsElement[r'libraries'] = value; }
 
   /// Name of event fired when library is loaded and available.
   String get notifyEvent => jsElement[r'notifyEvent'];

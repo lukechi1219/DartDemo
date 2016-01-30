@@ -2,16 +2,19 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.runner;
-
 import 'dart:async';
 import 'dart:io';
 
 import 'package:async/async.dart';
 
+import 'backend/group.dart';
+import 'backend/group_entry.dart';
+import 'backend/suite.dart';
+import 'backend/test.dart';
 import 'backend/test_platform.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
+import 'runner/debugger.dart';
 import 'runner/engine.dart';
 import 'runner/load_exception.dart';
 import 'runner/load_suite.dart';
@@ -19,7 +22,7 @@ import 'runner/loader.dart';
 import 'runner/reporter.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
-import 'runner/runner_suite.dart';
+import 'runner/reporter/json.dart';
 import 'util/io.dart';
 import 'utils.dart';
 
@@ -44,6 +47,18 @@ class Runner {
   /// The subscription to the stream returned by [_loadSuites].
   StreamSubscription _suiteSubscription;
 
+  /// The set of suite paths for which [_warnForUnknownTags] has already been
+  /// called.
+  ///
+  /// This is used to avoid printing duplicate warnings when a suite is loaded
+  /// on multiple platforms.
+  final _tagWarningSuites = new Set<String>();
+
+  /// The current debug operation, if any.
+  ///
+  /// This is stored so that we can cancel it when the runner is closed.
+  CancelableOperation _debugOperation;
+
   /// The memoizer for ensuring [close] only runs once.
   final _closeMemo = new AsyncMemoizer();
   bool get _closed => _closeMemo.hasRun;
@@ -53,17 +68,28 @@ class Runner {
     var loader = new Loader(config);
     var engine = new Engine(concurrency: config.concurrency);
 
-    var watch = config.reporter == "compact"
-        ? CompactReporter.watch
-        : ExpandedReporter.watch;
+    var reporter;
+    switch (config.reporter) {
+      case "compact":
+      case "expanded":
+        var watch = config.reporter == "compact"
+            ? CompactReporter.watch
+            : ExpandedReporter.watch;
 
-    var reporter = watch(
-        engine,
-        color: config.color,
-        verboseTrace: config.verboseTrace,
-        printPath: config.paths.length > 1 ||
-            new Directory(config.paths.single).existsSync(),
-        printPlatform: config.platforms.length > 1);
+        reporter = watch(
+            engine,
+            color: config.color,
+            verboseTrace: config.verboseTrace,
+            printPath: config.paths.length > 1 ||
+                new Directory(config.paths.single).existsSync(),
+            printPlatform: config.platforms.length > 1);
+        break;
+
+      case "json":
+        reporter = JsonReporter.watch(engine,
+            verboseTrace: config.verboseTrace);
+        break;
+    }
 
     return new Runner._(config, loader, engine, reporter);
   }
@@ -133,6 +159,8 @@ class Runner {
       });
     }
 
+    if (_debugOperation != null) await _debugOperation.cancel();
+
     if (_suiteSubscription != null) _suiteSubscription.cancel();
     _suiteSubscription = null;
 
@@ -158,10 +186,104 @@ class Runner {
       ]);
     })).map((loadSuite) {
       return loadSuite.changeSuite((suite) {
-        if (_config.pattern == null) return suite;
-        return suite.filter((test) => test.name.contains(_config.pattern));
+        _warnForUnknownTags(suite);
+
+        return suite.filter((test) {
+          // Skip any tests that don't match the given pattern.
+          if (_config.pattern != null && !test.name.contains(_config.pattern)) {
+            return false;
+          }
+
+          // If the user provided tags, skip tests that don't match all of them.
+          if (!_config.tags.isEmpty &&
+              !test.metadata.tags.containsAll(_config.tags)) {
+            return false;
+          }
+
+          // Skip tests that do match any tags the user wants to exclude.
+          if (_config.excludeTags.intersection(test.metadata.tags).isNotEmpty) {
+            return false;
+          }
+
+          return true;
+        });
       });
     });
+  }
+
+  /// Prints a warning for any unknown tags referenced in [suite] or its
+  /// children.
+  void _warnForUnknownTags(Suite suite) {
+    if (_tagWarningSuites.contains(suite.path)) return;
+    _tagWarningSuites.add(suite.path);
+
+    var unknownTags = _collectUnknownTags(suite);
+    if (unknownTags.isEmpty) return;
+
+    var yellow = _config.color ? '\u001b[33m' : '';
+    var bold = _config.color ? '\u001b[1m' : '';
+    var noColor = _config.color ? '\u001b[0m' : '';
+
+    var buffer = new StringBuffer()
+      ..write("${yellow}Warning:$noColor ")
+      ..write(unknownTags.length == 1 ? "A tag was " : "Tags were ")
+      ..write("used that ")
+      ..write(unknownTags.length == 1 ? "wasn't " : "weren't ")
+      ..writeln("specified on the command line.");
+
+    unknownTags.forEach((tag, entries) {
+      buffer.write("  $bold$tag$noColor was used in");
+
+      if (entries.length == 1) {
+        buffer.writeln(" ${_entryDescription(entries.single)}");
+        return;
+      }
+
+      buffer.write(":");
+      for (var entry in entries) {
+        buffer.write("\n    ${_entryDescription(entry)}");
+      }
+      buffer.writeln();
+    });
+
+    print(buffer.toString());
+  }
+
+  /// Collects all tags used by [suite] or its children that aren't also passed
+  /// on the command line.
+  ///
+  /// This returns a map from tag names to lists of entries that use those tags.
+  Map<String, List<GroupEntry>> _collectUnknownTags(Suite suite) {
+    var knownTags = _config.tags.union(_config.excludeTags);
+    var unknownTags = {};
+    var currentTags = new Set();
+
+    collect(entry) {
+      var newTags = new Set();
+      for (var unknownTag in entry.metadata.tags.difference(knownTags)) {
+        if (currentTags.contains(unknownTag)) continue;
+        unknownTags.putIfAbsent(unknownTag, () => []).add(entry);
+        newTags.add(unknownTag);
+      }
+
+      if (entry is! Group) return;
+
+      currentTags.addAll(newTags);
+      for (var child in entry.entries) {
+        collect(child);
+      }
+      currentTags.removeAll(newTags);
+    }
+
+    collect(suite.group);
+    return unknownTags;
+  }
+
+  /// Returns a human-readable description of [entry], including its type.
+  String _entryDescription(GroupEntry entry) {
+    if (entry is Test) return 'the test "${entry.name}"';
+    if (entry.name != null) return 'the group "${entry.name}"';
+    return 'the suite itself';
   }
 
   /// Loads each suite in [suites] in order, pausing after load for platforms
@@ -173,18 +295,8 @@ class Runner {
     }
 
     _suiteSubscription = suites.asyncMap((loadSuite) async {
-      // Make the underlying suite null so that the engine doesn't start running
-      // it immediately.
-      _engine.suiteSink.add(loadSuite.changeSuite((_) => null));
-
-      var suite = await loadSuite.suite;
-      if (suite == null) return;
-
-      await _pause(suite);
-      if (_closed) return;
-
-      _engine.suiteSink.add(suite);
-      await _engine.onIdle.first;
+      _debugOperation = debug(_config, _engine, _reporter, loadSuite);
+      await _debugOperation.valueOrCancellation();
     }).listen(null);
 
     var results = await Future.wait([
@@ -192,64 +304,5 @@ class Runner {
       _engine.run()
     ]);
     return results.last;
-  }
-
-  /// Pauses the engine and the reporter so that the user can set breakpoints as
-  /// necessary.
-  ///
-  /// This is a no-op for test suites that aren't on platforms where debugging
-  /// is supported.
-  Future _pause(RunnerSuite suite) async {
-    if (suite.platform == null) return;
-    if (suite.platform == TestPlatform.vm) return;
-
-    try {
-      _reporter.pause();
-
-      var bold = _config.color ? '\u001b[1m' : '';
-      var yellow = _config.color ? '\u001b[33m' : '';
-      var noColor = _config.color ? '\u001b[0m' : '';
-      print('');
-
-      if (suite.platform.isDartVM) {
-        var url = suite.environment.observatoryUrl;
-        if (url == null) {
-          print("${yellow}Observatory URL not found. Make sure you're using "
-              "${suite.platform.name} 1.11 or later.$noColor");
-        } else {
-          print("Observatory URL: $bold$url$noColor");
-        }
-      }
-
-      if (suite.platform.isHeadless) {
-        var url = suite.environment.remoteDebuggerUrl;
-        if (url == null) {
-          print("${yellow}Remote debugger URL not found.$noColor");
-        } else {
-          print("Remote debugger URL: $bold$url$noColor");
-        }
-      }
-
-      var buffer = new StringBuffer(
-          "${bold}The test runner is paused.${noColor} ");
-      if (!suite.platform.isHeadless) {
-        buffer.write("Open the dev console in ${suite.platform} ");
-      } else {
-        buffer.write("Open the remote debugger ");
-      }
-      if (suite.platform.isDartVM) buffer.write("or the Observatory ");
-
-      buffer.write("and set breakpoints. Once you're finished, return to this "
-          "terminal and press Enter.");
-
-      print(wordWrap(buffer.toString()));
-
-      await inCompletionOrder([
-        suite.environment.displayPause(),
-        cancelableNext(stdinLines)
-      ]).first;
-    } finally {
-      _reporter.resume();
-    }
   }
 }

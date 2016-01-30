@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library glob.single_component;
-
 import 'package:path/path.dart' as p;
 import 'package:string_scanner/string_scanner.dart';
 
@@ -21,8 +19,12 @@ class Parser {
   /// The path context for the glob.
   final p.Context _context;
 
-  Parser(String component, this._context)
-      : _scanner = new StringScanner(component);
+  /// Whether this glob is case-sensitive.
+  final bool _caseSensitive;
+
+  Parser(String component, this._context, {bool caseSensitive: true})
+      : _scanner = new StringScanner(component),
+        _caseSensitive = caseSensitive;
 
   /// Parses an entire glob.
   SequenceNode parse() => _parseSequence();
@@ -42,7 +44,7 @@ class Parser {
       nodes.add(_parseNode(inOptions: inOptions));
     }
 
-    return new SequenceNode(nodes);
+    return new SequenceNode(nodes, caseSensitive: _caseSensitive);
   }
 
   /// Parses an [AstNode].
@@ -69,7 +71,9 @@ class Parser {
   /// Returns `null` if there's not one to parse.
   AstNode _parseStar() {
     if (!_scanner.scan('*')) return null;
-    return _scanner.scan('*') ? new DoubleStarNode(_context) : new StarNode();
+    return _scanner.scan('*')
+        ? new DoubleStarNode(_context, caseSensitive: _caseSensitive)
+        : new StarNode(caseSensitive: _caseSensitive);
   }
 
   /// Tries to parse an [AnyCharNode].
@@ -77,7 +81,7 @@ class Parser {
   /// Returns `null` if there's not one to parse.
   AstNode _parseAnyChar() {
     if (!_scanner.scan('?')) return null;
-    return new AnyCharNode();
+    return new AnyCharNode(caseSensitive: _caseSensitive);
   }
 
   /// Tries to parse an [RangeNode].
@@ -125,7 +129,8 @@ class Parser {
       }
     }
 
-    return new RangeNode(ranges, negated: negated);
+    return new RangeNode(ranges,
+        negated: negated, caseSensitive: _caseSensitive);
   }
 
   /// Tries to parse an [OptionsNode].
@@ -144,7 +149,7 @@ class Parser {
     if (options.length == 1) _scanner.expect(',');
     _scanner.expect('}');
 
-    return new OptionsNode(options);
+    return new OptionsNode(options, caseSensitive: _caseSensitive);
   }
 
   /// Parses a [LiteralNode].
@@ -168,6 +173,7 @@ class Parser {
     }
     if (!inOptions && _scanner.matches('}')) _scanner.error('unexpected "}"');
 
-    return new LiteralNode(buffer.toString(), _context);
+    return new LiteralNode(buffer.toString(),
+        context: _context, caseSensitive: _caseSensitive);
   }
 }

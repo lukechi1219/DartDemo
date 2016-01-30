@@ -25,22 +25,26 @@ import 'package:polymer_elements/iron_pages.dart';
 @PolymerRegister('main-app')
 class MainApp extends PolymerElement {
   @property
-  String page = 'home';
+  String page = 'homePage';
 
   @Property(notify: true)
   String subPage = '';
 
   @property
-  List tabs = ['home', 'portfolio', 'contact'];
+  List tabs = [
+    {'category': 'homePage', 'title': 'Home'},
+    {'category': 'portfolio', 'title': 'Portfolio'},
+    {'category': 'contact', 'title': 'Contact'}
+  ];
 
   @property
   List allPages = [
-    {'category': 'home', 'title': 'Home'},
+    {'category': 'homePage', 'title': 'Home'},
     {'category': 'portfolio', 'title': 'Portfolio'},
     {'category': 'contact', 'title': 'Contact'},
     {'category': 'service', 'title': 'Service'},
     {'category': 'about', 'title': 'About'},
-    {'category': 'settings', 'title': 'Settings'}
+    {'category': 'settingsPage', 'title': 'Settings'}
   ];
 
   @property
@@ -50,6 +54,8 @@ class MainApp extends PolymerElement {
     {'category': 'topic3', 'title': 'Topic 3'}
   ];
 
+  int i = 0;
+
   /// Constructor used to create instance of MainApp.
   MainApp.created() : super.created();
 
@@ -57,13 +63,42 @@ class MainApp extends PolymerElement {
   void coreSelectHandler(Event e, [_]) {
     //  void coreSelectHandler(Event e, var detail ?) {
     //    print(detail);
-    String selectedCategory = e.target.attributes['category'];
-    // print(selectedItem);
+//    print(e);
+//    print(e.target);
 
-    for (var page in allPages) {
-      if (selectedCategory == page['category'] && subPage != '') {
+    if (page != null) {
+      print('page: ' + page);
+    } else if (subPage != null) {
+      print('subPage: ' + subPage);
+    } else {
+      print('page & subPage are both null');
+    }
+    i++;
+
+    var id = page;
+    if (id == null) {
+      id = subPage;
+    }
+    if (id != null) {
+      var section = querySelector('#' + id);
+      print(section);
+      section.append(
+          new Element.html('<p>This is the snippet ' + i.toString() + '</p>'));
+    }
+
+    if (page == null) {
+      return;
+    }
+
+    String selectedCategory = page;
+    print('selectedCategory: ' + selectedCategory);
+
+    for (var pageObj in allPages) {
+      if (selectedCategory == pageObj['category'] && subPage != '') {
         subPage = '';
-        querySelector('#subPages').selected = '';
+        // querySelector('#subPages').selected = '';
+        IronPages subPages = querySelector('#subPages');
+        subPages.selected = '';
       }
     }
   }

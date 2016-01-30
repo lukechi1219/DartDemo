@@ -17,18 +17,6 @@ class Indent {
 
   /// The ":" on a wrapped constructor initialization list.
   static const constructorInitializer = 4;
-
-  /// The indentation for subsequent variables when a for loop defines multiple
-  /// variables that wrap, like:
-  ///
-  ///     for (var a = initializer,
-  ///             b = another,
-  ///             c = third;
-  ///         a + b + c < 100;
-  ///         a++) {
-  ///       ...
-  ///     }
-  static const loopVariable = 8;
 }
 
 /// The kind of pending whitespace that has been "written", but not actually
@@ -58,13 +46,6 @@ class Whitespace {
 
   /// Two newlines, a single blank line of separation.
   static const twoNewlines = const Whitespace._("twoNewlines");
-
-  /// A space or newline should be output based on whether the current token is
-  /// on the same line as the previous one or not.
-  ///
-  /// In general, we like to avoid using this because it makes the formatter
-  /// less prescriptive over the user's whitespace.
-  static const spaceOrNewline = const Whitespace._("spaceOrNewline");
 
   /// A split or newline should be output based on whether the current token is
   /// on the same line as the previous one or not.
