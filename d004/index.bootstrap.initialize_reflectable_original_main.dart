@@ -69,7 +69,7 @@ import 'package:polymer_elements/iron_menubar_behavior.dart' as i65;
 import 'package:polymer_elements/paper_tabs_icons.dart' as i66;
 import 'package:polymer_elements/paper_tab.dart' as i67;
 import 'package:polymer_elements/paper_tabs.dart' as i68;
-import 'package:d004/main_app.dart' as i69;
+import 'package:d005/main_app.dart' as i69;
 import 'package:polymer/src/common/polymer_register.dart' as i70;
 
 main() {

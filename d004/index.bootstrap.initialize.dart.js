@@ -605,7 +605,7 @@
       }],
       noSuchMethod$1: ["super$Interceptor$noSuchMethod", function(receiver, invocation) {
         throw H.wrapException(P.NoSuchMethodError$(receiver, invocation.get$memberName(), invocation.get$positionalArguments(), invocation.get$namedArguments(), null));
-      }, null, "get$noSuchMethod", 2, 0, null, 11],
+      }, null, "get$noSuchMethod", 2, 0, null, 12],
       get$runtimeType: function(receiver) {
         return new H.TypeImpl(H.getRuntimeTypeString(receiver), null);
       },
@@ -640,7 +640,7 @@
       },
       noSuchMethod$1: [function(receiver, invocation) {
         return this.super$Interceptor$noSuchMethod(receiver, invocation);
-      }, null, "get$noSuchMethod", 2, 0, null, 11]
+      }, null, "get$noSuchMethod", 2, 0, null, 12]
     },
     JavaScriptObject: {
       "^": "Interceptor;",
@@ -1041,12 +1041,7 @@
       substring$1: function($receiver, startIndex) {
         return this.substring$2($receiver, startIndex, null);
       },
-      toLowerCase$0: function(receiver) {
-        return receiver.toLowerCase();
-      },
       contains$2: function(receiver, other, startIndex) {
-        if (other == null)
-          H.throwExpression(H.argumentErrorValue(other));
         if (startIndex > receiver.length)
           throw H.wrapException(P.RangeError$range(startIndex, 0, receiver.length, null, null));
         return H.stringContainsUnchecked(receiver, other, startIndex);
@@ -1247,7 +1242,7 @@
         case "error":
           throw H.wrapException(t1.$index(msg, "msg"));
       }
-    }, null, null, 4, 0, null, 23, 8],
+    }, null, null, 4, 0, null, 30, 6],
     IsolateNatives__log: function(msg) {
       var trace, t1, t2, exception;
       if (init.globalState.isWorker) {
@@ -1308,7 +1303,7 @@
       static: {_Manager__serializePrintMessage: [function(object) {
           var t1 = P.LinkedHashMap__makeLiteral(["command", "print", "msg", object]);
           return new H._Serializer(true, P.LinkedHashMap_LinkedHashMap$identity(null, P.$int)).serialize$1(t1);
-        }, null, null, 2, 0, null, 38]}
+        }, null, null, 2, 0, null, 16]}
     },
     _IsolateContext: {
       "^": "Object;id,ports,weakPorts,isolateStatics<,controlPort<,pauseCapability,terminateCapability,initialized,isPaused,delayedEvents,pauseTokens,doneHandlers,_scheduledControlEvents,_isExecutingEvent,errorsAreFatal,errorPorts",
@@ -1684,17 +1679,9 @@
         t1.events._add$1(new H._IsolateEvent(isolate, new H._NativeJsSendPort_send_closure(this, msg), t2));
       },
       $eq: function(_, other) {
-        var t1, t2;
         if (other == null)
           return false;
-        if (other instanceof H._NativeJsSendPort) {
-          t1 = this._receivePort;
-          t2 = other._receivePort;
-          t2 = t1 == null ? t2 == null : t1 === t2;
-          t1 = t2;
-        } else
-          t1 = false;
-        return t1;
+        return other instanceof H._NativeJsSendPort && this._receivePort === other._receivePort;
       },
       get$hashCode: function(_) {
         return this._receivePort._id;
@@ -1881,7 +1868,7 @@
         if (!(x instanceof P.Object))
           this.unsupported$1(x);
         return ["dart", init.classIdExtractor(x), this.serializeArrayInPlace$1(init.classFieldsExtractor(x))];
-      }, "call$1", "get$serialize", 2, 0, 0, 12],
+      }, "call$1", "get$serialize", 2, 0, 0, 11],
       unsupported$2: function(x, message) {
         throw H.wrapException(new P.UnsupportedError(H.S(message == null ? "Can't transmit:" : message) + " " + H.S(x)));
       },
@@ -2021,7 +2008,7 @@
           default:
             throw H.wrapException("couldn't deserialize: " + H.S(x));
         }
-      }, "call$1", "get$deserialize", 2, 0, 0, 12],
+      }, "call$1", "get$deserialize", 2, 0, 0, 11],
       deserializeArrayInPlace$1: function(x) {
         var i;
         for (i = 0; i < x.length; ++i)
@@ -2386,7 +2373,7 @@
         return H._callInIsolate(isolate, new H.invokeClosure_closure3(closure, arg1, arg2, arg3, arg4));
       else
         throw H.wrapException(P.Exception_Exception("Unsupported number of arguments for wrapped closure"));
-    }, null, null, 14, 0, null, 19, 33, 46, 20, 24, 34, 35],
+    }, null, null, 14, 0, null, 31, 34, 42, 17, 19, 25, 29],
     convertDartClosureToJS: function(closure, arity) {
       var $function;
       if (closure == null)
@@ -3218,10 +3205,9 @@
         return receiver.indexOf(other, startIndex) >= 0;
       else {
         t1 = J.getInterceptor(other);
-        if (!!t1.$isJSSyntaxRegExp) {
-          t1 = C.JSString_methods.substring$1(receiver, startIndex);
-          return other._nativeRegExp.test(H.checkString(t1));
-        } else
+        if (!!t1.$isJSSyntaxRegExp)
+          return other._nativeRegExp.test(H.checkString(C.JSString_methods.substring$1(receiver, startIndex)));
+        else
           return J.get$isNotEmpty$asx(t1.allMatches$1(other, C.JSString_methods.substring$1(receiver, startIndex)));
       }
     },
@@ -3363,7 +3349,7 @@
         }}
     },
     Primitives_functionNoSuchMethod_closure: {
-      "^": "Closure:12;__js_helper$_box_0,_captured_arguments_1,_captured_namedArgumentList_2",
+      "^": "Closure:11;__js_helper$_box_0,_captured_arguments_1,_captured_namedArgumentList_2",
       call$2: function($name, argument) {
         var t1 = this.__js_helper$_box_0;
         t1._captured_names_1 = t1._captured_names_1 + "$" + H.S($name);
@@ -3719,7 +3705,7 @@
       "^": "Object;dartException,stackTrace<"
     },
     asyncHelper_closure: {
-      "^": "Closure:13;_captured_bodyFunctionOrErrorCode_0",
+      "^": "Closure:12;_captured_bodyFunctionOrErrorCode_0",
       call$2: [function(error, stackTrace) {
         H._wrapJsFunctionForAsync(this._captured_bodyFunctionOrErrorCode_0, 1).call$1(new H.ExceptionAndStackTrace(error, stackTrace));
       }, null, null, 4, 0, null, 2, 3, "call"]
@@ -3728,7 +3714,7 @@
       "^": "Closure:0;_captured_errorCode_0,_captured_protected_1",
       call$1: [function(result) {
         this._captured_protected_1(this._captured_errorCode_0, result);
-      }, null, null, 2, 0, null, 25, "call"]
+      }, null, null, 2, 0, null, 15, "call"]
     },
     TypeImpl: {
       "^": "Object;_typeName,_unmangledName",
@@ -3999,7 +3985,7 @@
       "^": "Closure:0;__js_helper$_captured_this_0",
       call$1: [function(each) {
         return this.__js_helper$_captured_this_0.$index(0, each);
-      }, null, null, 2, 0, null, 28, "call"]
+      }, null, null, 2, 0, null, 39, "call"]
     },
     LinkedHashMapCell: {
       "^": "Object;hashMapCellKey,hashMapCellValue,_next,_previous"
@@ -4066,7 +4052,7 @@
       }
     },
     initHooks_closure0: {
-      "^": "Closure:14;_captured_getUnknownTag_1",
+      "^": "Closure:13;_captured_getUnknownTag_1",
       call$2: function(o, tag) {
         return this._captured_getUnknownTag_1(o, tag);
       }
@@ -4085,7 +4071,7 @@
         return this.pattern;
       }
     }
-  }], ["d004.lib.main_app", "package:d004/main_app.dart",, S, {
+  }], ["d005.lib.main_app", "package:d005/main_app.dart",, V, {
     "^": "",
     MainApp: {
       "^": "PolymerElement;page:$$MainApp_page=,subPage:$$MainApp_subPage=,tabs:$$MainApp_tabs=,allPages:$$MainApp_allPages=,allSubPages:$$MainApp_allSubPages=,$$MainApp_i,PolymerMixin__proxy",
@@ -4105,17 +4091,7 @@
         receiver.$$MainApp_allSubPages = allSubPages;
       },
       coreSelectHandler$2: [function(receiver, e, _) {
-        var t1, id, section, t2, t3;
-        t1 = receiver.$$MainApp_page;
-        if (t1 != null)
-          P.print(C.JSString_methods.$add("page: ", t1));
-        else {
-          t1 = receiver.$$MainApp_subPage;
-          if (t1 != null)
-            P.print(C.JSString_methods.$add("subPage: ", t1));
-          else
-            P.print("page & subPage are both null");
-        }
+        var id, t1, section, t2, t3;
         ++receiver.$$MainApp_i;
         id = receiver.$$MainApp_page;
         if (id == null)
@@ -4123,13 +4099,13 @@
         if (id != null) {
           t1 = "#" + id;
           section = C.HtmlDocument_methods.querySelector$1(document, t1);
-          P.print(section);
-          J.append$1$x(section, W.Element_Element$html("<p>This is the snippet " + C.JSInt_methods.toString$0(receiver.$$MainApp_i) + "</p>", null, null));
+          e = C.HtmlDocument_methods._createElement$2(document, "img", null);
+          J.set$src$x(e, "http://s2.tokichoi.com.tw/shop/images/Pdmain/4023155M_204.jpg");
+          J.append$1$x(section, e);
         }
         t1 = receiver.$$MainApp_page;
         if (t1 == null)
           return;
-        P.print(C.JSString_methods.$add("selectedCategory: ", t1));
         for (t2 = J.get$iterator$ax(receiver.$$MainApp_allPages); t2.moveNext$0();) {
           t3 = J.$index$asx(t2.get$current(), "category");
           if ((t1 == null ? t3 == null : t1 === t3) && receiver.$$MainApp_subPage !== "") {
@@ -4139,11 +4115,11 @@
         }
       }, function($receiver, e) {
         return this.coreSelectHandler$2($receiver, e, null);
-      }, "coreSelectHandler$1", "call$2", "call$1", "get$coreSelectHandler", 2, 2, 15, 1, 8, 5],
+      }, "coreSelectHandler$1", "call$2", "call$1", "get$coreSelectHandler", 2, 2, 14, 0, 6, 4],
       reverseText$1: [function(receiver, text) {
         var t1 = text.split("");
         return H.setRuntimeTypeInfo(new H.ReversedListIterable(t1), [H.getTypeArgumentByIndex(t1, 0)]).join$1(0, "");
-      }, "call$1", "get$reverseText", 2, 0, 16, 43],
+      }, "call$1", "get$reverseText", 2, 0, 15, 18],
       static: {MainApp$created: function(receiver) {
           var t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12;
           t1 = P.LinkedHashMap__makeLiteral(["category", "homePage", "title", "Home"]);
@@ -4169,7 +4145,7 @@
           return receiver;
         }}
     }
-  }], ["d004.web.index", "index.dart",, O, {
+  }], ["d005.web.index", "index.dart",, S, {
     "^": "",
     main: function() {
       var $async$goto = 0, $async$completer = new P.Completer_Completer(), $async$handler = 1, $async$currentError, $async$temp1;
@@ -4200,9 +4176,6 @@
     "^": "",
     IterableElementError_noElement: function() {
       return new P.StateError("No element");
-    },
-    IterableElementError_tooMany: function() {
-      return new P.StateError("Too many elements");
     },
     IterableElementError_tooFew: function() {
       return new P.StateError("Too few elements");
@@ -4252,9 +4225,6 @@
           t1 = buffer._contents;
           return t1.charCodeAt(0) == 0 ? t1 : t1;
         }
-      },
-      where$1: function(_, test) {
-        return this.super$Iterable$where(this, test);
       },
       map$1: function(_, f) {
         return H.setRuntimeTypeInfo(new H.MappedListIterable(this, f), [null, null]);
@@ -4746,10 +4716,10 @@
         f = t1._captured_storedCallback_0;
         t1._captured_storedCallback_0 = null;
         f.call$0();
-      }, null, null, 2, 0, null, 5, "call"]
+      }, null, null, 2, 0, null, 4, "call"]
     },
     _AsyncRun__initializeScheduleImmediate_closure: {
-      "^": "Closure:17;_async$_box_0,_captured_div_1,_captured_span_2",
+      "^": "Closure:16;_async$_box_0,_captured_div_1,_captured_span_2",
       call$1: function(callback) {
         var t1, t2;
         t1 = this._async$_box_0;
@@ -4919,7 +4889,7 @@
         listeners = this._removeListeners$0();
         this._setErrorObject$1(new P.AsyncError(error, stackTrace));
         P._Future__propagateToListeners(this, listeners);
-      }, null, "get$_completeError", 2, 2, null, 1, 2, 3],
+      }, null, "get$_completeError", 2, 2, null, 0, 2, 3],
       _asyncComplete$1: function(value) {
         var t1;
         H.assertHelper(this._state < 4);
@@ -5128,7 +5098,7 @@
         var t1 = this._captured_target_0;
         H.assertHelper(t1._state === 2);
         t1._completeWithValue$1(value);
-      }, null, null, 2, 0, null, 4, "call"]
+      }, null, null, 2, 0, null, 8, "call"]
     },
     _Future__chainForeignFuture_closure0: {
       "^": "Closure:7;_captured_target_1",
@@ -5138,7 +5108,7 @@
         t1._completeError$2(error, stackTrace);
       }, function(error) {
         return this.call$2(error, null);
-      }, "call$1", null, null, null, 2, 2, null, 1, 2, 3, "call"]
+      }, "call$1", null, null, null, 2, 2, null, 0, 2, 3, "call"]
     },
     _Future__chainForeignFuture_closure1: {
       "^": "Closure:1;_captured_target_2,_captured_e_3,_captured_s_4",
@@ -5165,7 +5135,7 @@
       }
     },
     _Future__propagateToListeners_handleValueCallback: {
-      "^": "Closure:18;_box_1,_captured_listener_3,_captured_sourceValue_4,_captured_zone_5",
+      "^": "Closure:17;_box_1,_captured_listener_3,_captured_sourceValue_4,_captured_zone_5",
       call$0: function() {
         var e, s, t1, exception;
         try {
@@ -5294,7 +5264,7 @@
       "^": "Closure:0;_box_2,_captured_result_11",
       call$1: [function(ignored) {
         P._Future__propagateToListeners(this._box_2._captured_source_4, new P._FutureListener(null, this._captured_result_11, 0, null, null));
-      }, null, null, 2, 0, null, 18, "call"]
+      }, null, null, 2, 0, null, 20, "call"]
     },
     _Future__propagateToListeners_handleWhenCompleteCallback_closure0: {
       "^": "Closure:7;_async$_box_0,_captured_result_12",
@@ -5309,7 +5279,7 @@
         P._Future__propagateToListeners(t1._captured_completeResult_0, new P._FutureListener(null, this._captured_result_12, 0, null, null));
       }, function(error) {
         return this.call$2(error, null);
-      }, "call$1", null, null, null, 2, 2, null, 1, 2, 3, "call"]
+      }, "call$1", null, null, null, 2, 2, null, 0, 2, 3, "call"]
     },
     _AsyncCallbackEntry: {
       "^": "Object;callback,zone,next",
@@ -5373,7 +5343,7 @@
         this._state = 4;
       }, function(error) {
         return this._onError$2(error, null);
-      }, "_onError$1", "call$2", "call$1", "get$_onError", 2, 2, 19, 1, 2, 3],
+      }, "_onError$1", "call$2", "call$1", "get$_onError", 2, 2, 18, 0, 2, 3],
       _onDone$0: [function() {
         if (this._state === 2) {
           var hasNext = this._futureOrPrefetch;
@@ -5615,13 +5585,6 @@
     },
     LinkedHashSet_LinkedHashSet: function(equals, hashCode, isValidKey, $E) {
       return H.setRuntimeTypeInfo(new P._LinkedHashSet(0, null, null, null, null, null, 0), [$E]);
-    },
-    LinkedHashSet_LinkedHashSet$from: function(elements, $E) {
-      var result, t1, _i;
-      result = P.LinkedHashSet_LinkedHashSet(null, null, null, $E);
-      for (t1 = elements.length, _i = 0; _i < elements.length; elements.length === t1 || (0, H.throwConcurrentModificationError)(elements), ++_i)
-        result.add$1(0, elements[_i]);
-      return result;
     },
     Maps_mapToString: function(m) {
       var t1, result, t2;
@@ -5987,19 +5950,8 @@
         }
       },
       add$1: function(_, element) {
-        var strings, table, nums;
-        if (typeof element === "string" && element !== "__proto__") {
-          strings = this._collection$_strings;
-          if (strings == null) {
-            table = Object.create(null);
-            H.assertHelper(table != null);
-            table["<non-identifier-key>"] = table;
-            delete table["<non-identifier-key>"];
-            this._collection$_strings = table;
-            strings = table;
-          }
-          return this._collection$_addHashTableEntry$2(strings, element);
-        } else if (typeof element === "number" && (element & 0x3ffffff) === element) {
+        var nums, table;
+        if (typeof element === "number" && (element & 0x3ffffff) === element) {
           nums = this._collection$_nums;
           if (nums == null) {
             table = Object.create(null);
@@ -6174,17 +6126,6 @@
     _HashSetBase: {
       "^": "SetBase;"
     },
-    ListBase: {
-      "^": "Object_ListMixin;"
-    },
-    Object_ListMixin: {
-      "^": "Object+ListMixin;",
-      $isList: 1,
-      $asList: null,
-      $isEfficientLength: 1,
-      $isIterable: 1,
-      $asIterable: null
-    },
     ListMixin: {
       "^": "Object;",
       get$iterator: function(receiver) {
@@ -6204,9 +6145,6 @@
       },
       get$isEmpty: function(receiver) {
         return this.get$length(receiver) === 0;
-      },
-      where$1: function(receiver, test) {
-        return H.setRuntimeTypeInfo(new H.WhereIterable(receiver, test), [H.getRuntimeTypeArgument(receiver, "ListMixin", 0)]);
       },
       map$1: function(receiver, f) {
         return H.setRuntimeTypeInfo(new H.MappedListIterable(receiver, f), [null, null]);
@@ -6549,11 +6487,6 @@
       get$isEmpty: function(_) {
         return this.get$length(this) === 0;
       },
-      addAll$1: function(_, elements) {
-        var t1;
-        for (t1 = J.get$iterator$ax(elements); t1.moveNext$0();)
-          this.add$1(0, t1.get$current());
-      },
       map$1: function(_, f) {
         return H.setRuntimeTypeInfo(new H.EfficientLengthMappedIterable(this, f), [H.getTypeArgumentByIndex(this, 0), null]);
       },
@@ -6605,7 +6538,7 @@
       H.printString(line);
     },
     NoSuchMethodError_toString_closure: {
-      "^": "Closure:20;_box_0,_captured_sb_1",
+      "^": "Closure:19;_box_0,_captured_sb_1",
       call$2: function(key, value) {
         var t1, t2, t3;
         t1 = this._captured_sb_1;
@@ -6958,9 +6891,6 @@
       map$1: function(_, f) {
         return H.MappedIterable_MappedIterable(this, f, H.getRuntimeTypeArgument(this, "Iterable", 0), null);
       },
-      where$1: ["super$Iterable$where", function(_, f) {
-        return H.setRuntimeTypeInfo(new H.WhereIterable(this, f), [H.getRuntimeTypeArgument(this, "Iterable", 0)]);
-      }],
       forEach$1: function(_, f) {
         var t1;
         for (t1 = this.get$iterator(this); t1.moveNext$0();)
@@ -7005,16 +6935,6 @@
       },
       get$isNotEmpty: function(_) {
         return !this.get$isEmpty(this);
-      },
-      get$single: function(_) {
-        var it, result;
-        it = this.get$iterator(this);
-        if (!it.moveNext$0())
-          throw H.wrapException(H.IterableElementError_noElement());
-        result = it.get$current();
-        if (it.moveNext$0())
-          throw H.wrapException(H.IterableElementError_tooMany());
-        return result;
       },
       elementAt$1: function(_, index) {
         var t1, elementIndex, element;
@@ -7125,15 +7045,6 @@
     CssStyleDeclaration__camelCase: function(hyphenated) {
       return hyphenated.replace(/^-ms-/, "ms-").replace(/-([\da-z])/ig, C.JS_CONST_s8I);
     },
-    Element_Element$html: function(html, treeSanitizer, validator) {
-      var t1, fragment;
-      t1 = document.body;
-      fragment = (t1 && C.BodyElement_methods).createFragment$3$treeSanitizer$validator(t1, html, treeSanitizer, validator);
-      fragment.toString;
-      t1 = new W._ChildNodeListLazy(fragment);
-      t1 = t1.where$1(t1, new W.Element_Element$html_closure());
-      return t1.get$single(t1);
-    },
     _ElementFactoryProvider_createElement_tag: function(tag, typeExtension) {
       return document.createElement(tag);
     },
@@ -7163,15 +7074,11 @@
       "^": "Element;",
       $isHtmlElement: 1,
       $isElement: 1,
-      $isNode: 1,
       $isObject: 1,
-      "%": "HTMLAppletElement|HTMLBRElement|HTMLCanvasElement|HTMLContentElement|HTMLDListElement|HTMLDataListElement|HTMLDetailsElement|HTMLDialogElement|HTMLDirectoryElement|HTMLDivElement|HTMLFontElement|HTMLFrameElement|HTMLHRElement|HTMLHeadingElement|HTMLHtmlElement|HTMLImageElement|HTMLLIElement|HTMLLabelElement|HTMLLegendElement|HTMLMarqueeElement|HTMLMenuElement|HTMLMenuItemElement|HTMLMeterElement|HTMLModElement|HTMLOListElement|HTMLOptGroupElement|HTMLOptionElement|HTMLParagraphElement|HTMLPictureElement|HTMLPreElement|HTMLProgressElement|HTMLQuoteElement|HTMLScriptElement|HTMLShadowElement|HTMLSourceElement|HTMLSpanElement|HTMLStyleElement|HTMLTableCaptionElement|HTMLTableCellElement|HTMLTableColElement|HTMLTableDataCellElement|HTMLTableElement|HTMLTableHeaderCellElement|HTMLTableRowElement|HTMLTableSectionElement|HTMLTitleElement|HTMLTrackElement|HTMLUListElement|HTMLUnknownElement|PluginPlaceholderElement;HTMLElement;HtmlElement_PolymerMixin|HtmlElement_PolymerMixin_PolymerBase|PolymerElement|MainApp|HtmlElement_CustomElementProxyMixin|HtmlElement_CustomElementProxyMixin_PolymerBase|ArraySelector|HtmlElement_CustomElementProxyMixin0|HtmlElement_CustomElementProxyMixin_PolymerBase0|IronA11yAnnouncer|HtmlElement_CustomElementProxyMixin1|HtmlElement_CustomElementProxyMixin_PolymerBase1|IronCollapse|HtmlElement_CustomElementProxyMixin2|HtmlElement_CustomElementProxyMixin_PolymerBase2|IronIcon|HtmlElement_CustomElementProxyMixin3|HtmlElement_CustomElementProxyMixin_PolymerBase3|IronIconsetSvg|HtmlElement_CustomElementProxyMixin4|HtmlElement_CustomElementProxyMixin_PolymerBase4|IronMediaQuery|HtmlElement_CustomElementProxyMixin5|HtmlElement_CustomElementProxyMixin_PolymerBase5|IronMeta|HtmlElement_CustomElementProxyMixin6|HtmlElement_CustomElementProxyMixin_PolymerBase6|IronMetaQuery|HtmlElement_CustomElementProxyMixin7|HtmlElement_CustomElementProxyMixin_PolymerBase7|IronOverlayBackdrop|HtmlElement_CustomElementProxyMixin8|HtmlElement_CustomElementProxyMixin_PolymerBase8|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior|IronPages|HtmlElement_CustomElementProxyMixin9|HtmlElement_CustomElementProxyMixin_PolymerBase9|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior|IronSelector|HtmlElement_CustomElementProxyMixin10|HtmlElement_CustomElementProxyMixin_PolymerBase10|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior0|PaperDrawerPanel|HtmlElement_CustomElementProxyMixin11|HtmlElement_CustomElementProxyMixin_PolymerBase11|PaperHeaderPanel|HtmlElement_CustomElementProxyMixin12|HtmlElement_CustomElementProxyMixin_PolymerBase12|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperRippleBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperRippleBehavior_PaperInkyFocusBehavior|PaperIconButton|HtmlElement_CustomElementProxyMixin13|HtmlElement_CustomElementProxyMixin_PolymerBase13|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_IronA11yKeysBehavior_PaperInputBehavior|PaperInput|HtmlElement_CustomElementProxyMixin14|HtmlElement_CustomElementProxyMixin_PolymerBase14|HtmlElement_CustomElementProxyMixin_PolymerBase_PaperInputAddonBehavior|PaperInputCharCounter|HtmlElement_CustomElementProxyMixin15|HtmlElement_CustomElementProxyMixin_PolymerBase15|PaperInputContainer|HtmlElement_CustomElementProxyMixin16|HtmlElement_CustomElementProxyMixin_PolymerBase16|HtmlElement_CustomElementProxyMixin_PolymerBase_PaperInputAddonBehavior0|PaperInputError|HtmlElement_CustomElementProxyMixin17|HtmlElement_CustomElementProxyMixin_PolymerBase17|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperItemBehavior|PaperItem|HtmlElement_CustomElementProxyMixin18|HtmlElement_CustomElementProxyMixin_PolymerBase18|PaperMaterial|HtmlElement_CustomElementProxyMixin19|HtmlElement_CustomElementProxyMixin_PolymerBase19|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior|PaperMenu|HtmlElement_CustomElementProxyMixin20|HtmlElement_CustomElementProxyMixin_PolymerBase20|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState|PaperSubmenu|HtmlElement_CustomElementProxyMixin21|HtmlElement_CustomElementProxyMixin_PolymerBase21|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior1|PaperRipple|HtmlElement_CustomElementProxyMixin22|HtmlElement_CustomElementProxyMixin_PolymerBase22|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior1|PaperScrollHeaderPanel|HtmlElement_CustomElementProxyMixin23|HtmlElement_CustomElementProxyMixin_PolymerBase23|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState_PaperRippleBehavior|PaperTab|HtmlElement_CustomElementProxyMixin24|HtmlElement_CustomElementProxyMixin_PolymerBase24|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior2|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior_IronMenubarBehavior|PaperTabs|HtmlElement_CustomElementProxyMixin25|HtmlElement_CustomElementProxyMixin_PolymerBase25|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFitBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFitBehavior_IronResizableBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFitBehavior_IronResizableBehavior_IronOverlayBehavior|PaperToast|HtmlElement_CustomElementProxyMixin26|HtmlElement_CustomElementProxyMixin_PolymerBase26|PaperToolbar"
+      "%": "HTMLAppletElement|HTMLBRElement|HTMLCanvasElement|HTMLContentElement|HTMLDListElement|HTMLDataListElement|HTMLDetailsElement|HTMLDialogElement|HTMLDirectoryElement|HTMLDivElement|HTMLFontElement|HTMLFrameElement|HTMLHRElement|HTMLHeadElement|HTMLHeadingElement|HTMLHtmlElement|HTMLLIElement|HTMLLabelElement|HTMLLegendElement|HTMLLinkElement|HTMLMarqueeElement|HTMLMenuElement|HTMLMenuItemElement|HTMLMeterElement|HTMLModElement|HTMLOListElement|HTMLOptGroupElement|HTMLOptionElement|HTMLParagraphElement|HTMLPictureElement|HTMLPreElement|HTMLProgressElement|HTMLQuoteElement|HTMLShadowElement|HTMLSpanElement|HTMLStyleElement|HTMLTableCaptionElement|HTMLTableCellElement|HTMLTableColElement|HTMLTableDataCellElement|HTMLTableElement|HTMLTableHeaderCellElement|HTMLTableRowElement|HTMLTableSectionElement|HTMLTitleElement|HTMLUListElement|HTMLUnknownElement|PluginPlaceholderElement;HTMLElement;HtmlElement_PolymerMixin|HtmlElement_PolymerMixin_PolymerBase|PolymerElement|MainApp|HtmlElement_CustomElementProxyMixin|HtmlElement_CustomElementProxyMixin_PolymerBase|ArraySelector|HtmlElement_CustomElementProxyMixin0|HtmlElement_CustomElementProxyMixin_PolymerBase0|IronA11yAnnouncer|HtmlElement_CustomElementProxyMixin1|HtmlElement_CustomElementProxyMixin_PolymerBase1|IronCollapse|HtmlElement_CustomElementProxyMixin2|HtmlElement_CustomElementProxyMixin_PolymerBase2|IronIcon|HtmlElement_CustomElementProxyMixin3|HtmlElement_CustomElementProxyMixin_PolymerBase3|IronIconsetSvg|HtmlElement_CustomElementProxyMixin4|HtmlElement_CustomElementProxyMixin_PolymerBase4|IronMediaQuery|HtmlElement_CustomElementProxyMixin5|HtmlElement_CustomElementProxyMixin_PolymerBase5|IronMeta|HtmlElement_CustomElementProxyMixin6|HtmlElement_CustomElementProxyMixin_PolymerBase6|IronMetaQuery|HtmlElement_CustomElementProxyMixin7|HtmlElement_CustomElementProxyMixin_PolymerBase7|IronOverlayBackdrop|HtmlElement_CustomElementProxyMixin8|HtmlElement_CustomElementProxyMixin_PolymerBase8|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior|IronPages|HtmlElement_CustomElementProxyMixin9|HtmlElement_CustomElementProxyMixin_PolymerBase9|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior|IronSelector|HtmlElement_CustomElementProxyMixin10|HtmlElement_CustomElementProxyMixin_PolymerBase10|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior0|PaperDrawerPanel|HtmlElement_CustomElementProxyMixin11|HtmlElement_CustomElementProxyMixin_PolymerBase11|PaperHeaderPanel|HtmlElement_CustomElementProxyMixin12|HtmlElement_CustomElementProxyMixin_PolymerBase12|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperRippleBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperRippleBehavior_PaperInkyFocusBehavior|PaperIconButton|HtmlElement_CustomElementProxyMixin13|HtmlElement_CustomElementProxyMixin_PolymerBase13|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFormElementBehavior_IronControlState_IronA11yKeysBehavior_PaperInputBehavior|PaperInput|HtmlElement_CustomElementProxyMixin14|HtmlElement_CustomElementProxyMixin_PolymerBase14|HtmlElement_CustomElementProxyMixin_PolymerBase_PaperInputAddonBehavior|PaperInputCharCounter|HtmlElement_CustomElementProxyMixin15|HtmlElement_CustomElementProxyMixin_PolymerBase15|PaperInputContainer|HtmlElement_CustomElementProxyMixin16|HtmlElement_CustomElementProxyMixin_PolymerBase16|HtmlElement_CustomElementProxyMixin_PolymerBase_PaperInputAddonBehavior0|PaperInputError|HtmlElement_CustomElementProxyMixin17|HtmlElement_CustomElementProxyMixin_PolymerBase17|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperItemBehavior|PaperItem|HtmlElement_CustomElementProxyMixin18|HtmlElement_CustomElementProxyMixin_PolymerBase18|PaperMaterial|HtmlElement_CustomElementProxyMixin19|HtmlElement_CustomElementProxyMixin_PolymerBase19|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior|PaperMenu|HtmlElement_CustomElementProxyMixin20|HtmlElement_CustomElementProxyMixin_PolymerBase20|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState|PaperSubmenu|HtmlElement_CustomElementProxyMixin21|HtmlElement_CustomElementProxyMixin_PolymerBase21|HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior1|PaperRipple|HtmlElement_CustomElementProxyMixin22|HtmlElement_CustomElementProxyMixin_PolymerBase22|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior1|PaperScrollHeaderPanel|HtmlElement_CustomElementProxyMixin23|HtmlElement_CustomElementProxyMixin_PolymerBase23|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState|HtmlElement_CustomElementProxyMixin_PolymerBase_IronControlState_IronA11yKeysBehavior_IronButtonState_PaperRippleBehavior|PaperTab|HtmlElement_CustomElementProxyMixin24|HtmlElement_CustomElementProxyMixin_PolymerBase24|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior2|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior0|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronResizableBehavior_IronSelectableBehavior_IronMultiSelectableBehavior_IronA11yKeysBehavior_IronMenuBehavior_IronMenubarBehavior|PaperTabs|HtmlElement_CustomElementProxyMixin25|HtmlElement_CustomElementProxyMixin_PolymerBase25|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFitBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFitBehavior_IronResizableBehavior|HtmlElement_CustomElementProxyMixin_PolymerBase_IronFitBehavior_IronResizableBehavior_IronOverlayBehavior|PaperToast|HtmlElement_CustomElementProxyMixin26|HtmlElement_CustomElementProxyMixin_PolymerBase26|PaperToolbar"
     },
     AnchorElement: {
-      "^": "HtmlElement;target=,href",
-      set$href: function(receiver, href) {
-        receiver.href = href;
-      },
+      "^": "HtmlElement;target=",
       toString$0: function(receiver) {
         return String(receiver);
       },
@@ -7179,10 +7086,7 @@
       "%": "HTMLAnchorElement"
     },
     AreaElement: {
-      "^": "HtmlElement;target=,href",
-      set$href: function(receiver, href) {
-        receiver.href = href;
-      },
+      "^": "HtmlElement;target=",
       toString$0: function(receiver) {
         return String(receiver);
       },
@@ -7190,10 +7094,7 @@
       "%": "HTMLAreaElement"
     },
     BaseElement: {
-      "^": "HtmlElement;href,target=",
-      set$href: function(receiver, href) {
-        receiver.href = href;
-      },
+      "^": "HtmlElement;target=",
       "%": "HTMLBaseElement"
     },
     Blob: {
@@ -7203,7 +7104,6 @@
     },
     BodyElement: {
       "^": "HtmlElement;",
-      $isBodyElement: 1,
       $isEventTarget: 1,
       $isInterceptor: 1,
       "%": "HTMLBodyElement"
@@ -7270,9 +7170,6 @@
     },
     Document: {
       "^": "Node;",
-      adoptNode$1: function(receiver, node) {
-        return receiver.adoptNode(node);
-      },
       _createElement$2: function(receiver, localName_OR_tagName, typeExtension) {
         return receiver.createElement(localName_OR_tagName, typeExtension);
       },
@@ -7292,13 +7189,6 @@
         return String(receiver);
       },
       "%": "DOMException"
-    },
-    DomImplementation: {
-      "^": "Interceptor;",
-      createHtmlDocument$1: function(receiver, title) {
-        return receiver.createHTMLDocument(title);
-      },
-      "%": "DOMImplementation"
     },
     DomRectReadOnly: {
       "^": "Interceptor;bottom=,height=,left=,right=,top=,width=",
@@ -7345,75 +7235,15 @@
       "%": ";DOMRectReadOnly"
     },
     Element: {
-      "^": "Node;tagName=",
+      "^": "Node;",
       attached$0: [function(receiver) {
       }, "call$0", "get$attached", 0, 0, 3],
       detached$0: [function(receiver) {
       }, "call$0", "get$detached", 0, 0, 3],
       attributeChanged$3: [function(receiver, $name, oldValue, newValue) {
-      }, "call$3", "get$attributeChanged", 6, 0, 21, 26, 27, 16],
+      }, "call$3", "get$attributeChanged", 6, 0, 20, 23, 24, 13],
       toString$0: function(receiver) {
         return receiver.localName;
-      },
-      createFragment$3$treeSanitizer$validator: function(receiver, html, treeSanitizer, validator) {
-        var t1, t2, base, contextElement, fragment;
-        if (treeSanitizer == null) {
-          t1 = $.Element__defaultValidator;
-          if (t1 == null) {
-            t1 = H.setRuntimeTypeInfo([], [W.NodeValidator]);
-            t2 = new W.NodeValidatorBuilder(t1);
-            C.JSArray_methods.add$1(t1, W._Html5NodeValidator$(null));
-            C.JSArray_methods.add$1(t1, W._TemplatingNodeValidator$());
-            $.Element__defaultValidator = t2;
-            validator = t2;
-          } else
-            validator = t1;
-          t1 = $.Element__defaultSanitizer;
-          if (t1 == null) {
-            t1 = new W._ValidatingTreeSanitizer(validator);
-            $.Element__defaultSanitizer = t1;
-            treeSanitizer = t1;
-          } else {
-            t1.validator = validator;
-            treeSanitizer = t1;
-          }
-        }
-        if ($.Element__parseDocument == null) {
-          t1 = document.implementation;
-          t1 = (t1 && C.DomImplementation_methods).createHtmlDocument$1(t1, "");
-          $.Element__parseDocument = t1;
-          $.Element__parseRange = t1.createRange();
-          t1 = $.Element__parseDocument;
-          base = (t1 && C.HtmlDocument_methods)._createElement$2(t1, "base", null);
-          J.set$href$x(base, document.baseURI);
-          t1 = $.Element__parseDocument.head;
-          (t1 && C.HeadElement_methods).append$1(t1, base);
-        }
-        t1 = $.Element__parseDocument;
-        if (!!this.$isBodyElement)
-          contextElement = t1.body;
-        else {
-          contextElement = (t1 && C.HtmlDocument_methods)._createElement$2(t1, receiver.tagName, null);
-          t1 = $.Element__parseDocument.body;
-          (t1 && C.BodyElement_methods).append$1(t1, contextElement);
-        }
-        if ("createContextualFragment" in window.Range.prototype && !C.JSArray_methods.contains$1(C.List_ego, receiver.tagName)) {
-          t1 = $.Element__parseRange;
-          (t1 && C.Range_methods).selectNodeContents$1(t1, contextElement);
-          t1 = $.Element__parseRange;
-          fragment = (t1 && C.Range_methods).createContextualFragment$1(t1, html);
-        } else {
-          contextElement.innerHTML = html;
-          fragment = $.Element__parseDocument.createDocumentFragment();
-          for (t1 = J.getInterceptor$x(fragment); t2 = contextElement.firstChild, t2 != null;)
-            t1.append$1(fragment, t2);
-        }
-        t1 = $.Element__parseDocument.body;
-        if (contextElement == null ? t1 != null : contextElement !== t1)
-          J.remove$0$ax(contextElement);
-        treeSanitizer.sanitizeTree$1(fragment);
-        C.HtmlDocument_methods.adoptNode$1(document, fragment);
-        return fragment;
       },
       getAttribute$1: function(receiver, $name) {
         return receiver.getAttribute($name);
@@ -7427,20 +7257,16 @@
       Element$created$0: function(receiver) {
       },
       $isElement: 1,
-      $isNode: 1,
       $isObject: 1,
       $isInterceptor: 1,
       $isEventTarget: 1,
       "%": ";Element"
     },
-    Element_Element$html_closure: {
-      "^": "Closure:0;",
-      call$1: function(e) {
-        return !!J.getInterceptor(e).$isElement;
-      }
-    },
     EmbedElement: {
-      "^": "HtmlElement;name=",
+      "^": "HtmlElement;name=,src",
+      set$src: function(receiver, src) {
+        receiver.src = src;
+      },
       "%": "HTMLEmbedElement"
     },
     ErrorEvent: {
@@ -7469,16 +7295,15 @@
       "^": "HtmlElement;length=,name=,target=",
       "%": "HTMLFormElement"
     },
-    HeadElement: {
-      "^": "HtmlElement;",
-      "%": "HTMLHeadElement"
-    },
     HtmlDocument: {
       "^": "Document;",
       "%": "HTMLDocument"
     },
     IFrameElement: {
-      "^": "HtmlElement;name=",
+      "^": "HtmlElement;name=,src",
+      set$src: function(receiver, src) {
+        receiver.src = src;
+      },
       "%": "HTMLIFrameElement"
     },
     ImageData: {
@@ -7486,9 +7311,18 @@
       $isImageData: 1,
       "%": "ImageData"
     },
+    ImageElement: {
+      "^": "HtmlElement;src",
+      set$src: function(receiver, src) {
+        receiver.src = src;
+      },
+      "%": "HTMLImageElement"
+    },
     InputElement: {
-      "^": "HtmlElement;name=",
-      $isElement: 1,
+      "^": "HtmlElement;name=,src",
+      set$src: function(receiver, src) {
+        receiver.src = src;
+      },
       $isInterceptor: 1,
       $isEventTarget: 1,
       $isNode: 1,
@@ -7498,26 +7332,15 @@
       "^": "HtmlElement;name=",
       "%": "HTMLKeygenElement"
     },
-    LinkElement: {
-      "^": "HtmlElement;href",
-      set$href: function(receiver, href) {
-        receiver.href = href;
-      },
-      "%": "HTMLLinkElement"
-    },
-    Location: {
-      "^": "Interceptor;",
-      toString$0: function(receiver) {
-        return String(receiver);
-      },
-      "%": "Location"
-    },
     MapElement: {
       "^": "HtmlElement;name=",
       "%": "HTMLMapElement"
     },
     MediaElement: {
-      "^": "HtmlElement;error=",
+      "^": "HtmlElement;error=,src",
+      set$src: function(receiver, src) {
+        receiver.src = src;
+      },
       "%": "HTMLAudioElement|HTMLMediaElement|HTMLVideoElement"
     },
     MetaElement: {
@@ -7543,95 +7366,14 @@
       $isInterceptor: 1,
       "%": "Navigator"
     },
-    _ChildNodeListLazy: {
-      "^": "ListBase;_this",
-      addAll$1: function(_, iterable) {
-        var t1, t2, len, t3, i;
-        if (!!iterable.$is_ChildNodeListLazy) {
-          t1 = iterable._this;
-          t2 = this._this;
-          if (t1 !== t2)
-            for (len = t1.childNodes.length, t3 = J.getInterceptor$x(t2), i = 0; i < len; ++i)
-              t3.append$1(t2, t1.firstChild);
-          return;
-        }
-        for (t1 = iterable.get$iterator(iterable), t2 = this._this, t3 = J.getInterceptor$x(t2); t1.moveNext$0();)
-          t3.append$1(t2, t1.get$current());
-      },
-      insertAll$2: function(_, index, iterable) {
-        var t1, t2;
-        t1 = this._this;
-        t2 = t1.childNodes;
-        if (index === t2.length)
-          this.addAll$1(0, iterable);
-        else
-          J.insertAllBefore$2$x(t1, iterable, C.NodeList_methods.$index(t2, index));
-      },
-      setAll$2: function(_, index, iterable) {
-        throw H.wrapException(new P.UnsupportedError("Cannot setAll on Node list"));
-      },
-      $indexSet: function(_, index, value) {
-        var t1 = this._this;
-        J._replaceChild$2$x(t1, value, C.NodeList_methods.$index(t1.childNodes, index));
-      },
-      get$iterator: function(_) {
-        return C.NodeList_methods.get$iterator(this._this.childNodes);
-      },
-      setRange$4: function(_, start, end, iterable, skipCount) {
-        throw H.wrapException(new P.UnsupportedError("Cannot setRange on Node list"));
-      },
-      setRange$3: function($receiver, start, end, iterable) {
-        return this.setRange$4($receiver, start, end, iterable, 0);
-      },
-      get$length: function(_) {
-        return this._this.childNodes.length;
-      },
-      set$length: function(_, value) {
-        throw H.wrapException(new P.UnsupportedError("Cannot set length on immutable List."));
-      },
-      $index: function(_, index) {
-        return C.NodeList_methods.$index(this._this.childNodes, index);
-      },
-      $asListBase: function() {
-        return [W.Node];
-      },
-      $asObject_ListMixin: function() {
-        return [W.Node];
-      },
-      $asList: function() {
-        return [W.Node];
-      },
-      $asIterable: function() {
-        return [W.Node];
-      }
-    },
     Node: {
       "^": "EventTarget;",
-      remove$0: function(receiver) {
-        var t1 = receiver.parentNode;
-        if (t1 != null)
-          J._removeChild$1$x(t1, receiver);
-      },
-      insertAllBefore$2: function(receiver, newNodes, refChild) {
-        var t1;
-        for (t1 = H.setRuntimeTypeInfo(new H.ListIterator(newNodes, newNodes.get$length(newNodes), 0, null), [H.getRuntimeTypeArgument(newNodes, "ListIterable", 0)]); t1.moveNext$0();)
-          this.insertBefore$2(receiver, t1._current, refChild);
-      },
       toString$0: function(receiver) {
         var value = receiver.nodeValue;
         return value == null ? this.super$Interceptor$toString(receiver) : value;
       },
       append$1: function(receiver, newChild) {
         return receiver.appendChild(newChild);
-      },
-      insertBefore$2: function(receiver, newChild, refChild) {
-        return receiver.insertBefore(newChild, refChild);
-      },
-      _removeChild$1: function(receiver, oldChild) {
-        return receiver.removeChild(oldChild);
-      },
-      _replaceChild$2: function(receiver, newChild, oldChild) {
-        return receiver.replaceChild(newChild, oldChild);
       },
       $isNode: 1,
       $isObject: 1,
@@ -7709,19 +7451,23 @@
       "^": "CharacterData;target=",
       "%": "ProcessingInstruction"
     },
-    Range: {
-      "^": "Interceptor;",
-      createContextualFragment$1: function(receiver, html) {
-        return receiver.createContextualFragment(html);
+    ScriptElement: {
+      "^": "HtmlElement;src",
+      set$src: function(receiver, src) {
+        receiver.src = src;
       },
-      selectNodeContents$1: function(receiver, refNode) {
-        return receiver.selectNodeContents(refNode);
-      },
-      "%": "Range"
+      "%": "HTMLScriptElement"
     },
     SelectElement: {
       "^": "HtmlElement;length=,name=",
       "%": "HTMLSelectElement"
+    },
+    SourceElement: {
+      "^": "HtmlElement;src",
+      set$src: function(receiver, src) {
+        receiver.src = src;
+      },
+      "%": "HTMLSourceElement"
     },
     SpeechRecognitionError: {
       "^": "Event;error=",
@@ -7729,12 +7475,18 @@
     },
     TemplateElement: {
       "^": "HtmlElement;",
-      $isTemplateElement: 1,
       "%": ";HTMLTemplateElement;TemplateElement_CustomElementProxyMixin|TemplateElement_CustomElementProxyMixin_PolymerBase|DomBind|TemplateElement_CustomElementProxyMixin0|TemplateElement_CustomElementProxyMixin_PolymerBase0|DomIf|TemplateElement_CustomElementProxyMixin1|TemplateElement_CustomElementProxyMixin_PolymerBase1|DomRepeat"
     },
     TextAreaElement: {
       "^": "HtmlElement;name=",
       "%": "HTMLTextAreaElement"
+    },
+    TrackElement: {
+      "^": "HtmlElement;src",
+      set$src: function(receiver, src) {
+        receiver.src = src;
+      },
+      "%": "HTMLTrackElement"
     },
     UIEvent: {
       "^": "Event;",
@@ -7876,7 +7628,7 @@
       }
     },
     _AttributeMap: {
-      "^": "Object;_element<",
+      "^": "Object;",
       forEach$1: function(_, f) {
         var t1, t2, _i, key;
         for (t1 = this.get$keys(), t2 = t1.length, _i = 0; _i < t1.length; t1.length === t2 || (0, H.throwConcurrentModificationError)(t1), ++_i) {
@@ -7921,75 +7673,6 @@
         return node.namespaceURI == null;
       }
     },
-    _Html5NodeValidator: {
-      "^": "Object;uriPolicy",
-      allowsElement$1: function(element) {
-        return $.$get$_Html5NodeValidator__allowedElements().contains$1(0, element.tagName);
-      },
-      allowsAttribute$3: function(element, attributeName, value) {
-        var tagName, t1, validator;
-        tagName = element.tagName;
-        t1 = $.$get$_Html5NodeValidator__attributeValidators();
-        validator = t1.$index(0, H.S(tagName) + "::" + attributeName);
-        if (validator == null)
-          validator = t1.$index(0, "*::" + attributeName);
-        if (validator == null)
-          return false;
-        return validator.call$4(element, attributeName, value, this);
-      },
-      _Html5NodeValidator$1$uriPolicy: function(uriPolicy) {
-        var t1, _i;
-        t1 = $.$get$_Html5NodeValidator__attributeValidators();
-        if (t1.get$isEmpty(t1)) {
-          for (_i = 0; _i < 261; ++_i)
-            t1.$indexSet(0, C.List_1GN[_i], W.html__Html5NodeValidator__standardAttributeValidator$closure());
-          for (_i = 0; _i < 12; ++_i)
-            t1.$indexSet(0, C.List_yrN[_i], W.html__Html5NodeValidator__uriAttributeValidator$closure());
-        }
-      },
-      $isNodeValidator: 1,
-      static: {_Html5NodeValidator$: function(uriPolicy) {
-          var e, t1;
-          e = C.HtmlDocument_methods._createElement$2(document, "a", null);
-          t1 = new W._SameOriginUriPolicy(e, window.location);
-          t1 = new W._Html5NodeValidator(t1);
-          t1._Html5NodeValidator$1$uriPolicy(uriPolicy);
-          return t1;
-        }, _Html5NodeValidator__standardAttributeValidator: [function(element, attributeName, value, context) {
-          return true;
-        }, "call$4", "html__Html5NodeValidator__standardAttributeValidator$closure", 8, 0, 11, 13, 14, 4, 15], _Html5NodeValidator__uriAttributeValidator: [function(element, attributeName, value, context) {
-          var t1, t2, t3, t4, t5;
-          t1 = context.uriPolicy;
-          t2 = t1._hiddenAnchor;
-          t2.href = value;
-          t3 = t2.hostname;
-          t1 = t1._loc;
-          t4 = t1.hostname;
-          if (t3 == null ? t4 == null : t3 === t4) {
-            t4 = t2.port;
-            t5 = t1.port;
-            if (t4 == null ? t5 == null : t4 === t5) {
-              t4 = t2.protocol;
-              t1 = t1.protocol;
-              t1 = t4 == null ? t1 == null : t4 === t1;
-            } else
-              t1 = false;
-          } else
-            t1 = false;
-          if (!t1)
-            if (t3 === "")
-              if (t2.port === "") {
-                t1 = t2.protocol;
-                t1 = t1 === ":" || t1 === "";
-              } else
-                t1 = false;
-            else
-              t1 = false;
-          else
-            t1 = true;
-          return t1;
-        }, "call$4", "html__Html5NodeValidator__uriAttributeValidator$closure", 8, 0, 11, 13, 14, 4, 15]}
-    },
     ImmutableListMixin: {
       "^": "Object;",
       get$iterator: function(receiver) {
@@ -8015,104 +7698,6 @@
       $isEfficientLength: 1,
       $isIterable: 1,
       $asIterable: null
-    },
-    NodeValidatorBuilder: {
-      "^": "Object;_validators",
-      allowsElement$1: function(element) {
-        return C.JSArray_methods.any$1(this._validators, new W.NodeValidatorBuilder_allowsElement_closure(element));
-      },
-      allowsAttribute$3: function(element, attributeName, value) {
-        return C.JSArray_methods.any$1(this._validators, new W.NodeValidatorBuilder_allowsAttribute_closure(element, attributeName, value));
-      }
-    },
-    NodeValidatorBuilder_allowsElement_closure: {
-      "^": "Closure:0;_captured_element_0",
-      call$1: function(v) {
-        return v.allowsElement$1(this._captured_element_0);
-      }
-    },
-    NodeValidatorBuilder_allowsAttribute_closure: {
-      "^": "Closure:0;_captured_element_0,_captured_attributeName_1,_captured_value_2",
-      call$1: function(v) {
-        return v.allowsAttribute$3(this._captured_element_0, this._captured_attributeName_1, this._captured_value_2);
-      }
-    },
-    _SimpleNodeValidator: {
-      "^": "Object;",
-      allowsElement$1: function(element) {
-        return this.allowedElements.contains$1(0, element.tagName);
-      },
-      allowsAttribute$3: ["super$_SimpleNodeValidator$allowsAttribute", function(element, attributeName, value) {
-        var tagName, t1;
-        tagName = element.tagName;
-        t1 = this.allowedUriAttributes;
-        if (t1.contains$1(0, H.S(tagName) + "::" + attributeName))
-          return this.uriPolicy.allowsUri$1(value);
-        else if (t1.contains$1(0, "*::" + attributeName))
-          return this.uriPolicy.allowsUri$1(value);
-        else {
-          t1 = this.allowedAttributes;
-          if (t1.contains$1(0, H.S(tagName) + "::" + attributeName))
-            return true;
-          else if (t1.contains$1(0, "*::" + attributeName))
-            return true;
-          else if (t1.contains$1(0, H.S(tagName) + "::*"))
-            return true;
-          else if (t1.contains$1(0, "*::*"))
-            return true;
-        }
-        return false;
-      }],
-      _SimpleNodeValidator$4$allowedAttributes$allowedElements$allowedUriAttributes: function(uriPolicy, allowedAttributes, allowedElements, allowedUriAttributes) {
-        var legalAttributes, extraUriAttributes, t1;
-        this.allowedElements.addAll$1(0, allowedElements);
-        legalAttributes = allowedAttributes.where$1(0, new W._SimpleNodeValidator_closure());
-        extraUriAttributes = allowedAttributes.where$1(0, new W._SimpleNodeValidator_closure0());
-        this.allowedAttributes.addAll$1(0, legalAttributes);
-        t1 = this.allowedUriAttributes;
-        t1.addAll$1(0, C.List_empty);
-        t1.addAll$1(0, extraUriAttributes);
-      }
-    },
-    _SimpleNodeValidator_closure: {
-      "^": "Closure:0;",
-      call$1: function(x) {
-        return !C.JSArray_methods.contains$1(C.List_yrN, x);
-      }
-    },
-    _SimpleNodeValidator_closure0: {
-      "^": "Closure:0;",
-      call$1: function(x) {
-        return C.JSArray_methods.contains$1(C.List_yrN, x);
-      }
-    },
-    _TemplatingNodeValidator: {
-      "^": "_SimpleNodeValidator;_templateAttrs,allowedElements,allowedAttributes,allowedUriAttributes,uriPolicy",
-      allowsAttribute$3: function(element, attributeName, value) {
-        if (this.super$_SimpleNodeValidator$allowsAttribute(element, attributeName, value))
-          return true;
-        if (attributeName === "template" && value === "")
-          return true;
-        if (J.getAttribute$1$x(element, "template") === "")
-          return this._templateAttrs.contains$1(0, attributeName);
-        return false;
-      },
-      static: {_TemplatingNodeValidator$: function() {
-          var t1, t2, t3, t4;
-          t1 = H.setRuntimeTypeInfo(new H.MappedListIterable(C.List_wSV, new W._TemplatingNodeValidator_closure()), [null, null]);
-          t2 = P.LinkedHashSet_LinkedHashSet(null, null, null, P.String);
-          t3 = P.LinkedHashSet_LinkedHashSet(null, null, null, P.String);
-          t4 = P.LinkedHashSet_LinkedHashSet(null, null, null, P.String);
-          t4 = new W._TemplatingNodeValidator(P.LinkedHashSet_LinkedHashSet$from(C.List_wSV, P.String), t2, t3, t4, null);
-          t4._SimpleNodeValidator$4$allowedAttributes$allowedElements$allowedUriAttributes(null, t1, ["TEMPLATE"], null);
-          return t4;
-        }}
-    },
-    _TemplatingNodeValidator_closure: {
-      "^": "Closure:0;",
-      call$1: [function(attr) {
-        return "TEMPLATE::" + H.S(attr);
-      }, null, null, 2, 0, null, 29, "call"]
     },
     FixedSizeListIterator: {
       "^": "Object;_array,_html$_length,_position,_html$_current",
@@ -8149,129 +7734,6 @@
           else
             return new W._DOMWindowCrossFrame(w);
         }}
-    },
-    NodeValidator: {
-      "^": "Object;"
-    },
-    _SameOriginUriPolicy: {
-      "^": "Object;_hiddenAnchor,_loc"
-    },
-    _ValidatingTreeSanitizer: {
-      "^": "Object;validator",
-      sanitizeTree$1: function(node) {
-        new W._ValidatingTreeSanitizer_sanitizeTree_walk(this).call$2(node, null);
-      },
-      _removeNode$2: function(node, $parent) {
-        if ($parent == null)
-          J.remove$0$ax(node);
-        else
-          J._removeChild$1$x($parent, node);
-      },
-      _sanitizeUntrustedElement$2: function(element, $parent) {
-        var corrupted, attrs, isAttr, elementText, elementTagName, t1, exception;
-        corrupted = true;
-        attrs = null;
-        isAttr = null;
-        try {
-          t1 = element;
-          t1.toString;
-          attrs = new W._ElementAttributeMap(t1);
-          isAttr = J.getAttribute$1$x(attrs.get$_element(), "is");
-          corrupted = function(element) {
-            if (!(element.attributes instanceof NamedNodeMap))
-              return true;
-            var childNodes = element.childNodes;
-            if (element.lastChild && element.lastChild !== childNodes[childNodes.length - 1])
-              return true;
-            if (element.children)
-              if (!(element.children instanceof HTMLCollection || element.children instanceof NodeList))
-                return true;
-            return false;
-          }(element);
-        } catch (exception) {
-          H.unwrapException(exception);
-        }
-        elementText = "element unprintable";
-        try {
-          elementText = J.toString$0$(element);
-        } catch (exception) {
-          H.unwrapException(exception);
-        }
-        elementTagName = "element tag unavailable";
-        try {
-          elementTagName = J.get$tagName$x(element);
-        } catch (exception) {
-          H.unwrapException(exception);
-        }
-        this._sanitizeElement$7(element, $parent, corrupted, elementText, elementTagName, attrs, isAttr);
-      },
-      _sanitizeElement$7: function(element, $parent, corrupted, text, tag, attrs, isAttr) {
-        var t1, keys, i, t2, $name, t3;
-        if (corrupted) {
-          window;
-          t1 = "Removing element due to corrupted attributes on <" + text + ">";
-          if (typeof console != "undefined")
-            console.warn(t1);
-          this._removeNode$2(element, $parent);
-          return;
-        }
-        if (!this.validator.allowsElement$1(element)) {
-          window;
-          t1 = "Removing disallowed element <" + H.S(tag) + ">";
-          if (typeof console != "undefined")
-            console.warn(t1);
-          this._removeNode$2(element, $parent);
-          return;
-        }
-        if (isAttr != null)
-          if (!this.validator.allowsAttribute$3(element, "is", isAttr)) {
-            window;
-            t1 = "Removing disallowed type extension <" + H.S(tag) + " is=\"" + isAttr + "\">";
-            if (typeof console != "undefined")
-              console.warn(t1);
-            this._removeNode$2(element, $parent);
-            return;
-          }
-        t1 = attrs.get$keys();
-        keys = H.setRuntimeTypeInfo(t1.slice(), [H.getTypeArgumentByIndex(t1, 0)]);
-        for (i = attrs.get$keys().length - 1, t1 = attrs._element, t2 = J.getInterceptor$x(t1); i >= 0; --i) {
-          $name = keys[i];
-          if (!this.validator.allowsAttribute$3(element, J.toLowerCase$0$s($name), t2.getAttribute$1(t1, $name))) {
-            window;
-            t3 = "Removing disallowed attribute <" + H.S(tag) + " " + H.S($name) + "=\"" + H.S(t2.getAttribute$1(t1, $name)) + "\">";
-            if (typeof console != "undefined")
-              console.warn(t3);
-            t2.getAttribute$1(t1, $name);
-            t2._removeAttribute$1(t1, $name);
-          }
-        }
-        if (!!J.getInterceptor(element).$isTemplateElement)
-          this.sanitizeTree$1(element.content);
-      }
-    },
-    _ValidatingTreeSanitizer_sanitizeTree_walk: {
-      "^": "Closure:22;_html$_captured_this_0",
-      call$2: function(node, $parent) {
-        var t1, child, nextChild;
-        t1 = this._html$_captured_this_0;
-        switch (node.nodeType) {
-          case 1:
-            t1._sanitizeUntrustedElement$2(node, $parent);
-            break;
-          case 8:
-          case 11:
-          case 3:
-          case 4:
-            break;
-          default:
-            t1._removeNode$2(node, $parent);
-        }
-        child = node.lastChild;
-        for (; child != null; child = nextChild) {
-          nextChild = child.previousSibling;
-          this.call$2(child, node);
-        }
-      }
     }
   }], ["dart.dom.indexed_db", "dart:indexed_db",, P, {
     "^": "",
@@ -8498,7 +7960,7 @@
       }
       dartArgs = P.List_List$from(J.map$1$ax($arguments, P.js___convertToDart$closure()), true, null);
       return P._convertToJS(H.Primitives_applyFunctionWithPositionalArguments(callback, dartArgs));
-    }, null, null, 8, 0, null, 39, 31, 45, 6],
+    }, null, null, 8, 0, null, 26, 27, 35, 5],
     _defineProperty: function(o, $name, value) {
       var exception;
       if (Object.isExtensible(o) && !Object.prototype.hasOwnProperty.call(o, $name))
@@ -8557,7 +8019,7 @@
         else
           return P._wrapToDart(o);
       }
-    }, "call$1", "js___convertToDart$closure", 2, 0, 28, 9],
+    }, "call$1", "js___convertToDart$closure", 2, 0, 26, 9],
     _wrapToDart: function(o) {
       if (typeof o == "function")
         return P._getDartProxy(o, $.$get$_DART_CLOSURE_PROPERTY_NAME(), new P._wrapToDart_closure());
@@ -9246,7 +8708,7 @@
       "^": "Closure:0;_captured_initializers_0",
       call$1: [function(_) {
         return B._runInitQueue(this._captured_initializers_0);
-      }, null, null, 2, 0, null, 5, "call"]
+      }, null, null, 2, 0, null, 4, "call"]
     }
   }], ["initialize.static_loader", "package:initialize/src/static_loader.dart",, A, {
     "^": "",
@@ -9283,7 +8745,7 @@
       "^": "Closure:0;",
       call$1: [function(i) {
         return new A.loadInitializers__closure(i);
-      }, null, null, 2, 0, null, 17, "call"]
+      }, null, null, 2, 0, null, 14, "call"]
     },
     loadInitializers__closure: {
       "^": "Closure:1;_captured_i_3",
@@ -9344,7 +8806,7 @@
       J.$indexSet$ax($.$get$_polymerDart1(), "propertyChanged", new U._setUpPropertyChanged_closure());
     },
     _setUpPropertyChanged_closure: {
-      "^": "Closure:23;",
+      "^": "Closure:21;",
       call$3: [function(instance, path, newValue) {
         var instanceMirror, t1, t2, splice, t3, index, removed, addedCount, original, exception;
         t1 = J.getInterceptor(instance);
@@ -9392,7 +8854,7 @@
               throw exception;
           }
         }
-      }, null, null, 6, 0, null, 36, 37, 16, "call"]
+      }, null, null, 6, 0, null, 32, 33, 13, "call"]
     }
   }], ["polymer.lib.polymer_micro", "package:polymer/polymer_micro.dart",, N, {
     "^": "",
@@ -9556,14 +9018,14 @@
       call$1: [function(dartInstance) {
         var mirror = this._captured_declaration_2.get$isStatic() ? C.JsProxyReflectable_wmj.reflectType$1(this._captured_type_1) : Q._InstanceMirrorImpl$(dartInstance, C.JsProxyReflectable_wmj);
         return E.convertToJs(mirror.invokeGetter$1(this._captured_name_0));
-      }, null, null, 2, 0, null, 0, "call"]
+      }, null, null, 2, 0, null, 1, "call"]
     },
     addDeclarationToPrototype_closure0: {
       "^": "Closure:2;_captured_name_3,_captured_type_4,_captured_declaration_5",
       call$2: [function(dartInstance, value) {
         var mirror = this._captured_declaration_5.get$isStatic() ? C.JsProxyReflectable_wmj.reflectType$1(this._captured_type_4) : Q._InstanceMirrorImpl$(dartInstance, C.JsProxyReflectable_wmj);
         mirror.invokeSetter$2(this._captured_name_3, E.convertToDart(value));
-      }, null, null, 4, 0, null, 0, 4, "call"]
+      }, null, null, 4, 0, null, 1, 8, "call"]
     },
     addDeclarationToPrototype_closure1: {
       "^": "Closure:2;_captured_name_6,_captured_type_7,_captured_declaration_8",
@@ -9572,7 +9034,7 @@
         newArgs = J.map$1$ax($arguments, new T.addDeclarationToPrototype__closure()).toList$0(0);
         mirror = this._captured_declaration_8.get$isStatic() ? C.JsProxyReflectable_wmj.reflectType$1(this._captured_type_7) : Q._InstanceMirrorImpl$(dartInstance, C.JsProxyReflectable_wmj);
         return E.convertToJs(mirror.invoke$2(this._captured_name_6, newArgs));
-      }, null, null, 4, 0, null, 0, 6, "call"]
+      }, null, null, 4, 0, null, 1, 5, "call"]
     },
     addDeclarationToPrototype__closure: {
       "^": "Closure:0;",
@@ -9735,10 +9197,10 @@
     },
     _isBehavior: [function(instance) {
       return !!J.getInterceptor(instance).$isBehaviorAnnotation;
-    }, "call$1", "properties___isBehavior$closure", 2, 0, 29],
+    }, "call$1", "properties___isBehavior$closure", 2, 0, 27],
     _hasBehaviorMeta: [function(clazz) {
       return C.JSArray_methods.any$1(clazz.get$metadata(), U.properties___isBehavior$closure());
-    }, "call$1", "properties___hasBehaviorMeta$closure", 2, 0, 30],
+    }, "call$1", "properties___hasBehaviorMeta$closure", 2, 0, 28],
     _buildBehaviorsList: function(type) {
       var t1, allBehaviors, behaviorStack, t2, behavior, t3, t4, $interface;
       t1 = T.mixinsFor(type, C.JsProxyReflectable_wmj, null);
@@ -9917,7 +9379,7 @@
           mirror = Q._InstanceMirrorImpl$(dartInstance, C.JsProxyReflectable_wmj);
         C.JSArray_methods.addAll$1(newArgs, J.map$1$ax($arguments, new U._setupLifecycleMethods___closure()));
         return mirror.invoke$2(this._captured_name_4, newArgs);
-      }, null, null, 4, 0, null, 0, 6, "call"]
+      }, null, null, 4, 0, null, 1, 5, "call"]
     },
     _setupLifecycleMethods___closure: {
       "^": "Closure:0;",
@@ -9977,7 +9439,7 @@
         var newArgs = [!!J.getInterceptor(dartInstance).$isHtmlElement ? P.JsObject_JsObject$fromBrowserObject(dartInstance) : dartInstance];
         C.JSArray_methods.addAll$1(newArgs, J.map$1$ax($arguments, new U._setupRegistrationMethods__closure()));
         this._captured_typeMirror_0.invoke$2(this._captured_name_1, newArgs);
-      }, null, null, 4, 0, null, 0, 6, "call"]
+      }, null, null, 4, 0, null, 1, 5, "call"]
     },
     _setupRegistrationMethods__closure: {
       "^": "Closure:0;",
@@ -9998,22 +9460,22 @@
         if (value == null)
           return $.$get$polymerDartUndefined();
         return value;
-      }, null, null, 4, 0, null, 0, 5, "call"]
+      }, null, null, 4, 0, null, 1, 4, "call"]
     },
     _buildBehaviorsList_closure: {
-      "^": "Closure:24;",
+      "^": "Closure:22;",
       call$1: [function(behavior) {
         var meta = C.JSArray_methods.firstWhere$1(behavior.get$metadata(), U.properties___isBehavior$closure());
         if (!behavior.get$hasBestEffortReflectedType())
           throw H.wrapException("Unable to get `bestEffortReflectedType` for behavior " + behavior.simpleName + ".");
         return meta.getBehavior$1(behavior.get$bestEffortReflectedType());
-      }, null, null, 2, 0, null, 40, "call"]
+      }, null, null, 2, 0, null, 36, "call"]
     },
     _throwInvalidMixinOrder_closure: {
       "^": "Closure:0;",
       call$1: [function(clazz) {
         return clazz.get$simpleName();
-      }, null, null, 2, 0, null, 41, "call"]
+      }, null, null, 2, 0, null, 37, "call"]
     }
   }], ["polymer.src.template.array_selector", "package:polymer/src/template/array_selector.dart",, U, {
     "^": "",
@@ -10167,6 +9629,9 @@
     "^": "",
     IronIcon: {
       "^": "HtmlElement_CustomElementProxyMixin_PolymerBase2;CustomElementProxyMixin__proxy",
+      set$src: function(receiver, value) {
+        this.get$jsElement(receiver).$indexSet(0, "src", value);
+      },
       static: {IronIcon$created: function(receiver) {
           receiver.toString;
           C.IronIcon_methods.Element$created$0(receiver);
@@ -10444,6 +9909,9 @@
     "^": "",
     PaperIconButton: {
       "^": "HtmlElement_CustomElementProxyMixin_PolymerBase_IronA11yKeysBehavior_IronButtonState_IronControlState_PaperRippleBehavior_PaperInkyFocusBehavior;CustomElementProxyMixin__proxy",
+      set$src: function(receiver, value) {
+        this.get$jsElement(receiver).$indexSet(0, "src", value);
+      },
       static: {PaperIconButton$created: function(receiver) {
           receiver.toString;
           C.PaperIconButton_methods.Element$created$0(receiver);
@@ -10945,7 +10413,7 @@
         }
       }
       return jsValue;
-    }, "call$1", "convert__convertToDart$closure", 2, 0, 0, 42],
+    }, "call$1", "convert__convertToDart$closure", 2, 0, 0, 38],
     _dartType: function(jsValue) {
       if (jsValue.$eq(0, $.$get$_String()))
         return C.Type_k8F;
@@ -10998,7 +10466,7 @@
         this.get$jsElement(receiver).callMethod$2("serializeValueToAttribute", [E.convertToJs(value), attribute, node]);
       }, function($receiver, value, attribute) {
         return this.serializeValueToAttribute$3($receiver, value, attribute, null);
-      }, "serializeValueToAttribute$2", "call$3", "call$2", "get$serializeValueToAttribute", 4, 2, 25, 1, 4, 44, 32],
+      }, "serializeValueToAttribute$2", "call$3", "call$2", "get$serializeValueToAttribute", 4, 2, 23, 0, 8, 40, 41],
       $set$2: function(receiver, path, value) {
         return this.get$jsElement(receiver).callMethod$2("set", [path, E.convertToJs(value)]);
       }
@@ -11396,7 +10864,7 @@
       "^": "Closure:10;_mirrors_unimpl$_captured_this_0",
       call$1: [function(i) {
         return C.JSArray_methods.$index(this._mirrors_unimpl$_captured_this_0.get$_data().typeMirrors, i);
-      }, null, null, 2, 0, null, 17, "call"]
+      }, null, null, 2, 0, null, 14, "call"]
     },
     ClassMirrorBase__checkInstanceParameterListShape_closure: {
       "^": "Closure:4;_mirrors_unimpl$_captured_this_0",
@@ -11607,7 +11075,7 @@
       "^": "Closure:10;_mirrors_unimpl$_captured_this_0",
       call$1: [function(parameterIndex) {
         return C.JSArray_methods.$index(this._mirrors_unimpl$_captured_this_0.get$_data().parameterMirrors, parameterIndex);
-      }, null, null, 2, 0, null, 30, "call"]
+      }, null, null, 2, 0, null, 28, "call"]
     },
     ImplicitAccessorMirrorImpl: {
       "^": "_DataCaching;_reflector<",
@@ -11778,7 +11246,7 @@
       }
     },
     ReflectableImpl__hasTypeCapability_closure: {
-      "^": "Closure:26;",
+      "^": "Closure:24;",
       call$1: function(capability) {
         return !!J.getInterceptor(capability).$isTypeCapability;
       }
@@ -11813,7 +11281,7 @@
       }
     },
     ReflectableBase_capabilities_add: {
-      "^": "Closure:27;_captured_result_0",
+      "^": "Closure:25;_captured_result_0",
       call$1: function(cap) {
       }
     }
@@ -11823,7 +11291,7 @@
       $.data = $.$get$_data();
       $.memberSymbolMap = null;
       $.$get$initializers().addAll$1(0, [H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_eNF, C.Type_hin), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_RA5, C.Type_yuB), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_Ier, C.Type_oSr), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_chs, C.Type_ouf), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_qBh, C.Type_Slt), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_CBD, C.Type_6Hr), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_0, C.Type_46c), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_MGR, C.Type_l2Z), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_OaN, C.Type_MUs), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_gc6, C.Type_as9), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_A0x, C.Type_uAF), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_Gt8, C.Type_2fh), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_wmT, C.Type_ouN), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_geJ, C.Type_KHg), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_QON, C.Type_YYn), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_FGf, C.Type_JAZ), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_KNi, C.Type_COL), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_bAD, C.Type_Jik), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_6L0, C.Type_aeF), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_dPR, C.Type_tRa), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_UoK, C.Type_2GH), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_00, C.Type_Rz5), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_FAV, C.Type_EGl), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_AYZ, C.Type_e4R), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_8aB, C.Type_R3X), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_si8, C.Type_6F1), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_l2R, C.Type_hYu), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_zT2, C.Type_d0T), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_Odg, C.Type_c0h), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_QOW, C.Type_z9V), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_2hE, C.Type_qjl), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.CustomElementProxy_Dxz, C.Type_qv5), [null]), H.setRuntimeTypeInfo(new A.InitEntry(C.PolymerRegister_gs1, C.Type_cSk), [null])]);
-      return O.main();
+      return S.main();
     }, "call$0", "reflectable_generated_main_library__main$closure", 0, 0, 1],
     closure: {
       "^": "Closure:0;",
@@ -11947,7 +11415,7 @@
   }, 1], ["web_components.custom_element_proxy", "package:web_components/custom_element_proxy.dart",, X, {
     "^": "",
     CustomElementProxy: {
-      "^": "Object;tagName>,extendsTag",
+      "^": "Object;tagName,extendsTag",
       initialize$1: ["super$CustomElementProxy$initialize", function(t) {
         N.registerDartType(this.tagName, t, this.extendsTag);
       }]
@@ -12008,7 +11476,7 @@
           Object.defineProperty(e, init.dispatchPropertyName, {value: H.makeLeafDispatchRecord(t2._interceptor), enumerable: false, writable: true, configurable: true});
           t2._constructor(e);
         }
-      }, null, null, 2, 0, null, 8, "call"]
+      }, null, null, 2, 0, null, 6, "call"]
     }
   }], ["web_components.src.init", "package:web_components/src/init.dart",, X, {
     "^": "",
@@ -12106,14 +11574,14 @@
   J.set$allSubPages$x = function(receiver, value) {
     return J.getInterceptor$x(receiver).set$allSubPages(receiver, value);
   };
-  J.set$href$x = function(receiver, value) {
-    return J.getInterceptor$x(receiver).set$href(receiver, value);
-  };
   J.set$page$x = function(receiver, value) {
     return J.getInterceptor$x(receiver).set$page(receiver, value);
   };
   J.set$selected$x = function(receiver, value) {
     return J.getInterceptor$x(receiver).set$selected(receiver, value);
+  };
+  J.set$src$x = function(receiver, value) {
+    return J.getInterceptor$x(receiver).set$src(receiver, value);
   };
   J.set$subPage$x = function(receiver, value) {
     return J.getInterceptor$x(receiver).set$subPage(receiver, value);
@@ -12172,9 +11640,6 @@
   J.get$tabs$x = function(receiver) {
     return J.getInterceptor$x(receiver).get$tabs(receiver);
   };
-  J.get$tagName$x = function(receiver) {
-    return J.getInterceptor$x(receiver).get$tagName(receiver);
-  };
   J.get$target$x = function(receiver) {
     return J.getInterceptor$x(receiver).get$target(receiver);
   };
@@ -12202,12 +11667,6 @@
       return receiver < a0;
     return J.getInterceptor$n(receiver).$lt(receiver, a0);
   };
-  J._removeChild$1$x = function(receiver, a0) {
-    return J.getInterceptor$x(receiver)._removeChild$1(receiver, a0);
-  };
-  J._replaceChild$2$x = function(receiver, a0, a1) {
-    return J.getInterceptor$x(receiver)._replaceChild$2(receiver, a0, a1);
-  };
   J.abs$0$n = function(receiver) {
     return J.getInterceptor$n(receiver).abs$0(receiver);
   };
@@ -12229,17 +11688,11 @@
   J.getAttribute$1$x = function(receiver, a0) {
     return J.getInterceptor$x(receiver).getAttribute$1(receiver, a0);
   };
-  J.insertAllBefore$2$x = function(receiver, a0, a1) {
-    return J.getInterceptor$x(receiver).insertAllBefore$2(receiver, a0, a1);
-  };
   J.map$1$ax = function(receiver, a0) {
     return J.getInterceptor$ax(receiver).map$1(receiver, a0);
   };
   J.matchAsPrefix$2$s = function(receiver, a0, a1) {
     return J.getInterceptor$s(receiver).matchAsPrefix$2(receiver, a0, a1);
-  };
-  J.remove$0$ax = function(receiver) {
-    return J.getInterceptor$ax(receiver).remove$0(receiver);
   };
   J.send$1$x = function(receiver, a0) {
     return J.getInterceptor$x(receiver).send$1(receiver, a0);
@@ -12252,9 +11705,6 @@
   };
   J.startsWith$1$s = function(receiver, a0) {
     return J.getInterceptor$s(receiver).startsWith$1(receiver, a0);
-  };
-  J.toLowerCase$0$s = function(receiver) {
-    return J.getInterceptor$s(receiver).toLowerCase$0(receiver);
   };
   J.get$hashCode$ = function(receiver) {
     return J.getInterceptor(receiver).get$hashCode(receiver);
@@ -12282,12 +11732,9 @@
   };
   var $ = Isolate.$isolateProperties;
   C.ArraySelector_methods = U.ArraySelector.prototype;
-  C.BodyElement_methods = W.BodyElement.prototype;
   C.DomBind_methods = X.DomBind.prototype;
   C.DomIf_methods = M.DomIf.prototype;
-  C.DomImplementation_methods = W.DomImplementation.prototype;
   C.DomRepeat_methods = Y.DomRepeat.prototype;
-  C.HeadElement_methods = W.HeadElement.prototype;
   C.HtmlDocument_methods = W.HtmlDocument.prototype;
   C.IronA11yAnnouncer_methods = Q.IronA11yAnnouncer.prototype;
   C.IronCollapse_methods = S.IronCollapse.prototype;
@@ -12305,8 +11752,7 @@
   C.JSNull_methods = J.JSNull.prototype;
   C.JSNumber_methods = J.JSNumber.prototype;
   C.JSString_methods = J.JSString.prototype;
-  C.MainApp_methods = S.MainApp.prototype;
-  C.NodeList_methods = W.NodeList.prototype;
+  C.MainApp_methods = V.MainApp.prototype;
   C.PaperDrawerPanel_methods = X.PaperDrawerPanel.prototype;
   C.PaperHeaderPanel_methods = B.PaperHeaderPanel.prototype;
   C.PaperIconButton_methods = D.PaperIconButton.prototype;
@@ -12326,7 +11772,6 @@
   C.PaperToolbar_methods = T.PaperToolbar.prototype;
   C.PlainJavaScriptObject_methods = J.PlainJavaScriptObject.prototype;
   C.PolymerElement_methods = N.PolymerElement.prototype;
-  C.Range_methods = W.Range.prototype;
   C.UnknownJavaScriptObject_methods = J.UnknownJavaScriptObject.prototype;
   C.C_DynamicRuntimeType = new H.DynamicRuntimeType();
   C.C__RootZone = new P._RootZone();
@@ -12390,12 +11835,11 @@
   C.C__CorrespondingSetterQuantifyCapability = new T._CorrespondingSetterQuantifyCapability();
   C.List_QuW = Isolate.makeConstantList([C.InstanceInvokeMetaCapability_kmC, C.InstanceInvokeCapability_woc, C.C_MetadataCapability, C.C_DeclarationsCapability, C.TypeAnnotationQuantifyCapability_false, C.C_TypeCapability, C.C_TypeRelationsCapability, C.C__SubtypeQuantifyCapability, C.SuperclassQuantifyCapability_KrF, C.StaticInvokeCapability_BHz, C.StaticInvokeMetaCapability_HRg, C.C__CorrespondingSetterQuantifyCapability]);
   C.JsProxyReflectable_wmj = new B.JsProxyReflectable(true, null, null, null, null, null, null, null, null, null, null, C.List_QuW);
-  C.List_0 = H.setRuntimeTypeInfo(Isolate.makeConstantList([0]), [P.$int]);
   C.List_0_1_2 = H.setRuntimeTypeInfo(Isolate.makeConstantList([0, 1, 2]), [P.$int]);
+  C.List_1 = H.setRuntimeTypeInfo(Isolate.makeConstantList([1]), [P.$int]);
   C.List_10 = H.setRuntimeTypeInfo(Isolate.makeConstantList([10]), [P.$int]);
   C.List_11 = H.setRuntimeTypeInfo(Isolate.makeConstantList([11]), [P.$int]);
   C.List_14 = H.setRuntimeTypeInfo(Isolate.makeConstantList([14]), [P.$int]);
-  C.List_1GN = H.setRuntimeTypeInfo(Isolate.makeConstantList(["*::class", "*::dir", "*::draggable", "*::hidden", "*::id", "*::inert", "*::itemprop", "*::itemref", "*::itemscope", "*::lang", "*::spellcheck", "*::title", "*::translate", "A::accesskey", "A::coords", "A::hreflang", "A::name", "A::shape", "A::tabindex", "A::target", "A::type", "AREA::accesskey", "AREA::alt", "AREA::coords", "AREA::nohref", "AREA::shape", "AREA::tabindex", "AREA::target", "AUDIO::controls", "AUDIO::loop", "AUDIO::mediagroup", "AUDIO::muted", "AUDIO::preload", "BDO::dir", "BODY::alink", "BODY::bgcolor", "BODY::link", "BODY::text", "BODY::vlink", "BR::clear", "BUTTON::accesskey", "BUTTON::disabled", "BUTTON::name", "BUTTON::tabindex", "BUTTON::type", "BUTTON::value", "CANVAS::height", "CANVAS::width", "CAPTION::align", "COL::align", "COL::char", "COL::charoff", "COL::span", "COL::valign", "COL::width", "COLGROUP::align", "COLGROUP::char", "COLGROUP::charoff", "COLGROUP::span", "COLGROUP::valign", "COLGROUP::width", "COMMAND::checked", "COMMAND::command", "COMMAND::disabled", "COMMAND::label", "COMMAND::radiogroup", "COMMAND::type", "DATA::value", "DEL::datetime", "DETAILS::open", "DIR::compact", "DIV::align", "DL::compact", "FIELDSET::disabled", "FONT::color", "FONT::face", "FONT::size", "FORM::accept", "FORM::autocomplete", "FORM::enctype", "FORM::method", "FORM::name", "FORM::novalidate", "FORM::target", "FRAME::name", "H1::align", "H2::align", "H3::align", "H4::align", "H5::align", "H6::align", "HR::align", "HR::noshade", "HR::size", "HR::width", "HTML::version", "IFRAME::align", "IFRAME::frameborder", "IFRAME::height", "IFRAME::marginheight", "IFRAME::marginwidth", "IFRAME::width", "IMG::align", "IMG::alt", "IMG::border", "IMG::height", "IMG::hspace", "IMG::ismap", "IMG::name", "IMG::usemap", "IMG::vspace", "IMG::width", "INPUT::accept", "INPUT::accesskey", "INPUT::align", "INPUT::alt", "INPUT::autocomplete", "INPUT::checked", "INPUT::disabled", "INPUT::inputmode", "INPUT::ismap", "INPUT::list", "INPUT::max", "INPUT::maxlength", "INPUT::min", "INPUT::multiple", "INPUT::name", "INPUT::placeholder", "INPUT::readonly", "INPUT::required", "INPUT::size", "INPUT::step", "INPUT::tabindex", "INPUT::type", "INPUT::usemap", "INPUT::value", "INS::datetime", "KEYGEN::disabled", "KEYGEN::keytype", "KEYGEN::name", "LABEL::accesskey", "LABEL::for", "LEGEND::accesskey", "LEGEND::align", "LI::type", "LI::value", "LINK::sizes", "MAP::name", "MENU::compact", "MENU::label", "MENU::type", "METER::high", "METER::low", "METER::max", "METER::min", "METER::value", "OBJECT::typemustmatch", "OL::compact", "OL::reversed", "OL::start", "OL::type", "OPTGROUP::disabled", "OPTGROUP::label", "OPTION::disabled", "OPTION::label", "OPTION::selected", "OPTION::value", "OUTPUT::for", "OUTPUT::name", "P::align", "PRE::width", "PROGRESS::max", "PROGRESS::min", "PROGRESS::value", "SELECT::autocomplete", "SELECT::disabled", "SELECT::multiple", "SELECT::name", "SELECT::required", "SELECT::size", "SELECT::tabindex", "SOURCE::type", "TABLE::align", "TABLE::bgcolor", "TABLE::border", "TABLE::cellpadding", "TABLE::cellspacing", "TABLE::frame", "TABLE::rules", "TABLE::summary", "TABLE::width", "TBODY::align", "TBODY::char", "TBODY::charoff", "TBODY::valign", "TD::abbr", "TD::align", "TD::axis", "TD::bgcolor", "TD::char", "TD::charoff", "TD::colspan", "TD::headers", "TD::height", "TD::nowrap", "TD::rowspan", "TD::scope", "TD::valign", "TD::width", "TEXTAREA::accesskey", "TEXTAREA::autocomplete", "TEXTAREA::cols", "TEXTAREA::disabled", "TEXTAREA::inputmode", "TEXTAREA::name", "TEXTAREA::placeholder", "TEXTAREA::readonly", "TEXTAREA::required", "TEXTAREA::rows", "TEXTAREA::tabindex", "TEXTAREA::wrap", "TFOOT::align", "TFOOT::char", "TFOOT::charoff", "TFOOT::valign", "TH::abbr", "TH::align", "TH::axis", "TH::bgcolor", "TH::char", "TH::charoff", "TH::colspan", "TH::headers", "TH::height", "TH::nowrap", "TH::rowspan", "TH::scope", "TH::valign", "TH::width", "THEAD::align", "THEAD::char", "THEAD::charoff", "THEAD::valign", "TR::align", "TR::bgcolor", "TR::char", "TR::charoff", "TR::valign", "TRACK::default", "TRACK::kind", "TRACK::label", "TRACK::srclang", "UL::compact", "UL::type", "VIDEO::controls", "VIDEO::height", "VIDEO::loop", "VIDEO::mediagroup", "VIDEO::muted", "VIDEO::preload", "VIDEO::width"]), [P.String]);
   C.List_3 = H.setRuntimeTypeInfo(Isolate.makeConstantList([3]), [P.$int]);
   C.List_4_5 = H.setRuntimeTypeInfo(Isolate.makeConstantList([4, 5]), [P.$int]);
   C.List_5_6_7 = H.setRuntimeTypeInfo(Isolate.makeConstantList([5, 6, 7]), [P.$int]);
@@ -12413,7 +11857,6 @@
   C.C_PolymerReflectable = new V.PolymerReflectable();
   C.List_PolymerReflectable = H.setRuntimeTypeInfo(Isolate.makeConstantList([C.C_PolymerReflectable]), [P.Object]);
   C.List_cGl = H.setRuntimeTypeInfo(Isolate.makeConstantList([5, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]), [P.$int]);
-  C.List_ego = Isolate.makeConstantList(["HEAD", "AREA", "BASE", "BASEFONT", "BR", "COL", "COLGROUP", "EMBED", "FRAME", "FRAMESET", "HR", "IMAGE", "IMG", "INPUT", "ISINDEX", "LINK", "META", "PARAM", "SOURCE", "STYLE", "TITLE", "WBR"]);
   C.List_empty0 = H.setRuntimeTypeInfo(Isolate.makeConstantList([]), [P.$int]);
   C.List_empty1 = H.setRuntimeTypeInfo(Isolate.makeConstantList([]), [P.Object]);
   C.List_empty = Isolate.makeConstantList([]);
@@ -12421,8 +11864,6 @@
   C.List_od9 = H.setRuntimeTypeInfo(Isolate.makeConstantList([C.PolymerRegister_gs1]), [P.Object]);
   C.List_registered_beforeRegister = Isolate.makeConstantList(["registered", "beforeRegister"]);
   C.List_serialize_deserialize = Isolate.makeConstantList(["serialize", "deserialize"]);
-  C.List_wSV = H.setRuntimeTypeInfo(Isolate.makeConstantList(["bind", "if", "ref", "repeat", "syntax"]), [P.String]);
-  C.List_yrN = H.setRuntimeTypeInfo(Isolate.makeConstantList(["A::href", "AREA::href", "BLOCKQUOTE::cite", "BODY::background", "COMMAND::icon", "DEL::cite", "FORM::action", "IMG::src", "INPUT::src", "INS::cite", "Q::cite", "VIDEO::poster"]), [P.String]);
   C.List_empty2 = H.setRuntimeTypeInfo(Isolate.makeConstantList([]), [P.Symbol]);
   C.Map_empty = H.setRuntimeTypeInfo(new H.ConstantStringMap(0, {}, C.List_empty2), [P.Symbol, null]);
   C.Map_empty0 = new H.ConstantStringMap(0, {}, C.List_empty);
@@ -12515,10 +11956,6 @@
   $._isInCallbackLoop = false;
   $.Zone__current = C.C__RootZone;
   $.Expando__keyCount = 0;
-  $.Element__parseDocument = null;
-  $.Element__parseRange = null;
-  $.Element__defaultValidator = null;
-  $.Element__defaultSanitizer = null;
   $.Device__isOpera = null;
   $.Device__isIE = null;
   $.Device__isFirefox = null;
@@ -12537,7 +11974,7 @@
   };
   init.deferredLibraryUris = {};
   init.deferredLibraryHashes = {};
-  init.typeToInterceptorMap = [C.Type_cwF, W.HtmlElement, {}, C.Type_2GH, X.DomBind, {created: X.DomBind$created}, C.Type_2fh, Z.PaperItem, {created: Z.PaperItem$created}, C.Type_46c, B.PaperHeaderPanel, {created: B.PaperHeaderPanel$created}, C.Type_6F1, T.PaperInputContainer, {created: T.PaperInputContainer$created}, C.Type_6Hr, E.IronSelector, {created: E.IronSelector$created}, C.Type_COL, S.IronOverlayBackdrop, {created: S.IronOverlayBackdrop$created}, C.Type_EGl, Y.DomRepeat, {created: Y.DomRepeat$created}, C.Type_JAZ, Q.IronA11yAnnouncer, {created: Q.IronA11yAnnouncer$created}, C.Type_Jik, Z.PaperToast, {created: Z.PaperToast$created}, C.Type_KHg, V.PaperMenu, {created: V.PaperMenu$created}, C.Type_MUs, X.PaperDrawerPanel, {created: X.PaperDrawerPanel$created}, C.Type_QKd, N.PolymerElement, {created: N.PolymerElement$created}, C.Type_R3X, N.PaperInputCharCounter, {created: N.PaperInputCharCounter$created}, C.Type_Rz5, M.DomIf, {created: M.DomIf$created}, C.Type_Slt, U.IronPages, {created: U.IronPages$created}, C.Type_YYn, E.PaperScrollHeaderPanel, {created: E.PaperScrollHeaderPanel$created}, C.Type_aeF, T.PaperToolbar, {created: T.PaperToolbar$created}, C.Type_as9, X.PaperRipple, {created: X.PaperRipple$created}, C.Type_c0h, S.IronCollapse, {created: S.IronCollapse$created}, C.Type_cSk, S.MainApp, {created: S.MainApp$created}, C.Type_d0T, U.PaperInput, {created: U.PaperInput$created}, C.Type_e4R, G.IronInput, {created: G.IronInput$created}, C.Type_hYu, Y.PaperInputError, {created: Y.PaperInputError$created}, C.Type_hin, F.IronMeta, {created: F.IronMeta$created}, C.Type_i1z, W.Event, {}, C.Type_l2Z, Q.IronMediaQuery, {created: Q.IronMediaQuery$created}, C.Type_oSr, O.IronIcon, {created: O.IronIcon$created}, C.Type_ouN, S.PaperMaterial, {created: S.PaperMaterial$created}, C.Type_ouf, M.IronIconsetSvg, {created: M.IronIconsetSvg$created}, C.Type_qjl, R.PaperTab, {created: R.PaperTab$created}, C.Type_qv5, L.PaperTabs, {created: L.PaperTabs$created}, C.Type_tRa, U.ArraySelector, {created: U.ArraySelector$created}, C.Type_uAF, D.PaperIconButton, {created: D.PaperIconButton$created}, C.Type_yuB, F.IronMetaQuery, {created: F.IronMetaQuery$created}, C.Type_z9V, M.PaperSubmenu, {created: M.PaperSubmenu$created}];
+  init.typeToInterceptorMap = [C.Type_cwF, W.HtmlElement, {}, C.Type_2GH, X.DomBind, {created: X.DomBind$created}, C.Type_2fh, Z.PaperItem, {created: Z.PaperItem$created}, C.Type_46c, B.PaperHeaderPanel, {created: B.PaperHeaderPanel$created}, C.Type_6F1, T.PaperInputContainer, {created: T.PaperInputContainer$created}, C.Type_6Hr, E.IronSelector, {created: E.IronSelector$created}, C.Type_COL, S.IronOverlayBackdrop, {created: S.IronOverlayBackdrop$created}, C.Type_EGl, Y.DomRepeat, {created: Y.DomRepeat$created}, C.Type_JAZ, Q.IronA11yAnnouncer, {created: Q.IronA11yAnnouncer$created}, C.Type_Jik, Z.PaperToast, {created: Z.PaperToast$created}, C.Type_KHg, V.PaperMenu, {created: V.PaperMenu$created}, C.Type_MUs, X.PaperDrawerPanel, {created: X.PaperDrawerPanel$created}, C.Type_QKd, N.PolymerElement, {created: N.PolymerElement$created}, C.Type_R3X, N.PaperInputCharCounter, {created: N.PaperInputCharCounter$created}, C.Type_Rz5, M.DomIf, {created: M.DomIf$created}, C.Type_Slt, U.IronPages, {created: U.IronPages$created}, C.Type_YYn, E.PaperScrollHeaderPanel, {created: E.PaperScrollHeaderPanel$created}, C.Type_aeF, T.PaperToolbar, {created: T.PaperToolbar$created}, C.Type_as9, X.PaperRipple, {created: X.PaperRipple$created}, C.Type_c0h, S.IronCollapse, {created: S.IronCollapse$created}, C.Type_cSk, V.MainApp, {created: V.MainApp$created}, C.Type_d0T, U.PaperInput, {created: U.PaperInput$created}, C.Type_e4R, G.IronInput, {created: G.IronInput$created}, C.Type_hYu, Y.PaperInputError, {created: Y.PaperInputError$created}, C.Type_hin, F.IronMeta, {created: F.IronMeta$created}, C.Type_i1z, W.Event, {}, C.Type_l2Z, Q.IronMediaQuery, {created: Q.IronMediaQuery$created}, C.Type_oSr, O.IronIcon, {created: O.IronIcon$created}, C.Type_ouN, S.PaperMaterial, {created: S.PaperMaterial$created}, C.Type_ouf, M.IronIconsetSvg, {created: M.IronIconsetSvg$created}, C.Type_qjl, R.PaperTab, {created: R.PaperTab$created}, C.Type_qv5, L.PaperTabs, {created: L.PaperTabs$created}, C.Type_tRa, U.ArraySelector, {created: U.ArraySelector$created}, C.Type_uAF, D.PaperIconButton, {created: D.PaperIconButton$created}, C.Type_yuB, F.IronMetaQuery, {created: F.IronMetaQuery$created}, C.Type_z9V, M.PaperSubmenu, {created: M.PaperSubmenu$created}];
   (function(lazies) {
     for (var i = 0; i < lazies.length;) {
       var fieldName = lazies[i++];
@@ -12606,10 +12043,6 @@
     return [];
   }, "CssStyleDeclaration__propertyCache", "$get$CssStyleDeclaration__propertyCache", "_propertyCache", function() {
     return {};
-  }, "_Html5NodeValidator__allowedElements", "$get$_Html5NodeValidator__allowedElements", "_allowedElements", function() {
-    return P.LinkedHashSet_LinkedHashSet$from(["A", "ABBR", "ACRONYM", "ADDRESS", "AREA", "ARTICLE", "ASIDE", "AUDIO", "B", "BDI", "BDO", "BIG", "BLOCKQUOTE", "BR", "BUTTON", "CANVAS", "CAPTION", "CENTER", "CITE", "CODE", "COL", "COLGROUP", "COMMAND", "DATA", "DATALIST", "DD", "DEL", "DETAILS", "DFN", "DIR", "DIV", "DL", "DT", "EM", "FIELDSET", "FIGCAPTION", "FIGURE", "FONT", "FOOTER", "FORM", "H1", "H2", "H3", "H4", "H5", "H6", "HEADER", "HGROUP", "HR", "I", "IFRAME", "IMG", "INPUT", "INS", "KBD", "LABEL", "LEGEND", "LI", "MAP", "MARK", "MENU", "METER", "NAV", "NOBR", "OL", "OPTGROUP", "OPTION", "OUTPUT", "P", "PRE", "PROGRESS", "Q", "S", "SAMP", "SECTION", "SELECT", "SMALL", "SOURCE", "SPAN", "STRIKE", "STRONG", "SUB", "SUMMARY", "SUP", "TABLE", "TBODY", "TD", "TEXTAREA", "TFOOT", "TH", "THEAD", "TIME", "TR", "TRACK", "TT", "U", "UL", "VAR", "VIDEO", "WBR"], null);
-  }, "_Html5NodeValidator__attributeValidators", "$get$_Html5NodeValidator__attributeValidators", "_attributeValidators", function() {
-    return P.LinkedHashMap__makeEmpty();
   }, "context", "$get$context", "context", function() {
     return P._wrapToDart(self);
   }, "_DART_OBJECT_PROPERTY_NAME", "$get$_DART_OBJECT_PROPERTY_NAME", "_DART_OBJECT_PROPERTY_NAME", function() {
@@ -12655,14 +12088,14 @@
   }, "memberSymbolMap", "$get$memberSymbolMap", "memberSymbolMap", function() {
     return H.throwExpression(new P.StateError("Reflectable has not been initialized. Did you forget to add the main file to the reflectable transformer's entry_points in pubspec.yaml?"));
   }, "_data", "$get$_data", "_data", function() {
-    return P.LinkedHashMap__makeLiteral([C.JsProxyReflectable_wmj, new Q.ReflectorData(H.setRuntimeTypeInfo([Q.NonGenericClassMirrorImpl$("PolymerMixin", "polymer.src.common.polymer_js_proxy.PolymerMixin", 519, 0, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 0, C.List_empty0, C.List_Awx, null), Q.NonGenericClassMirrorImpl$("JsProxy", "polymer.lib.src.common.js_proxy.JsProxy", 519, 1, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 1, C.List_empty0, C.List_Awx, null), Q.NonGenericClassMirrorImpl$("dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin", "polymer.lib.polymer_micro.dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin", 583, 2, C.JsProxyReflectable_wmj, C.List_empty0, C.List_5_6_7, C.List_empty0, -1, C.Map_empty0, C.Map_empty0, C.Map_empty0, -1, 0, C.List_empty0, C.List_empty, null), Q.NonGenericClassMirrorImpl$("PolymerSerialize", "polymer.src.common.polymer_serialize.PolymerSerialize", 519, 3, C.JsProxyReflectable_wmj, C.List_8_9, C.List_8_9, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 3, C.List_0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin, polymer_interop.src.js_element_proxy.PolymerBase", "polymer.lib.polymer_micro.dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin, polymer_interop.src.js_element_proxy.PolymerBase", 583, 4, C.JsProxyReflectable_wmj, C.List_10, C.List_5_6_7_10, C.List_empty0, 2, C.Map_empty0, C.Map_empty0, C.Map_empty0, -1, 7, C.List_empty0, C.List_empty, null), Q.NonGenericClassMirrorImpl$("PolymerElement", "polymer.lib.polymer_micro.PolymerElement", 7, 5, C.JsProxyReflectable_wmj, C.List_empty0, C.List_5_6_7_10, C.List_empty0, 4, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), -1, 5, C.List_empty0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("MainApp", "d004.lib.main_app.MainApp", 7, 6, C.JsProxyReflectable_wmj, C.List_E7y, C.List_cGl, C.List_empty0, 5, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), -1, 6, C.List_empty0, C.List_od9, null), Q.NonGenericClassMirrorImpl$("PolymerBase", "polymer_interop.src.js_element_proxy.PolymerBase", 519, 7, C.JsProxyReflectable_wmj, C.List_10, C.List_10, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 7, C.List_empty0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("String", "dart.core.String", 519, 8, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 8, C.List_empty0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("Type", "dart.core.Type", 519, 9, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 9, C.List_empty0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("Element", "dart.dom.html.Element", 519, 10, C.JsProxyReflectable_wmj, C.List_5_6_7, C.List_5_6_7, C.List_empty0, -1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 10, C.List_empty0, C.List_empty1, null), new Q.GenericClassMirrorImpl(new K.closure(), C.List_14, 11, C.JsProxyReflectable_wmj, 519, 11, -1, 13, 11, C.List_empty0, C.List_empty0, C.List_empty0, C.List_empty0, "List", "dart.core.List", C.List_empty1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, null, null, null, null, null), Q.NonGenericClassMirrorImpl$("Event", "dart.dom.html.Event", 7, 12, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, -1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), -1, 12, C.List_empty0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("Object", "dart.core.Object", 7, 13, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, null, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), -1, 13, C.List_empty0, C.List_empty1, null), new Q.TypeVariableMirrorImpl("E", "dart.core.List.E", C.JsProxyReflectable_wmj, 13, 11, H.setRuntimeTypeInfo([], [P.Object]), null)], [O.TypeMirror]), null, H.setRuntimeTypeInfo([Q.VariableMirrorImpl$("page", 32773, 6, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_H1L), Q.VariableMirrorImpl$("subPage", 32773, 6, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_H1L0), Q.VariableMirrorImpl$("tabs", 2129925, 6, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_H1L), Q.VariableMirrorImpl$("allPages", 2129925, 6, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_H1L), Q.VariableMirrorImpl$("allSubPages", 2129925, 6, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_H1L), new Q.MethodMirrorImpl(262146, "attached", 10, null, -1, -1, C.List_empty0, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(262146, "detached", 10, null, -1, -1, C.List_empty0, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(262146, "attributeChanged", 10, null, -1, -1, C.List_0_1_2, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(131074, "serialize", 3, 8, 8, 8, C.List_3, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(65538, "deserialize", 3, null, null, null, C.List_4_5, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(262146, "serializeValueToAttribute", 7, null, -1, -1, C.List_6_7_8, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(262146, "coreSelectHandler", 6, null, -1, -1, C.List_9_10, C.JsProxyReflectable_wmj, C.List_PolymerReflectable, null, null, null, null), new Q.MethodMirrorImpl(131074, "reverseText", 6, 8, 8, 8, C.List_11, C.JsProxyReflectable_wmj, C.List_PolymerReflectable, null, null, null, null), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_wmj, 0, -1, -1, 13), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_wmj, 0, -1, -1, 14), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_wmj, 1, -1, -1, 15), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_wmj, 1, -1, -1, 16), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_wmj, 2, -1, -1, 17), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_wmj, 2, -1, -1, 18), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_wmj, 3, -1, -1, 19), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_wmj, 3, -1, -1, 20), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_wmj, 4, -1, -1, 21), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_wmj, 4, -1, -1, 22)], [O.DeclarationMirror]), H.setRuntimeTypeInfo([Q.ParameterMirrorImpl$("name", 32774, 7, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("oldValue", 32774, 7, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("newValue", 32774, 7, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("value", 16390, 8, C.JsProxyReflectable_wmj, null, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("value", 32774, 9, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("type", 32774, 9, C.JsProxyReflectable_wmj, 9, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("value", 16390, 10, C.JsProxyReflectable_wmj, null, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("attribute", 32774, 10, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("node", 36870, 10, C.JsProxyReflectable_wmj, 10, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("e", 32774, 11, C.JsProxyReflectable_wmj, 12, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("_", 20518, 11, C.JsProxyReflectable_wmj, null, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("text", 32774, 12, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("_page", 32870, 14, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty, null, null), Q.ParameterMirrorImpl$("_subPage", 32870, 16, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty, null, null), Q.ParameterMirrorImpl$("_tabs", 2130022, 18, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_empty, null, null), Q.ParameterMirrorImpl$("_allPages", 2130022, 20, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_empty, null, null), Q.ParameterMirrorImpl$("_allSubPages", 2130022, 22, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_empty, null, null)], [O.ParameterMirror]), H.setRuntimeTypeInfo([C.Type_rjf, C.Type_ahs, C.FakeType_1CP, C.Type_gug, C.FakeType_GEQ, C.Type_QKd, C.Type_cSk, C.Type_wT1, C.Type_k8F, C.Type_o8I, C.Type_O1c, C.Type_naM, C.Type_i1z, C.Type_xQ6], [P.Type]), 14, P.LinkedHashMap__makeLiteral(["attached", new K.closure0(), "detached", new K.closure1(), "attributeChanged", new K.closure2(), "serialize", new K.closure3(), "deserialize", new K.closure4(), "serializeValueToAttribute", new K.closure5(), "coreSelectHandler", new K.closure6(), "reverseText", new K.closure7(), "page", new K.closure8(), "subPage", new K.closure9(), "tabs", new K.closure10(), "allPages", new K.closure11(), "allSubPages", new K.closure12()]), P.LinkedHashMap__makeLiteral(["page=", new K.closure13(), "subPage=", new K.closure14(), "tabs=", new K.closure15(), "allPages=", new K.closure16(), "allSubPages=", new K.closure17()]), [], null)]);
+    return P.LinkedHashMap__makeLiteral([C.JsProxyReflectable_wmj, new Q.ReflectorData(H.setRuntimeTypeInfo([Q.NonGenericClassMirrorImpl$("JsProxy", "polymer.lib.src.common.js_proxy.JsProxy", 519, 0, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 0, C.List_empty0, C.List_Awx, null), Q.NonGenericClassMirrorImpl$("PolymerMixin", "polymer.src.common.polymer_js_proxy.PolymerMixin", 519, 1, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 1, C.List_empty0, C.List_Awx, null), Q.NonGenericClassMirrorImpl$("dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin", "polymer.lib.polymer_micro.dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin", 583, 2, C.JsProxyReflectable_wmj, C.List_empty0, C.List_5_6_7, C.List_empty0, -1, C.Map_empty0, C.Map_empty0, C.Map_empty0, -1, 1, C.List_empty0, C.List_empty, null), Q.NonGenericClassMirrorImpl$("PolymerSerialize", "polymer.src.common.polymer_serialize.PolymerSerialize", 519, 3, C.JsProxyReflectable_wmj, C.List_8_9, C.List_8_9, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 3, C.List_1, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin, polymer_interop.src.js_element_proxy.PolymerBase", "polymer.lib.polymer_micro.dart.dom.html.HtmlElement with polymer.src.common.polymer_js_proxy.PolymerMixin, polymer_interop.src.js_element_proxy.PolymerBase", 583, 4, C.JsProxyReflectable_wmj, C.List_10, C.List_5_6_7_10, C.List_empty0, 2, C.Map_empty0, C.Map_empty0, C.Map_empty0, -1, 7, C.List_empty0, C.List_empty, null), Q.NonGenericClassMirrorImpl$("PolymerElement", "polymer.lib.polymer_micro.PolymerElement", 7, 5, C.JsProxyReflectable_wmj, C.List_empty0, C.List_5_6_7_10, C.List_empty0, 4, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), -1, 5, C.List_empty0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("MainApp", "d005.lib.main_app.MainApp", 7, 6, C.JsProxyReflectable_wmj, C.List_E7y, C.List_cGl, C.List_empty0, 5, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), -1, 6, C.List_empty0, C.List_od9, null), Q.NonGenericClassMirrorImpl$("PolymerBase", "polymer_interop.src.js_element_proxy.PolymerBase", 519, 7, C.JsProxyReflectable_wmj, C.List_10, C.List_10, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 7, C.List_empty0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("String", "dart.core.String", 519, 8, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 8, C.List_empty0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("Type", "dart.core.Type", 519, 9, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, 13, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 9, C.List_empty0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("Element", "dart.dom.html.Element", 519, 10, C.JsProxyReflectable_wmj, C.List_5_6_7, C.List_5_6_7, C.List_empty0, -1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, -1, 10, C.List_empty0, C.List_empty1, null), new Q.GenericClassMirrorImpl(new K.closure(), C.List_14, 11, C.JsProxyReflectable_wmj, 519, 11, -1, 13, 11, C.List_empty0, C.List_empty0, C.List_empty0, C.List_empty0, "List", "dart.core.List", C.List_empty1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), C.Map_empty0, null, null, null, null, null), Q.NonGenericClassMirrorImpl$("Event", "dart.dom.html.Event", 7, 12, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, -1, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), -1, 12, C.List_empty0, C.List_empty1, null), Q.NonGenericClassMirrorImpl$("Object", "dart.core.Object", 7, 13, C.JsProxyReflectable_wmj, C.List_empty0, C.List_empty0, C.List_empty0, null, P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), P.LinkedHashMap__makeEmpty(), -1, 13, C.List_empty0, C.List_empty1, null), new Q.TypeVariableMirrorImpl("E", "dart.core.List.E", C.JsProxyReflectable_wmj, 13, 11, H.setRuntimeTypeInfo([], [P.Object]), null)], [O.TypeMirror]), null, H.setRuntimeTypeInfo([Q.VariableMirrorImpl$("page", 32773, 6, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_H1L), Q.VariableMirrorImpl$("subPage", 32773, 6, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_H1L0), Q.VariableMirrorImpl$("tabs", 2129925, 6, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_H1L), Q.VariableMirrorImpl$("allPages", 2129925, 6, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_H1L), Q.VariableMirrorImpl$("allSubPages", 2129925, 6, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_H1L), new Q.MethodMirrorImpl(262146, "attached", 10, null, -1, -1, C.List_empty0, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(262146, "detached", 10, null, -1, -1, C.List_empty0, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(262146, "attributeChanged", 10, null, -1, -1, C.List_0_1_2, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(131074, "serialize", 3, 8, 8, 8, C.List_3, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(65538, "deserialize", 3, null, null, null, C.List_4_5, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(262146, "serializeValueToAttribute", 7, null, -1, -1, C.List_6_7_8, C.JsProxyReflectable_wmj, C.List_empty1, null, null, null, null), new Q.MethodMirrorImpl(262146, "coreSelectHandler", 6, null, -1, -1, C.List_9_10, C.JsProxyReflectable_wmj, C.List_PolymerReflectable, null, null, null, null), new Q.MethodMirrorImpl(131074, "reverseText", 6, 8, 8, 8, C.List_11, C.JsProxyReflectable_wmj, C.List_PolymerReflectable, null, null, null, null), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_wmj, 0, -1, -1, 13), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_wmj, 0, -1, -1, 14), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_wmj, 1, -1, -1, 15), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_wmj, 1, -1, -1, 16), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_wmj, 2, -1, -1, 17), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_wmj, 2, -1, -1, 18), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_wmj, 3, -1, -1, 19), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_wmj, 3, -1, -1, 20), Q.ImplicitGetterMirrorImpl$(C.JsProxyReflectable_wmj, 4, -1, -1, 21), Q.ImplicitSetterMirrorImpl$(C.JsProxyReflectable_wmj, 4, -1, -1, 22)], [O.DeclarationMirror]), H.setRuntimeTypeInfo([Q.ParameterMirrorImpl$("name", 32774, 7, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("oldValue", 32774, 7, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("newValue", 32774, 7, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("value", 16390, 8, C.JsProxyReflectable_wmj, null, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("value", 32774, 9, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("type", 32774, 9, C.JsProxyReflectable_wmj, 9, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("value", 16390, 10, C.JsProxyReflectable_wmj, null, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("attribute", 32774, 10, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("node", 36870, 10, C.JsProxyReflectable_wmj, 10, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("e", 32774, 11, C.JsProxyReflectable_wmj, 12, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("_", 20518, 11, C.JsProxyReflectable_wmj, null, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("text", 32774, 12, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty1, null, null), Q.ParameterMirrorImpl$("_page", 32870, 14, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty, null, null), Q.ParameterMirrorImpl$("_subPage", 32870, 16, C.JsProxyReflectable_wmj, 8, -1, -1, C.List_empty, null, null), Q.ParameterMirrorImpl$("_tabs", 2130022, 18, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_empty, null, null), Q.ParameterMirrorImpl$("_allPages", 2130022, 20, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_empty, null, null), Q.ParameterMirrorImpl$("_allSubPages", 2130022, 22, C.JsProxyReflectable_wmj, 11, -1, -1, C.List_empty, null, null)], [O.ParameterMirror]), H.setRuntimeTypeInfo([C.Type_ahs, C.Type_rjf, C.FakeType_1CP, C.Type_gug, C.FakeType_GEQ, C.Type_QKd, C.Type_cSk, C.Type_wT1, C.Type_k8F, C.Type_o8I, C.Type_O1c, C.Type_naM, C.Type_i1z, C.Type_xQ6], [P.Type]), 14, P.LinkedHashMap__makeLiteral(["attached", new K.closure0(), "detached", new K.closure1(), "attributeChanged", new K.closure2(), "serialize", new K.closure3(), "deserialize", new K.closure4(), "serializeValueToAttribute", new K.closure5(), "coreSelectHandler", new K.closure6(), "reverseText", new K.closure7(), "page", new K.closure8(), "subPage", new K.closure9(), "tabs", new K.closure10(), "allPages", new K.closure11(), "allSubPages", new K.closure12()]), P.LinkedHashMap__makeLiteral(["page=", new K.closure13(), "subPage=", new K.closure14(), "tabs=", new K.closure15(), "allPages=", new K.closure16(), "allSubPages=", new K.closure17()]), [], null)]);
   }, "_doc", "$get$_doc", "_doc", function() {
     return P.JsObject_JsObject$fromBrowserObject(W.document());
   }]);
   Isolate = Isolate.$finishIsolateConstructor(Isolate);
   $ = new Isolate();
-  init.metadata = ["dartInstance", null, "error", "stackTrace", "value", "_", "arguments", "arg", "e", "o", "item", "invocation", "x", "element", "attributeName", "context", "newValue", "i", "ignored", "closure", "arg1", "data", 0, "sender", "arg2", "result", "name", "oldValue", "each", "attr", "parameterIndex", "captureThis", "node", "isolate", "arg3", "arg4", "instance", "path", "object", "callback", "behavior", "clazz", "jsValue", "text", "attribute", "self", "numberOfArguments"];
-  init.types = [{func: 1, args: [,]}, {func: 1}, {func: 1, args: [,,]}, {func: 1, void: true}, {func: 1, args: [P.String]}, {func: 1, args: [P.String, O.DeclarationMirror]}, {func: 1, void: true, args: [{func: 1, void: true}]}, {func: 1, args: [,], opt: [,]}, {func: 1, ret: P.String, args: [P.$int]}, {func: 1, args: [P.String, O.MethodMirror]}, {func: 1, args: [P.$int]}, {func: 1, ret: P.bool, args: [W.Element, P.String, P.String, W._Html5NodeValidator]}, {func: 1, args: [P.String,,]}, {func: 1, args: [, P.StackTrace]}, {func: 1, args: [, P.String]}, {func: 1, void: true, args: [W.Event], opt: [,]}, {func: 1, ret: P.String, args: [P.String]}, {func: 1, args: [{func: 1, void: true}]}, {func: 1, ret: P.bool}, {func: 1, void: true, args: [P.Object], opt: [P.StackTrace]}, {func: 1, args: [P.Symbol,,]}, {func: 1, void: true, args: [P.String, P.String, P.String]}, {func: 1, void: true, args: [W.Node, W.Node]}, {func: 1, args: [,,,]}, {func: 1, args: [O.ClassMirror]}, {func: 1, void: true, args: [, P.String], opt: [W.Element]}, {func: 1, args: [T.ReflectCapability]}, {func: 1, void: true, args: [T.ReflectCapability]}, {func: 1, ret: P.Object, args: [,]}, {func: 1, ret: P.bool, args: [,]}, {func: 1, ret: P.bool, args: [O.ClassMirror]}];
+  init.metadata = [null, "dartInstance", "error", "stackTrace", "_", "arguments", "e", "arg", "value", "o", "item", "x", "invocation", "newValue", "i", "result", "object", "arg1", "text", "arg2", "ignored", "data", 0, "name", "oldValue", "arg3", "callback", "captureThis", "parameterIndex", "arg4", "sender", "closure", "instance", "path", "isolate", "self", "behavior", "clazz", "jsValue", "each", "attribute", "node", "numberOfArguments"];
+  init.types = [{func: 1, args: [,]}, {func: 1}, {func: 1, args: [,,]}, {func: 1, void: true}, {func: 1, args: [P.String]}, {func: 1, args: [P.String, O.DeclarationMirror]}, {func: 1, void: true, args: [{func: 1, void: true}]}, {func: 1, args: [,], opt: [,]}, {func: 1, ret: P.String, args: [P.$int]}, {func: 1, args: [P.String, O.MethodMirror]}, {func: 1, args: [P.$int]}, {func: 1, args: [P.String,,]}, {func: 1, args: [, P.StackTrace]}, {func: 1, args: [, P.String]}, {func: 1, void: true, args: [W.Event], opt: [,]}, {func: 1, ret: P.String, args: [P.String]}, {func: 1, args: [{func: 1, void: true}]}, {func: 1, ret: P.bool}, {func: 1, void: true, args: [P.Object], opt: [P.StackTrace]}, {func: 1, args: [P.Symbol,,]}, {func: 1, void: true, args: [P.String, P.String, P.String]}, {func: 1, args: [,,,]}, {func: 1, args: [O.ClassMirror]}, {func: 1, void: true, args: [, P.String], opt: [W.Element]}, {func: 1, args: [T.ReflectCapability]}, {func: 1, void: true, args: [T.ReflectCapability]}, {func: 1, ret: P.Object, args: [,]}, {func: 1, ret: P.bool, args: [,]}, {func: 1, ret: P.bool, args: [O.ClassMirror]}];
   function convertToFastObject(properties) {
     function MyClass() {
     }

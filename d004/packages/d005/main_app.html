@@ -1,0 +1,74 @@
+<!--
+  Copyright (c) 2015, luke.chi@gmail.com. All rights reserved. Use of this source code
+  is governed by a BSD-style license that can be found in the LICENSE file.
+-->
+
+<dom-module id="main-app">
+  <style>
+    :host {
+      display: block;
+    }
+  </style>
+
+  <template is="auto-binding" id="tmpl">
+    <paper-drawer-panel>
+      <paper-header-panel drawer>
+        <paper-toolbar>
+          <div class="flex">Menu</div>
+        </paper-toolbar>
+        <paper-menu class="flex" selected="{{page}}" attr-for-selected="category">
+          <paper-item category="service"  paper-drawer-toggle on-click="coreSelectHandler">Service</paper-item>
+          <paper-item category="about"    paper-drawer-toggle on-click="coreSelectHandler">About</paper-item>
+          <paper-item category="settingsPage" paper-drawer-toggle on-click="coreSelectHandler">Settings</paper-item>
+          <paper-submenu>
+            <paper-item class="menu-trigger">Topics</paper-item>
+            <paper-menu class="menu-content" selected="{{subPage}}" attr-for-selected="category">
+              <paper-item category="topic1" paper-drawer-toggle on-click="coreSelectHandler">Topic 1</paper-item>
+              <paper-item category="topic2" paper-drawer-toggle on-click="coreSelectHandler">Topic 2</paper-item>
+            </paper-menu>
+          </paper-submenu>
+          <paper-submenu>
+            <paper-item class="menu-trigger">Topics</paper-item>
+            <paper-menu class="menu-content" selected="{{subPage}}" attr-for-selected="category">
+              <paper-item category="topic3" paper-drawer-toggle on-click="coreSelectHandler">Topic 3</paper-item>
+            </paper-menu>
+          </paper-submenu>
+        </paper-menu>
+      </paper-header-panel>
+      <paper-header-panel main>
+        <paper-toolbar>
+          <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+          <div class="flex">My App</div>
+          <div>
+            <paper-tabs selected="{{page}}" attr-for-selected="category">
+              <template is="dom-repeat" items="{{tabs}}">
+                <paper-tab category="{{item.category}}" name="{{item.category}}" on-click="coreSelectHandler">{{item.title}}</paper-tab>
+              </template>
+            </paper-tabs>
+          </div>
+        </paper-toolbar>
+        <div fit layout vertical>
+
+          <iron-pages selected="{{page}}" attr-for-selected="id">
+            <template is="dom-repeat" items="{{allPages}}">
+                <section id="{{item.category}}">
+                  <h1>{{item.category}}</h1>
+                  <div>{{item.title}}</div>
+                </section>
+            </template>
+          </iron-pages>
+
+          <iron-pages id="subPages" selected="{{subPage}}" attr-for-selected="id">
+            <template is="dom-repeat" items="{{allSubPages}}">
+                <section id="{{item.category}}">
+                  <h1>{{item.category}}</h1>
+                  <div>{{item.title}}</div>
+                </section>
+            </template>
+          </iron-pages>
+
+        </div>
+      </paper-header-panel>
+    </paper-drawer-panel>
+  </template>
+</dom-module>
