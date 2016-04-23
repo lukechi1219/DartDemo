@@ -1,0 +1,113 @@
+<dom-module id="main-app">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+/*
+      google-map {
+        width: 800px;
+        height: 90%;
+      }
+*/
+      paper-card {
+        position: absolute;
+        bottom: 25px;
+        left: 25px;
+        z-index: 1;
+        width: 490px;
+      }
+      paper-tabs {
+        --paper-tabs-selection-bar-color: #0D47A1;
+        margin-top: 16px;
+      }
+      paper-tab {
+        --paper-tab-ink: #BBDEFB;
+      }
+      paper-tab iron-icon {
+        margin-right: 10px;
+      }
+      paper-tab.iron-selected {
+        background: rgb(66, 133, 244);
+        color: white;
+      }
+    </style>
+
+    <google-map id="g-map" latitude="13.504858984696419" longitude="144.79230017461225" zoom="15" map="{{map}}" drag-events="true" click-events="true" >
+
+      <google-map-marker id="g-marker" title="Map center" latitude="0" longitude="0" draggable="false"></google-map-marker>
+
+      <google-map-marker title="1 Hotel Nikko Guam 日航酒店" latitude="13.522259234458582" longitude="144.80663658179685" draggable="false"></google-map-marker>
+      <google-map-marker title="2 Lotte Hotel 樂天酒店" latitude="13.519964310201885" longitude="144.80769337214872" draggable="false"></google-map-marker>
+      <google-map-marker title="3 Westin / Reef Hotel 威斯汀酒店/珊瑚酒店" latitude="13.517452907536216" longitude="144.80728031196043" draggable="false"></google-map-marker>
+      <google-map-marker title="4 Outrigger / The Plaza" latitude="13.514558111508116" longitude="144.80594725408002" draggable="false"></google-map-marker>
+      <google-map-marker title="5 Sand Castle / Hyatt Regency 沙堡 / 凱悅酒店" latitude="13.511600688995738" longitude="144.8058909276907" draggable="false"></google-map-marker>
+      <google-map-marker title="6 across Tumon Sands Plaza 杜夢沙精品廣場 對面" latitude="13.509777709225522" longitude="144.80507553615018" draggable="false"></google-map-marker>
+      <google-map-marker title="7 Holiday Resort / Fiesta Hotel 假日酒店 / 悅泰酒店" latitude="13.506322094164632" longitude="144.80045677222654" draggable="false"></google-map-marker>
+      <google-map-marker title="8 PIC Pacific Island Club" latitude="13.502455005951415" longitude="144.79363859691068" draggable="false"></google-map-marker>
+      <google-map-marker title="9 Ypao park 怡寶海灘公園" latitude="13.501253333509101" longitude="144.78920222320005" draggable="false"></google-map-marker>
+      <google-map-marker title="10 Guam Hilton 希爾頓酒店" latitude="13.502366983492191" longitude="144.78633762397214" draggable="false"></google-map-marker>
+      <google-map-marker title="11 Sheraton Laguna Guam 喜來登大飯店" latitude="13.496112089262402" longitude="144.77201731004163" draggable="false"></google-map-marker>
+      <google-map-marker title="12 Onward 安華渡假村" latitude="13.49547374569144" longitude="144.77593199409887" draggable="false"></google-map-marker>
+      <google-map-marker title="13 GPO 關島暢貨中心" latitude="13.489294309124325" longitude="144.78358835973188" draggable="false"></google-map-marker>
+      <google-map-marker title="14 across PIC PIC 對面" latitude="13.502222235363789" longitude="144.79388267793104" draggable="false"></google-map-marker>
+      <google-map-marker title="15 Fountain Plaza 噴泉廣場" latitude="13.503920738211274" longitude="144.7973246226494" draggable="false"></google-map-marker>
+      <google-map-marker title="16 across HOLIDAY RESORT 假日酒店 對面" latitude="13.50589502882341" longitude="144.80023481943056" draggable="false"></google-map-marker>
+      <google-map-marker title="17 Pacific Bay (Grand Plaza) 太平洋灣景飯店 (檳城飯店)" latitude="13.50827550082781" longitude="144.80391548075124" draggable="false"></google-map-marker>
+      <google-map-marker title="18 Tumon Sands Plaza 杜夢沙精品廣場" latitude="13.509704685425195" longitude="144.8053303460066" draggable="false"></google-map-marker>
+      <google-map-marker title="19 across HYATT REGENCY 凱悅酒店 對面" latitude="13.511464422391796" longitude="144.80609008171007" draggable="false"></google-map-marker>
+      <google-map-marker title="20 T Galleria by DFS" latitude="13.514468789542212" longitude="144.80612495042726" draggable="false"></google-map-marker>
+      <google-map-marker title="21 JP Super Store" latitude="13.515345056162529" longitude="144.80699935056612" draggable="false"></google-map-marker>
+      <google-map-marker title="22 Micronesia Mall 密克羅尼西亞 Mall" latitude="13.520592156736766" longitude="144.81669285394594" draggable="false"></google-map-marker>
+<!--
+      <google-map-marker title="23 Pacific Place 太平洋商場" latitude="40.2735697" longitude="-111.7154958" draggable="false"></google-map-marker>
+      <google-map-marker title="24 The Beach Bar & Culture Park" latitude="40.2735697" longitude="-111.7154958" draggable="false"></google-map-marker>
+-->
+      <google-map-marker title="25 K-Mart" latitude="13.499772588274734" longitude="144.79915925361558" draggable="false"></google-map-marker>
+<!--
+      <google-map-marker title="26 AGANA SHOPPING CENTER/SM STORE" latitude="40.2735697" longitude="-111.7154958" draggable="false"></google-map-marker>
+      <google-map-marker title="27 LEOPALACE RESORT 獅子皇宮度假村" latitude="40.2735697" longitude="-111.7154958" draggable="false"></google-map-marker>
+-->
+    </google-map>
+
+    <input id="latitude" value="0" style="display: none">
+    <input id="longitude" value="0" style="display: none">
+<!--
+    <google-map-directions id="directions" start-address="{{start}}" end-address="{{end}}" map="{{map}}" travel-mode="[[travelMode]]"></google-map-directions>
+-->
+
+<!--
+        <paper-card elevation="2">
+          <paper-icon-item tabindex="-1">
+            <iron-icon icon="search" item-icon></iron-icon>
+            <paper-input label="Start address" value="{{start}}"></paper-input>
+          </paper-icon-item>
+          <paper-icon-item tabindex="-1">
+            <iron-icon icon="search" item-icon></iron-icon>
+            <paper-input label="End address" value="{{end}}"></paper-input>
+          </paper-icon-item>
+
+      <paper-tabs selected="{{travelMode}}" attr-for-selected="label">
+        <paper-tab label="DRIVING">
+          <iron-icon icon="maps:directions-car"></iron-icon>
+          <span>DRIVING</span>
+        </paper-tab>
+        <paper-tab label="WALKING">
+          <iron-icon icon="maps:directions-walk"></iron-icon>
+          <span>WALKING</span>
+        </paper-tab>
+        <paper-tab label="BICYCLING">
+          <iron-icon icon="maps:directions-bike"></iron-icon>
+          <span>BICYCLING</span>
+        </paper-tab>
+        <paper-tab label="TRANSIT">
+          <iron-icon icon="maps:directions-transit"></iron-icon>
+          <span>TRANSIT</span>
+        </paper-tab>
+      </paper-tabs>
+
+    </paper-card>
+ -->
+
+  </template>
+</dom-module>
