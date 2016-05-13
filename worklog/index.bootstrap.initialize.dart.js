@@ -1927,7 +1927,7 @@ H.b(new W.ff(0,z.a,z.b,W.fD(new N.kd(a)),!1),[H.y(z,0)]).bs()},"$0","gfW",0,0,1]
 hT:[function(a,b){return b==null?!1:J.dH(b)},"$1","gH",2,0,13,6],
 fF:[function(a,b,c){return b===0},function(a,b){return this.fF(a,b,null)},"hU","$2","$1","gfE",2,2,28,0,6,1],
 cN:[function(a,b,c){var z=J.bh(this.gal(a).h(0,"new-todo").value)
-if(z!=="")this.eL(a,"items",new E.at(z,null,!1,!1,null))
+if(z!=="")this.eL(a,"items",new E.at(z,"go to office\r\n\r\n10:00\r\n\r\n11:00\r\n\r\n12:00\r\n\r\n13:00\r\n\r\n14:00\r\n\r\n15:00\r\n\r\n16:00\r\n\r\n17:00\r\n\r\n18:00\r\n\r\n19:00\r\n\r\ngo home",!1,!1,null))
 this.gal(a).h(0,"new-todo").value=""},function(a){return this.cN(a,null,null)},"hs",function(a,b){return this.cN(a,b,null)},"ht","$2","$0","$1","geN",0,4,5,0,0,1,2],
 cP:[function(a,b,c){this.gal(a).h(0,"new-todo").value=""},function(a){return this.cP(a,null,null)},"hy",function(a,b){return this.cP(a,b,null)},"hz","$2","$0","$1","geT",0,4,5,0,0,1,2],
 fe:[function(a,b,c){this.fY(a,"items",J.dG(b))},function(a,b){return this.fe(a,b,null)},"hL","$2","$1","gfd",2,2,10,0,3,1],
