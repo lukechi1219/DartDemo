@@ -1,0 +1,19 @@
+<dom-module name="td-item">
+  <link rel="import" type="css" href="../css/td_item.css">
+  <template>
+
+    <div class$="{{classString}}" hidden="{{editing}}">
+      <input type="checkbox" class="toggle" checked="{{item.completed::change}}"
+             id="completed">
+      <label on-dblclick="editAction">{{item.title}}</label>
+      <button class="destroy" on-click="destroyAction"></button>
+    </div>
+
+    <input is="td-input" id="edit" class="edit" value="{{item.title::input}}"
+        hidden="{{!editing}}" on-td-input-commit="commitAction"
+        on-td-input-cancel="cancelAction">
+
+    <textarea id="editLog" class="edit" value="{{item.log::input}}" hidden="{{!editing}}" rows="26"></textarea>
+
+  </template>
+</dom-module>
