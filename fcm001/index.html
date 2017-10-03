@@ -57,7 +57,7 @@
       sendTokenToServer(refreshedToken);
       // [START_EXCLUDE]
       // Display new Instance ID token and clear UI of all previous messages.
-//      resetUI();
+      resetUI();
       // [END_EXCLUDE]
     })
     .catch(function(err) {
@@ -111,7 +111,7 @@
       // [START_EXCLUDE]
       // In many cases once an app has been granted notification permission, it
       // should update its UI reflecting this.
-//      resetUI();
+      resetUI();
       // [END_EXCLUDE]
     })
     .catch(function(err) {
@@ -119,7 +119,30 @@
     });
     // [END request_permission]
   }
-  
+
+    function resetUI() {
+	    messaging.getToken()
+		.then(function(currentToken) {
+
+		if (currentToken) {
+		console.info(currentToken);
+        sendTokenToServer(currentToken);
+//        updateUIForPushEnabled(currentToken);
+      } else {
+        // Show permission request.
+        console.log('No Instance ID token available. Request permission to generate one.');
+        // Show permission UI.
+//        updateUIForPushPermissionRequired();
+        setTokenSentToServer(false);
+      }
+    })
+    .catch(function(err) {
+      console.log('An error occurred while retrieving token. ', err);
+//      showToken('Error retrieving Instance ID token. ', err);
+      setTokenSentToServer(false);
+    });
+  }
+  // [END get_token]
  </script>
 </body>
 </html>
