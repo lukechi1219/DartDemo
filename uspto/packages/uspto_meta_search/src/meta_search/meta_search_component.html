@@ -1,0 +1,25 @@
+<!-- Components info: https://webdev.dartlang.org/components -->
+<div>
+  <material-input label="What do you want to search?"
+                  autoFocus floatingLabel style="width:80%"
+                  [(ngModel)]="queryStr"
+                  (keyup.enter)="search()">
+  </material-input>
+
+  <material-fab mini raised
+                (trigger)="search()"
+                [disabled]="queryStr.isEmpty">
+    <glyph icon="search"></glyph>
+  </material-fab>
+</div>
+
+<p *ngIf="items.isEmpty">
+    Nothing to show! Search something above.
+</p>
+<div *ngIf="items.isNotEmpty">
+    <ul>
+        <li *ngFor="let item of items; let i=index">
+            <span><a href="{{item.link}}" target="_blank">{{item.number}}</a></span> | <span>{{item.title}}</span>
+        </li>
+    </ul>
+</div>
