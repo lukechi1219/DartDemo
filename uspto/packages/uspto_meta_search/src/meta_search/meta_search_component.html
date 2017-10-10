@@ -11,15 +11,21 @@
                 [disabled]="queryStr.isEmpty">
     <glyph icon="search"></glyph>
   </material-fab>
+
 </div>
 
 <p *ngIf="items.isEmpty">
     Nothing to show! Search something above.
 </p>
+
+<div *ngIf="searchFlag.isEmpty">
+    <material-spinner></material-spinner>
+</div>
+
 <div *ngIf="items.isNotEmpty">
     <ul>
         <li *ngFor="let item of items; let i=index">
-            <span><a href="{{item.link}}" target="_blank">{{item.number}}</a></span> | <span>{{item.title}}</span>
+            <span><a href="{{item.link}}" target="_blank">{{item.number}}</a></span> | <span>{{item.title}}</span><br>Inventors: {{item.inventors}}
         </li>
     </ul>
 </div>
