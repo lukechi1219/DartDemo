@@ -23,9 +23,39 @@
 </div>
 
 <div *ngIf="items.isNotEmpty">
-    <ul>
-        <li *ngFor="let item of items; let i=index">
-            <span><a href="{{item.link}}" target="_blank">{{item.number}}</a></span> | <span>{{item.title}}</span><br>Inventors: {{item.inventors}}
-        </li>
-    </ul>
+    <material-tab-panel>
+        <material-tab label="List">
+            <div>
+                <ul>
+                    <li *ngFor="let item of items; let i=index">
+                        <span><a href="{{item.link}}" target="_blank">{{item.number}}</a></span> | <span>{{item.title}}</span><br>
+                        發明人:
+                        <ul>
+                            <li *ngFor="let inventor of item.inventors; let i=index">
+                                {{inventor.name}} - {{inventor.company}}
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </material-tab>
+        <material-tab label="Inventors">
+            <ul>
+                <li *ngFor="let inventor of inventtorPatentMap.keys">
+                    發明人: {{inventor}}
+                    <ul>
+                        <li *ngFor="let company of inventtorPatentMap[inventor].keys">
+                            公司: {{company}} : total {{inventtorPatentMap[inventor][company].length}} patents
+                            <ul>
+                                <li *ngFor="let number of inventtorPatentMap[inventor][company]; let idx=index">
+                                    {{idx+1}}. {{numberTitleMap[number]}}
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                </li>
+            </ul>
+        </material-tab>
+    </material-tab-panel>
 </div>
